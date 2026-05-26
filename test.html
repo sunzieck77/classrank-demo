@@ -4321,7 +4321,7 @@
 
             const stName = st.fullName || '';
             const curStatus = sub.status;
-            const curCrystal = sub.crystal || 0;
+            const curCrystal = sub.crystal ?? 100;
             const curNote = sub.note || '';
 
             Swal.fire({
@@ -4368,6 +4368,16 @@
                 didOpen: () => {
                     const typeSel = document.getElementById('attach-type');
                     if(typeSel.value) window.app.handleAttachTypeChange(typeSel.value);
+                    const statusEl = document.getElementById('g-status');
+                    const crystalEl = document.getElementById('g-ct');
+
+                    statusEl.addEventListener('change', () => {
+                        if(statusEl.value === 'ตรวจแล้ว') {
+                            crystalEl.value = 100;
+                        } else {
+                            crystalEl.value = 0;
+                        }
+                    });
                 },
                 preConfirm: () => {
                     const status = document.getElementById('g-status').value;
@@ -4444,7 +4454,7 @@
             const title = aData.title || 'ชื่องาน';
             const detail = aData.detail || '-';
             const status = mySub.status;
-            const crystal = mySub.crystal || 0;
+            const crystal = mySub.crystal ?? 100;
             const note = mySub.note || '-';
             const att = mySub.attachment || null;
 

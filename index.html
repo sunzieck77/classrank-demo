@@ -4361,6 +4361,16 @@
                 didOpen: () => {
                     const typeSel = document.getElementById('attach-type');
                     if(typeSel.value) window.app.handleAttachTypeChange(typeSel.value);
+                    const statusEl = document.getElementById('g-status');
+                    const crystalEl = document.getElementById('g-ct');
+
+                    statusEl.addEventListener('change', () => {
+                        if(statusEl.value === 'ตรวจแล้ว') {
+                            crystalEl.value = 100;
+                        } else {
+                            crystalEl.value = 0;
+                        }
+                    });
                 },
                 preConfirm: () => {
                     const status = document.getElementById('g-status').value;
