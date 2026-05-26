@@ -267,13 +267,28 @@
             </main>
 
             <!-- Floating Pet Widget on Home -->
-            <div id="floating-pet-widget" class="hidden flex flex-col items-center">
-                <div id="pet-speech-bubble" class="hidden pet-bubble bg-white text-[10px] sm:text-xs font-bold text-dark px-3 py-1.5 rounded-2xl shadow-md border border-gray-100 mb-1 relative whitespace-nowrap">
-                    <!-- Text injected by JS -->
-                    <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-100 rotate-45"></div>
+            <div id="floating-pet-widget" class="hidden fixed z-40">
+                <!-- Bubble -->
+                <div 
+                    id="pet-speech-bubble"
+                    class="hidden absolute right-[80px] top-1/4 -translate-y-1/2
+                        bg-white text-dark text-sm sm:text-base font-bold
+                        px-4 py-3 rounded-2xl shadow-xl border border-gray-100
+                        max-w-[480px] w-max
+                        leading-relaxed break-words whitespace-normal z-50 
+                        text-left"
+                >
+                    <span id="pet-speech-text"></span>
+
+                    <!-- หาง -->
+                    <div class="absolute top-1/2 -right-1.5 -translate-y-1/2
+                                w-3 h-3 bg-white border-t border-r border-gray-100 rotate-45">
+                    </div>
                 </div>
-                <div class="w-16 h-16 sm:w-20 sm:h-20 animate-bounce-slow filter drop-shadow-md pointer-events-none">
-                    <img id="floating-pet-img" src="" class="w-full h-full object-contain pointer-events-none">
+
+                <!-- Cat -->
+                <div class="w-16 h-16 sm:w-20 sm:h-20 animate-bounce-slow relative z-10">
+                    <img id="floating-pet-img" src="" class="w-full h-full object-contain">
                 </div>
             </div>
 
@@ -688,11 +703,12 @@
                 widget.classList.remove('hidden');
 
                 // Greeting
-                const greetings = ["สวัสดีเมี้ยว~", "ยินดีต้อนรับ", "เย้คุณเข้ามาแล้ว!", "วันนี้มาตั้งใจเรียนกันเถอะ", "หิวจังเลยลูบหัวหน่อย"];
+                const greetings = ["สวัสดีเมี้ยว~", "อย่าลืมดูแลตัวเองเหมือนที่ดูแลเค้านะ", "เย้คุณเข้ามาแล้ว!", "วันนี้มาตั้งใจเรียนกันเถอะ", "หิวจังเลยลูบหัวหน่อยยย","เชื่อไหม เธอเก่งที่สุดเลย","วันนี้จะเรียนเยอะไหม~ เค้าเอาใจช่วย!","เมี้ยววว~", "ดีใจจังที่เจอคุณ!", "พร้อมแล้วยังหรอ?", "วันนี้จะเป็นวันที่ยอดเยี่ยมแน่นอน!",
+                "วันนี้เหนื่อยไหม? มากอดแมวก่อนก็ได้นะ","เค้าภูมิใจที่เธอยังพยายามอยู่นะ","ไม่เป็นไรนะ ค่อยๆไป เดี๋ยวเค้าอยู่เป็นเพื่อนเอง","เค้ารอให้เธอกลับมาเสมอเลย"];
                 const msg = greetings[Math.floor(Math.random() * greetings.length)];
-                bubble.innerHTML = `${msg}<div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-100 rotate-45"></div>`;
+                document.getElementById('pet-speech-text').textContent = msg;
                 bubble.classList.remove('hidden');
-                setTimeout(() => { bubble.classList.add('hidden'); }, 4000);
+                setTimeout(() => { bubble.classList.add('hidden'); }, 6000);
 
                 // Basic drag functionality
                 let isDragging = false;
@@ -744,9 +760,9 @@
                 widget.addEventListener('click', () => {
                     if(!isDragging) {
                         const msg = greetings[Math.floor(Math.random() * greetings.length)];
-                        bubble.innerHTML = `${msg}<div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-100 rotate-45"></div>`;
+                        document.getElementById('pet-speech-text').textContent = msg;
                         bubble.classList.remove('hidden');
-                        setTimeout(() => { bubble.classList.add('hidden'); }, 3000);
+                        setTimeout(() => { bubble.classList.add('hidden'); }, 6000);
                     }
                 });
             },
@@ -885,10 +901,10 @@
                                 </h3>
                                 <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold self-start sm:self-auto shadow-inner">
                                     <button onclick="app.changeRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${appState.rankingCriteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
-                                        <i class="fa-solid fa-star text-yellow-500"></i> ClassStar
+                                        <img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain"> ClassStar
                                     </button>
                                     <button onclick="app.changeRankingCriteria('ct')" id="rank-tab-ct" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${appState.rankingCriteria === 'ct' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
-                                        <i class="fa-solid fa-gem text-cyan-500"></i> Crystal
+                                        <img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain"> Crystal
                                     </button>
                                 </div>
                             </div>
@@ -1138,7 +1154,7 @@
                             rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
                         }
 
-                        const scoreIcon = criteria === 'cs' ? 'fa-star text-yellow-500' : 'fa-gem text-cyan-500';
+                        const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain">` : `<img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain">`;
 
                         listHtml += `
                             <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-2 sm:p-3.5 rounded-2xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-primary/50 active:scale-[0.98]">
@@ -1164,7 +1180,7 @@
                                 </div>
                                 <div class="flex items-center gap-1 sm:gap-1.5 font-bold text-xs sm:text-sm text-dark bg-gray-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-gray-100 shadow-inner shrink-0">
                                     <span>${score.toLocaleString()}</span>
-                                    <i class="fa-solid ${scoreIcon}"></i>
+                                    ${scoreIcon}
                                 </div>
                             </div>
                         `;
@@ -3637,12 +3653,14 @@
                             <i class="fa-solid fa-arrow-left text-lg"></i>
                         </button>
                         <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20">
-                            <img src="${CAT_ASSETS.cc}" class="w-4 h-4 object-contain">
-                            <span id="cat-cc-balance" class="text-white font-bold text-xs">${(catData.inventory?.cc || 0).toLocaleString()}</span>
-                            <img src="${CAT_ASSETS.cd}" class="w-4 h-4 object-contain ml-2">
-                            <span id="cat-cd-balance" class="text-white font-bold text-xs">${(catData.inventory?.cd || 0).toLocaleString()}</span>
-                            <img src="${CAT_ASSETS.ce}" class="w-4 h-4 object-contain ml-2">
-                            <span id="cat-ce-balance" class="text-white font-bold text-xs">${(catData.inventory?.ce || 0).toLocaleString()}</span>
+                            <img src="${ITEM_IMAGES.sc}" class="w-4 h-4 object-contain">
+                            
+                            <span id="cat-sc-balance" class="text-white font-bold text-xs">
+                                ${((u.items && u.items.sc) || 0).toLocaleString()}
+                            </span>
+                            <span class="text-[12px] text-white/70 font-bold">
+                                SC
+                            </span>
                         </div>
                     </div>
 
@@ -3916,19 +3934,45 @@
                     const shopItems = snap.exists() ? snap.val() : {};
                     let foodGrid = '<div class="grid grid-cols-4 gap-2">';
                     
-                    for (const key in myItems) {
-                        if (key.startsWith('food_') && myItems[key] > 0 && shopItems[key]) {
-                            hasFood = true;
-                            const f = shopItems[key];
-                            foodGrid += `
-                                <div onclick="app.feedCat('${key}', ${f.hunger}, ${f.happy})" class="bg-white/10 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-white/20 transition relative">
-                                    <span class="absolute top-1 right-1 bg-primary text-white text-[8px] font-bold px-1 rounded-sm border border-white/30">x${myItems[key]}</span>
-                                    <img src="https://drive.google.com/thumbnail?id=${f.driveId}&sz=s800" class="w-8 h-8 object-contain mb-1 drop-shadow">
-                                    <span class="text-white text-[8px] font-medium truncate w-full text-center">${f.name}</span>
-                                </div>
-                            `;
-                        }
-                    }
+                    for (const shopKey in shopItems) {
+
+                        const f = shopItems[shopKey];
+
+                        // เอาเฉพาะอาหาร
+                        if (f.type !== 'food')
+                            continue;
+
+                        // จำนวนอาหารที่มี
+                        const amount = myItems[shopKey] || 0;
+
+                        // ไม่มีอาหารชิ้นนี้
+                        if (amount <= 0)
+                            continue;
+
+                        hasFood = true;
+
+                        foodGrid += `
+                            <div
+                                onclick="app.feedCat('${shopKey}', ${f.hunger}, ${f.happy})"
+                                class="bg-white/10 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-white/20 transition relative"
+                            >
+
+                                <span class="absolute top-1 right-1 bg-primary text-white text-[8px] font-bold px-1 rounded-sm border border-white/30">
+                                    x${amount}
+                                </span>
+
+                                <img
+                                    src="https://drive.google.com/thumbnail?id=${f.driveId}&sz=s800"
+                                    class="w-8 h-8 object-contain mb-1 drop-shadow"
+                                >
+
+                                <span class="text-white text-[8px] font-medium truncate w-full text-center">
+                                    ${f.name}
+                                </span>
+
+                            </div>
+                        `;
+                    }   
                     foodGrid += '</div>';
                     if(!hasFood) foodGrid = '<div class="text-white/50 text-[10px] text-center w-full py-2">ไม่มีอาหาร ไปซื้อได้ที่ร้านค้าแมว</div>';
                     document.getElementById('cat-food-inventory').innerHTML = foodHtml + foodGrid;
@@ -4047,8 +4091,18 @@
                         }
                         
                         await update(ref(db), updates); appState.user.items.sc = sc - price;
+                        const scEl = document.getElementById('cat-sc-balance');
+                        if (scEl) {
+                            scEl.textContent =
+                                appState.user.items.sc.toLocaleString();
+                        }
                         Loader.hide(); Toast.fire({icon:'success', title:'ซื้อไอเทมสำเร็จ'});
                         this.renderCatShop();
+
+                        // ถ้าอยู่หน้าโปรไฟล์ให้อัปเดตอาหารด้วย
+                        if (appState.catRoomTab === 'profile') {
+                            this.renderCatProfile();
+                        }
                     } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'Error'}); }
                 }
             },
