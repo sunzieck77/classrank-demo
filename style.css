@@ -1,0 +1,393 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    list-style: none;
+    text-decoration: none;
+    font-family: 'Kanit', sans-serif;
+}
+
+body {
+    font-family: 'Kanit', sans-serif;
+    background: url('https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20BG.jpg') center center / cover no-repeat fixed;
+    min-height: 100%;
+    padding-left: 10px;
+    padding-right:10px;
+}
+
+.header-container {
+    /* background-color: red; */
+    display: flex;
+    padding: 0.313rem;
+    padding-top: 10px;
+    align-items: center;
+    font-weight: 500;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.header-box1, .header-box2 {
+    /* background-color: yellow; */
+    display: flex;
+    align-items: center;
+}
+
+.header-box1 span{
+    font-weight: 600;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.header-box2 i {
+    font-weight: 600;
+    font-size: large;
+}
+div.header-box2 input {
+    padding-left: 20px;
+    outline: none;
+    border: none;
+    border-radius: 8px;
+    background-color: #cfd2e5;
+    height: 30px;
+    width: 80%;
+}
+
+
+.header-box2 span {
+    font-weight: 600;
+    width: 9.375rem;
+    height: 30px;
+    margin-left: 1rem;
+    padding: 3px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    border-radius:8px ;
+}
+
+.main-container {
+  display: flex;
+  width: 100%;
+  min-height: 90vh; /* ให้มีความสูง */
+}
+
+.profile-banner {
+    /* background-color: green; */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+
+.teacher-banner .img-banner {
+    background: url("https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20banner.png");
+    width: 21.875rem;
+    height: 23.125rem;
+    background-repeat: no-repeat;
+    border-radius: 20px;
+}
+
+.teacher-pic {
+  position: relative;
+  width: 11.25rem;
+  height: 11.25rem;
+  bottom: 8rem;
+}
+
+.img-teacher-pic {
+  background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHlT4WgxAbr8ZBhrmxaFczevkXLG_9Vw_6Zw&s');
+  width: 10rem;
+  height: 10rem;
+  border-radius: 100%;
+  background-position: center;
+  background-size: cover;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.teacher-frame {
+  background: url('https://i.ibb.co/tPv8J61P/free-1.png');
+  background-position: center;
+  background-size: cover;
+  width: 12.25rem;
+  height: 12.25rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.main-vertical-line {
+    /* background-color: yellow; */
+    width: 6.25rem;
+    height: 50rem;
+}
+
+.main-vertical-line .vertical-line-main {
+    background: url('https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20vertical%20line.png');
+    background-position: 0rem -2.125rem;
+    background-size: 95%;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    right: 100px;
+}
+
+.teacher-detail-container {
+    /* background-color: red; */
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    width: 100%;
+    max-height: 18.75rem;
+}
+
+.side-profile-container {
+    display: flex;
+    flex-direction: column;
+    height: 85vh;
+    background-color: red;
+}
+
+.subject-box {
+    /* background-color: yellow; */
+    width: 100%;
+    height:6.25rem;
+    position: relative;
+}
+.img-subject {
+    background: url("https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20subject%20banner.png");
+    /* background-color: magenta; */
+    background-size: 100%;
+    background-repeat: no-repeat;
+    margin-top: 1.875rem;
+    height: 100%;
+    width: 100%;
+}
+
+.signature-box {
+    /* background-color: blue; */
+    margin-top: 1.875rem;
+    width: 100%;
+    height: 9.375rem;
+}
+
+.signature {
+    background: url("https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/Dsign.png");
+    background-size:100%;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+.icon-box-header {
+    align-items: center; 
+    display:flex; 
+    padding-right:1.25rem; 
+    margin-left:1.75rem;
+}
+
+.teacher-profile {
+    height: 1.875rem;
+}
+
+.right-panel-container {
+    display: flex;
+    width: 100%;
+}
+
+.right-container {
+    background-color: green;
+    width: 40%;
+}
+
+.middle-container {
+    position: relative;
+    background-color: yellow;
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.nav-btn-rank {
+    background-color: blue;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 18px;
+    padding-left: 10px;
+    height: 5.625rem;
+}
+
+.nav-btn-rank button {
+    display: flex;
+    /* background-color: transparent; */
+    margin-right: 0.75rem;
+    border: 0;
+    cursor: pointer;
+    align-items: center;
+    outline: none;
+}
+
+.nav-btn-rank button i {
+    font-size: 2rem;
+    color: white;
+}
+
+.nav-btn-rank .rank-board-btn, .nav-btn-rank .more-board-btn {
+    background-color: black;
+    border-radius: 5px;
+    padding-left: 1.125rem;
+    padding-right: 1.125rem;
+    height: 28px;
+}
+
+.tab_btn {
+    background-color: transparent;
+}
+
+.tab_btn.active{
+    background-color: #cfd2e5;
+    border-radius: 5px;
+    transform: translateY(-10px);
+    transition: all .2s;
+}
+
+.active_line {
+    position: absolute;
+    background-color: #383d4c;
+    top: 35px;
+    border-radius: 10px;
+    left: 0;
+    width: 50px;
+    height: 5px;
+}
+
+.nav-btn-rank span {
+    font-size: 1.563rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    margin-right: 15px;
+}
+
+
+.crystal-img {
+    background:url('https://drive.google.com/thumbnail?id=1R8J1RNHqbTJkVBIA-Qwzvr6pW8QFdy09') ;
+    background-size: 100%;
+    width: 3rem;
+    height: 3rem;
+}
+
+.star-img {
+    background: url('https://drive.google.com/thumbnail?id=1uW6iQ82drZGx9Q_V2Ng2mF82yP97BN6V');
+    background-size: 100%;
+    width: 3rem;
+    height: 3rem;
+}
+
+.mobile-profile-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.mobile-main-container {
+    position: relative;
+    width: 100%;
+    height: 20rem;
+}
+
+.mobile-banner {
+    background: url("https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20banner.png");
+    /* background-color: blue; */
+    background-size: 100%;
+    background-repeat: no-repeat;
+    border-radius: 20px;
+    width: 100%;
+    height: 11.25rem;
+}
+
+.mobile-teacher-pic-box {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    bottom: 3rem;
+    left: 1rem;
+}
+
+.mobile-teacher-pic {
+  background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHlT4WgxAbr8ZBhrmxaFczevkXLG_9Vw_6Zw&s');
+  width: 7.2rem;
+  height: 7.2rem;
+  border-radius: 100%;
+  background-position: center;
+  background-size: cover;
+  position: absolute;
+  top: 53%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.mobile-teacher-frame {
+  background: url('https://i.ibb.co/tPv8J61P/free-1.png');
+  background-position: center;
+  background-size: cover;
+  width: 8.5rem;
+  height: 8.5rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.mobile-badge-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-left: 10px;
+    transform: translate(2%, -20%);     
+}
+
+.mobile-subject-badge {
+    background: url("https://raw.githubusercontent.com/sunzieck77/ImageFree/refs/heads/main/CATROOM%20subject%20banner.png");
+    /* background-color: magenta; */
+    background-size: 100%;
+    background-repeat: no-repeat;
+    height: 5rem;
+    width: 17.5rem;
+    background-position: bottom;
+}
+
+.ranking-board {
+    position: relative;
+    width: 100%;
+    background-color: red;
+    height: 30%;
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.card-rank {
+    border-radius: 5px;
+    border: solid 3px black;
+    border-image: linear-gradient(45deg, black, #807f7f, #b8b8b8, #494949, #6254d1) 1;
+    background-color: greenyellow;
+    width: 30%;
+}
+
+/* .ranking-profile-box {
+    position: relative;
+    width: 8rem; 
+    height: 8rem;
+    bottom: 3rem;
+    left: 1rem;
+} */

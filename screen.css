@@ -1,0 +1,231 @@
+.header-box2 img{
+    /* background-color: green; */
+    height: 3.125rem;
+    width: 3.125rem;
+}
+
+@media (max-width:1150px) {
+    .search-box{
+        display: none;
+    }
+    .teacher-banner .img-banner {
+        width: 19rem;
+        height: 20rem;
+        border-radius: 18px;
+    }
+
+    .teacher-pic {
+        width: 9rem;
+        height: 9rem;
+        bottom: 6rem;
+    }
+
+    .img-teacher-pic {
+        width: 8rem;
+        height: 8rem;
+    }
+    .teacher-frame {
+        width: 10rem;
+        height: 10rem;
+    }
+
+    .main-vertical-line {
+        width: 4rem;
+        height: 40rem;
+    }
+    .main-vertical-line .vertical-line-main {
+        background-position: 0rem -2rem;
+    }
+
+}
+@media (max-width:950px){
+    .header-box1 span {
+        display: none;
+    }
+    .teacher-banner .img-banner {
+        width: 15rem;
+        height: 16rem;
+        border-radius: 18px;
+        background-size:200%;
+    }
+}
+
+@media (max-width:1190px){
+    .main-vertical-line {
+        width: 4rem;
+        height: 40rem;
+    }
+    .main-vertical-line .vertical-line-main {
+        background-position: 0rem -1rem;
+    }   
+}
+
+@media (max-width:850px){
+    .profile-banner,   .main-vertical-line .vertical-line-main , .main-vertical-line{
+        display: none;
+    }
+    .nav-btn-rank span{
+        font-size: 20px;
+    }
+}
+
+
+@media (min-width:850px){
+    .mobile-main-container {
+        display: none;
+    }
+}
+
+
+@media (max-width:1420px) {
+    .right-container {
+        display: none;
+    }
+    .right-panel-container {
+    flex-direction: column; 
+    }
+
+    .middle-container {
+        width: 100%;
+        height: 100%;
+    }
+    
+}
+
+@media (max-width: 768px) {
+  .left-panel-container,
+  .main-vertical-line {
+    display: none; 
+  }
+
+  .right-panel-container {
+    width: 100%;
+
+  }
+}
+
+@media (min-width:520px) {
+    .mobile-teacher-pic-box {
+        width: 10rem;
+        height: 10rem;
+        left: 2.3rem;
+    }
+
+   .mobile-teacher-pic {
+        width: 9rem;
+        height: 9rem;
+    }
+
+    .mobile-teacher-frame {
+        width: 10.5rem;
+        height: 10.5rem;
+    } 
+
+    .mobile-subject-badge {
+        
+        width: 100%;
+        min-width: 280px;
+        max-width: 350px;
+        height: 100px;
+    }
+    .mobile-badge-container {
+        margin-left: 30px;
+    }
+
+    .mobile-subject-badge {
+        width: 80%;
+        height: 100px;
+    }
+
+}
+
+@media (max-width: 520px){
+    .nav-btn-rank .rank-board-btn, .nav-btn-rank .more-board-btn  {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    .nav-btn-rank button i {
+        font-size: 1rem;
+    }
+
+    .nav-btn-rank span {
+        font-size: 0.8rem;
+    }
+
+    .active_line {
+        top: 28px;
+        width: 40px;
+    }
+
+    .crystal-img, .star-img {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .header-box1 span{
+    font-weight: 600;
+    padding-left: 10px;
+    padding-right: 10px;
+    }
+
+    .text-header h2 {
+        font-size:1.2rem;
+    }
+
+    .header-box2 span {
+        font-size: 10px;
+        width: 5rem;
+        height: 23px;
+        margin-right: 0;
+
+    }
+
+    .crystal-icon-header,
+    .star-icon-header {
+        max-width: 35px;
+        object-fit: contain; /* หรือ cover */
+    }
+
+    .icon-box-header {
+        padding: 0;
+        margin: 0px;
+    }
+
+    .header-container {
+        padding-top: 5px;
+    }
+    .mobile-main-container {
+        height: 12rem;
+    }
+    .mobile-banner {
+        height: 6rem;
+    }
+}
+
+@media (max-width:446px){
+    .mobile-teacher-pic-box {
+        width: 4rem;
+        height: 4rem;
+        bottom: 1rem;
+        left: 1.5rem;
+    }
+
+    .mobile-teacher-pic {
+        width: 4.5rem;
+        height: 4.5rem;
+    }
+
+    .mobile-teacher-frame {
+        width: 6rem;
+        height: 6rem;
+    } 
+    .mobile-badge-container {
+        margin-left: 30px;
+    }
+
+    .mobile-subject-badge {
+        background-size: 100%;
+        height: 3.438rem;
+        width: 12.5rem;
+    }
+}
