@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cat Room - Student Tracking</title>
+    <meta name="color-scheme" content="light">
+    <title>Cat Room</title>
     
     <!-- External UI Libraries -->
+    <script>
+        tailwind.config = {
+            darkMode: false
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -34,6 +41,9 @@
         }
     </script>
     <style>
+        :root {
+            color-scheme: light;
+        }
         /* Fixed Mobile App Viewport Constraints */
         body, html {
             margin: 0;
@@ -42,6 +52,7 @@
             width: 100vw;
             overflow: hidden; 
             background-color: #f3f4f6;
+            color: #1f2937;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
             display: flex;
