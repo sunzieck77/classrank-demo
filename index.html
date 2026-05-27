@@ -4022,10 +4022,6 @@
                     Loader.hide();
                     Toast.fire({ icon: 'success', title: `ได้รับ ${yieldAmount.toLocaleString()} ${nameStr}` });
                     
-                    // Direct UI Update
-                    document.getElementById('cat-cc-balance').innerText = appState.user.catData.inventory.cc.toLocaleString();
-                    document.getElementById('cat-cd-balance').innerText = appState.user.catData.inventory.cd.toLocaleString();
-                    document.getElementById('cat-ce-balance').innerText = appState.user.catData.inventory.ce.toLocaleString();
                     this.renderCatRoomMain(); 
                 } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'เกิดข้อผิดพลาด'}); }
             },
