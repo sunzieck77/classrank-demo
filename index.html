@@ -1073,7 +1073,7 @@
                                 </button>
                                 <button onclick="app.showExchangeModal()" class="bg-white hover:border-yellow-500/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-sm active:scale-95 group">
                                     <div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-colors"><i class="ri-exchange-fill text-xl sm:text-2xl"></i></div>
-                                    <span class="text-[10px] sm:text-xs font-bold text-gray-700">แลกแต้ม SC</span>
+                                    <span class="text-[10px] sm:text-xs font-bold text-gray-700">แลกเปลี่ยน SC</span>
                                 </button>
                             </div>
                         </div>
@@ -2234,7 +2234,7 @@
                 });
             },
 
-                       async renderShop() {
+            async renderShop() {
                 UI.setHeader('ร้านค้า');
                 const content = document.getElementById('content-area');
                 const isTeacher = appState.user.role === 'teacher';
@@ -3098,43 +3098,132 @@
                     title: 'แก้ไขโปรไฟล์',
                     html: `
                         <div class="text-left text-sm space-y-2 mb-3">
-                            <label class="text-xs text-gray-500 font-bold">ชื่อที่แสดง (Display Name) จำกัด 20 ตัว</label>
-                            <input id="swal-dname" class="swal2-input !w-[90%] !text-sm !mt-0" value="${appState.user.displayName || appState.user.fullName || ''}" maxlength="20" placeholder="ใส่ชื่อเท่ๆ ของคุณ">
+                            <label class="text-xs text-gray-500 font-bold">
+                                ชื่อที่แสดง (Display Name) จำกัด 20 ตัว
+                            </label>
+                            <input 
+                                id="swal-dname" 
+                                class="swal2-input !w-[90%] !text-sm !mt-0" 
+                                value="${appState.user.displayName || appState.user.fullName || ''}" 
+                                maxlength="20" 
+                                placeholder="ใส่ชื่อเท่ๆ ของคุณ"
+                            >
                         </div>
+
                         <div class="text-left text-sm space-y-2 mb-3">
-                            <label class="text-xs text-gray-500 font-bold">URL รูปโปรไฟล์</label>
-                            <input id="swal-pfp" class="swal2-input !w-[90%] !text-sm !mt-0" value="${appState.user.profileImage||''}">
+                            <label class="text-xs text-gray-500 font-bold">
+                                ลิ้งก์รูปโปรไฟล์ (Google Drive Link หรือ URL รูปปกติ)
+                            </label>
+                            <input 
+                                id="swal-pfp" 
+                                class="swal2-input !w-[90%] !text-sm !mt-0"
+                                value="${appState.user.profileImage || ''}"
+                                placeholder="วางลิงก์ Google Drive Link หรือ URL รูปปกติ" 
+                            >
                         </div>
+
                         <div class="text-left text-sm space-y-2">
-                            <label class="text-xs text-gray-500 font-bold">URL รูปภาพปก (Banner)</label>
-                            <input id="swal-banner" class="swal2-input !w-[90%] !text-sm !mt-0" value="${appState.user.bannerImage||''}">
+                            <label class="text-xs text-gray-500 font-bold">
+                                ลิ้งก์รูปปก (Google Drive Link หรือ URL รูปปกติ)
+                            </label>
+                            <input 
+                                id="swal-banner" 
+                                class="swal2-input !w-[90%] !text-sm !mt-0"
+                                value="${appState.user.bannerImage || ''}"
+                                placeholder="วางลิงก์ Google Drive Link หรือ URL รูปปกติ"
+                            >
                         </div>
+
+                        <p class="animate-pulse animate-infinite animate-ease-in-out text-[14px] text-red-400 mt-6 text-left px-4">
+                           <i class="ri-error-warning-fill"></i> จะต้องเป็น Google Drive Link ที่เป็นสาธารณะเท่านั้น หรือ Image URL ที่ตรงๆ เท่านั้น (เช่น https://example.com/image.jpg) ไม่รองรับลิงก์จากเว็บฝากรูปทั่วไปที่มีหน้าแสดงรูปอีกที
+                        </p>
                     `,
                     focusConfirm: false,
                     showCancelButton: true,
                     confirmButtonText: 'บันทึก',
+                    cancelButtonText: 'ยกเลิก',
+                    customClass: {
+                        popup: 'rounded-3xl'
+                    },
+
                     preConfirm: () => {
+                        const dname = document.getElementById('swal-dname')
+                            .value
+                            .trim()
+                            .substring(0, 20);
+
+                        const pfpInput = document.getElementById('swal-pfp')
+                            .value
+                            .trim();
+
+                        const bannerInput = document.getElementById('swal-banner')
+                            .value
+                            .trim();
+
+                        // helper
+                        const parseImageUrl = (url, size = 's800') => {
+
+                            if (!url) return '';
+
+                            // ถ้าเป็น Google Drive
+                            if (
+                                url.includes('drive.google.com') ||
+                                /^[a-zA-Z0-9_-]{20,}$/.test(url)
+                            ) {
+
+                                const driveId = extractDriveId(url);
+
+                                return `https://drive.google.com/thumbnail?id=${driveId}&sz=${size}`;
+                            }
+
+                            // ถ้าเป็น image url ปกติ
+                            return url;
+                        };
+
                         return {
-                            dname: document.getElementById('swal-dname').value.trim().substring(0, 20),
-                            pfp: document.getElementById('swal-pfp').value,
-                            banner: document.getElementById('swal-banner').value
-                        }
+                            dname,
+                            profileImage: parseImageUrl(pfpInput, 's800') || DEFAULT_AVATAR,
+                            bannerImage: parseImageUrl(bannerInput, 's1600')
+                        };
                     }
                 });
 
                 if (formValues) {
                     Loader.show();
-                    await update(ref(db, `users/${appState.user.uid}`), {
-                        displayName: formValues.dname,
-                        profileImage: formValues.pfp || DEFAULT_AVATAR,
-                        bannerImage: formValues.banner
-                    });
-                    appState.user.displayName = formValues.dname;
-                    appState.user.profileImage = formValues.pfp || DEFAULT_AVATAR;
-                    appState.user.bannerImage = formValues.banner;
-                    Loader.hide();
-                    Toast.fire({icon: 'success', title: 'อัปเดตโปรไฟล์สำเร็จ'});
-                    this.renderProfile();
+
+                    try {
+
+                        await update(ref(db, `users/${appState.user.uid}`), {
+                            displayName: formValues.dname,
+                            profileImage: formValues.profileImage,
+                            bannerImage: formValues.bannerImage
+                        });
+
+                        // sync state
+                        appState.user.displayName = formValues.dname;
+                        appState.user.profileImage = formValues.profileImage;
+                        appState.user.bannerImage = formValues.bannerImage;
+
+                        Loader.hide();
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'อัปเดตโปรไฟล์สำเร็จ'
+                        });
+
+                        this.renderProfile();
+
+                    } catch (e) {
+
+                        console.error(e);
+
+                        Loader.hide();
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด'
+                        });
+                    }
                 }
             },
 
@@ -4200,40 +4289,101 @@
                         </div>
                     </div>
                 `;
-                Swal.fire({ title: '<span class="font-bold text-lg">แลกเปลี่ยนแร่ธาตุ</span>', html: html, showConfirmButton: false, showCloseButton: true, customClass: { popup: 'rounded-3xl' } });
+                Swal.fire({ title: '<span class="font-bold text-lg">อัตราการแลกเปลี่ยน</span>', html: html, showConfirmButton: false, showCloseButton: true, customClass: { popup: 'rounded-3xl' } });
             },
 
             async processCatExchange(type) {
-                const u = appState.user; const inv = u.catData.inventory;
-                let cost = 0, gain = 0, targetType = '';
-                
-                if (type === 'cc') { cost = 1000; gain = 10; targetType = 'cs'; }
-                if (type === 'cd') { cost = 1000; gain = 10; targetType = 'ct'; }
-                if (type === 'ce') { cost = 500; gain = 1; targetType = 'ticket'; }
+                const u = appState.user;
 
-                if (inv[type] < cost) return Swal.showValidationMessage(`แร่ไม่พอ ต้องการอย่างน้อย ${cost}`);
+                // กัน undefined
+                if (!u.items) u.items = {};
+                if (!u.catData.inventory) u.catData.inventory = {};
+
+                const inv = u.catData.inventory;
+
+                let cost = 0, gain = 0, targetType = '';
+
+                if (type === 'cc') {
+                    cost = 1000;
+                    gain = 10;
+                    targetType = 'cs';
+                }
+
+                if (type === 'cd') {
+                    cost = 1000;
+                    gain = 10;
+                    targetType = 'ct';
+                }
+
+                if (type === 'ce') {
+                    cost = 500;
+                    gain = 1;
+                    targetType = 'ticket';
+                }
+
+                // ใช้ Swal.fire แทน
+                if ((inv[type] || 0) < cost) {
+                    return Swal.fire({
+                        icon: 'error',
+                        title: 'แร่ไม่พอ',
+                        text: `ต้องการอย่างน้อย ${cost}`,
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                }
 
                 Loader.show();
+
                 try {
-                    let updates = {};
-                    updates[`users/${u.uid}/catData/inventory/${type}`] = inv[type] - cost;
+                    const newMineral = (inv[type] || 0) - cost;
                     const curTarget = u.items[targetType] || 0;
-                    updates[`users/${u.uid}/items/${targetType}`] = curTarget + gain;
+                    const newTarget = curTarget + gain;
+
+                    let updates = {};
+
+                    updates[`users/${u.uid}/catData/inventory/${type}`] = newMineral;
+                    updates[`users/${u.uid}/items/${targetType}`] = newTarget;
 
                     await update(ref(db), updates);
-                    appState.user.catData.inventory[type] = inv[type] - cost;
-                    appState.user.items[targetType] = curTarget + gain;
+
+                    // sync state
+                    appState.user.catData.inventory[type] = newMineral;
+                    appState.user.items[targetType] = newTarget;
 
                     Loader.hide();
-                    Swal.fire({icon:'success', title:'แลกเปลี่ยนสำเร็จ', timer: 1500, showConfirmButton: false, customClass:{popup:'rounded-3xl'}});
-                    
-                    document.getElementById('cat-cc-balance').innerText = appState.user.catData.inventory.cc.toLocaleString();
-                    document.getElementById('cat-cd-balance').innerText = appState.user.catData.inventory.cd.toLocaleString();
-                    document.getElementById('cat-ce-balance').innerText = appState.user.catData.inventory.ce.toLocaleString();
-                    
-                    document.getElementById(`cr-inv-${type}`).innerText = appState.user.catData.inventory[type].toLocaleString();
-                    
-                } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'Error'}); }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'แลกเปลี่ยนสำเร็จ',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+
+                    // update UI
+                    const ccEl = document.getElementById('cat-cc-balance');
+                    const cdEl = document.getElementById('cat-cd-balance');
+                    const ceEl = document.getElementById('cat-ce-balance');
+
+                    if (ccEl) ccEl.innerText = appState.user.catData.inventory.cc.toLocaleString();
+                    if (cdEl) cdEl.innerText = appState.user.catData.inventory.cd.toLocaleString();
+                    if (ceEl) ceEl.innerText = appState.user.catData.inventory.ce.toLocaleString();
+
+                    const invEl = document.getElementById(`cr-inv-${type}`);
+                    if (invEl) {
+                        invEl.innerText = appState.user.catData.inventory[type].toLocaleString();
+                    }
+
+                } catch (e) {
+                    console.error(e);
+
+                    Loader.hide();
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: e.message || 'ไม่สามารถแลกเปลี่ยนได้'
+                    });
+                }
             },
 
             async renameCat() {
