@@ -29,7 +29,7 @@
                         sans: ['Kanit', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#27D6F5',
+                        primary: '#27d6f5',
                         secondary: '#F5E727',
                         accent: '#F5275B',
                         dark: '#1f2937',
@@ -1025,6 +1025,7 @@
                 const snap = await get(userRef);
                 const u = snap.val();
                 appState.user = { ...appState.user, ...u };
+                this.checkMailBadge();
 
                 const banner = u.bannerImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80';
                 const avatar = u.profileImage || DEFAULT_AVATAR;
@@ -1039,9 +1040,15 @@
                 const html = `
                     <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 flex flex-col pt-4 relative">
                         <!-- Settings Floating Button -->
-                        <button onclick="app.navigate('settings')" class="absolute top-8 right-8 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center z-20 transition active:scale-90 shadow-sm border border-white/20">
-                            <i class="fa-solid fa-gear text-lg"></i>
-                        </button>
+                       <div class="absolute top-8 right-8 flex gap-3 z-20">
+                            <button onclick="app.showMailbox()" class="relative w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition active:scale-90 shadow-sm border border-white/20">
+                                <i class="fa-solid fa-envelope text-lg"></i>
+                                <span id="mail-badge" class="hidden absolute -top-1 -right-1 h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-white">0</span>
+                            </button>
+                            <button onclick="app.navigate('settings')" class="w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center transition active:scale-90 shadow-sm border border-white/20">
+                                <i class="fa-solid fa-gear text-lg"></i>
+                            </button>
+                        </div>
 
                         <div class="shrink-0 h-40 sm:h-48 mx-4 rounded-3xl bg-cover bg-center shadow-sm relative z-0" style="background-image: url('${banner}')"></div>
                         
@@ -2872,44 +2879,79 @@
 
             async renderReward() {
                 UI.setHeader('ให้รางวัล (Reward)');
-                const classSnap = await get(ref(db, 'classrooms'));
+                Loader.show();
+                
+                // โหลดห้องเรียนและข้อมูลร้านค้า
+                const [classSnap, framesSnap, catShopSnap] = await Promise.all([
+                    get(ref(db, 'classrooms')),
+                    get(ref(db, 'shop_frames')),
+                    get(ref(db, 'cat_shop'))
+                ]);
+                Loader.hide();
+
                 let optionsHtml = '<option value="">-- เลือกห้องเรียนที่มีในระบบ --</option>';
                 if (classSnap.exists()) {
                     const classrooms = Object.entries(classSnap.val()).map(([id, data]) => ({ id, ...data }));
-                    classrooms.sort((a, b) => {
-                        if (a.class !== b.class) return a.class.localeCompare(b.class);
-                        return parseInt(a.room) - parseInt(b.room);
-                    });
-                    optionsHtml += classrooms.map(cr => `
-                        <option value="${cr.class}|${cr.room}">${cr.class}/${cr.room}</option>
-                    `).join('');
+                    classrooms.sort((a, b) => (a.class !== b.class) ? a.class.localeCompare(b.class) : parseInt(a.room) - parseInt(b.room));
+                    optionsHtml += classrooms.map(cr => `<option value="${cr.class}|${cr.room}">${cr.class}/${cr.room}</option>`).join('');
                 }
+
+                // สร้างตัวเลือกไอเทม
+                let itemOptions = `
+                    <optgroup label="สกุลเงินหลัก">
+                        <option value="currency|cs">ClassStar (CS)</option>
+                        <option value="currency|ct">Crystal (CT)</option>
+                        <option value="currency|ticket">Ticket</option>
+                        <option value="currency|sc">S-Card (SC)</option>
+                    </optgroup>
+                    <optgroup label="กรอบโปรไฟล์">
+                `;
+                
+                // (ส่วนดึงข้อมูล)
+                if (framesSnap.exists()) {
+                    Object.entries(framesSnap.val()).forEach(([key, val]) => {
+                        // เช็คว่าราคาต้องไม่เท่ากับ 0 ถึงจะเอามาแสดง
+                        if (val.price !== 0 && val.price !== '0') {
+                            itemOptions += `<option value="item|frame|${val.driveId}|${val.name}">กรอบ: ${val.name}</option>`;
+                        }
+                    });
+                }
+                
+                itemOptions += `</optgroup><optgroup label="ร้านค้าแมว">`;
+                if (catShopSnap.exists()) {
+                    Object.entries(catShopSnap.val()).forEach(([key, val]) => {
+                        // เช็คว่าราคาต้องไม่เท่ากับ 0 ถึงจะเอามาแสดง
+                        if (val.price !== 0 && val.price !== '0') {
+                            if(val.type === 'cat_frame') {
+                            itemOptions += `<option value="item|cat_frame|${val.driveId}|${val.name}">กรอบแมว: ${val.name}</option>`;
+                            } else {
+                            itemOptions += `<option value="item|${val.type}|${val.driveId}|${val.name}">${val.type.toUpperCase()}: ${val.name}</option>`;
+                            }
+                        }
+                    });
+                }
+                itemOptions += `</optgroup>`;
 
                 document.getElementById('content-area').innerHTML = `
                     <div class="flex-1 flex flex-col w-full h-full min-h-0 overflow-hidden">
                         <div class="shrink-0 p-5 pb-2 space-y-5">
                             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                                 <h3 class="font-bold text-dark mb-4"><i class="fa-solid fa-gift text-accent mr-2"></i>เลือกเป้าหมาย</h3>
-                                <div class="mb-3">
-                                    <select id="rw-classroom-select" class="w-full px-3 py-3 bg-gray-50 border rounded-xl text-sm font-medium focus:outline-none focus:border-primary text-dark">
-                                        ${optionsHtml}
-                                    </select>
-                                </div>
-                                <select id="rw-item" class="w-full px-3 py-2.5 bg-gray-50 border rounded-xl text-sm mb-3 focus:outline-none focus:border-primary font-medium text-dark">
-                                    <option value="">เลือก Item</option>
-                                    <option value="cs">ClassStar (CS)</option>
-                                    <option value="ct">Crystal (CT)</option>
-                                    <option value="ticket">Ticket</option>
-                                    <option value="sc">S-Card (SC)</option>
+                                <select id="rw-classroom-select" class="w-full px-3 py-3 mb-3 bg-gray-50 border rounded-xl text-sm font-medium focus:outline-none focus:border-primary text-dark">
+                                    ${optionsHtml}
                                 </select>
-                                <input type="number" id="rw-amount" placeholder="จำนวนที่ต้องการให้" class="w-full px-3 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:border-primary font-medium">
+                                <select id="rw-item" onchange="app.toggleRewardAmount(this.value)" class="w-full px-3 py-2.5 bg-gray-50 border rounded-xl text-sm mb-3 focus:outline-none focus:border-primary font-medium text-dark">
+                                <option value="">-- เลือกของรางวัล --</option>
+                                ${itemOptions}
+                            </select>
+                            <input type="number" id="rw-amount" placeholder="จำนวนที่ต้องการให้" class="w-full px-3 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:border-primary font-medium" value="1">
                                 <button onclick="app.loadStudentsForReward()" class="w-full mt-4 bg-dark text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">โหลดรายชื่อนักเรียน</button>
                             </div>
                         </div>
                         <div id="rw-student-list" class="flex-1 flex flex-col min-h-0 overflow-hidden w-full relative"></div>
                     </div>
                 `;
-            },
+            },  
 
             async loadStudentsForReward() {
                 const selectVal = document.getElementById('rw-classroom-select').value;
@@ -2937,7 +2979,7 @@
                 }
                 students.sort((a,b) => parseInt(a.number) - parseInt(b.number));
 
-                let html = `<div class="shrink-0 px-5 pb-2"><h4 class="font-bold text-sm text-gray-500">เลือกนักเรียนที่ต้องการให้ (${itemType.toUpperCase()} x${amount})</h4></div>`;
+                let html = `<div class="shrink-0 px-5 pb-2"><h4 class="font-bold text-sm text-gray-500">เลือกนักเรียนที่ต้องการให้ของรางวัล</h4></div>`;
                 if(students.length===0) {
                     html += `<div class="flex-1 flex items-center justify-center text-sm text-red-400 font-medium py-4">ไม่พบรายชื่อนักเรียนในห้องเรียนนี้</div>`;
                 } else {
@@ -2959,25 +3001,47 @@
                 document.getElementById('rw-student-list').innerHTML = html;
             },
 
-            async submitReward(itemType, amount) {
+            async submitReward(itemVal, amount) {
                 const checkboxes = document.querySelectorAll('.rw-checkbox:checked');
                 if(checkboxes.length === 0) return Toast.fire({icon:'warning', title:'กรุณาเลือกนักเรียนอย่างน้อย 1 คน'});
 
                 Loader.show();
-                let updates = {};
-                for (let cb of checkboxes) {
-                    const uid = cb.value;
-                    const itemRef = ref(db, `users/${uid}/items/${itemType}`);
-                    const snap = await get(itemRef);
-                    let current = snap.exists() ? snap.val() : 0;
-                    updates[`users/${uid}/items/${itemType}`] = current + amount;
-                }
-                
+                const [type, itemCategory, driveId, itemName] = itemVal.split('|');
+
                 try {
-                    await update(ref(db), updates);
-                    Toast.fire({icon:'success', title:`แจก ${itemType.toUpperCase()} สำเร็จ`});
+                    for (let cb of checkboxes) {
+                        const uid = cb.value;
+
+                        if (type === 'currency') {
+                            // ให้สกุลเงินเข้าตัวโดยตรง
+                            const currencyType = itemCategory;
+                            const itemRef = ref(db, `users/${uid}/items/${currencyType}`);
+                            const snap = await get(itemRef);
+                            await set(itemRef, (snap.exists() ? snap.val() : 0) + amount);
+                        } else if (type === 'item') {
+                            // ส่งไอเทมเข้าจดหมาย
+                            const mailRef = ref(db, `mailbox/${uid}`);
+                            const mailSnap = await get(mailRef);
+                            const currentMails = mailSnap.exists() ? mailSnap.val() : {};
+                            
+                            // เช็คโควต้า 10 ฉบับ
+                            if (Object.keys(currentMails).length >= 10) {
+                                continue; // ข้ามคนนี้ไปถ้ากล่องจดหมายเต็ม
+                            }
+
+                            await push(mailRef, {
+                                itemCategory: itemCategory,
+                                driveId: driveId,
+                                itemName: itemName,
+                                amount: amount,
+                                timestamp: Date.now()
+                            });
+                        }
+                    }
+                    
+                    Toast.fire({icon:'success', title: 'แจกรางวัลสำเร็จ'});
                     document.getElementById('rw-student-list').innerHTML = '';
-                    document.getElementById('rw-amount').value = '';
+                    document.getElementById('rw-amount').value = '1';
                 } catch(e) {
                     Toast.fire({icon:'error', title:'เกิดข้อผิดพลาด'});
                 }
@@ -4243,7 +4307,8 @@
             },
 
             async equipCatItem(type, driveId) {
-                Swal.close(); Loader.show();
+                Swal.close(); 
+                Loader.show();
                 try {
                     let field = 'equippedBg';
                     if (type === 'cat') {
@@ -4271,6 +4336,7 @@
                             `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
                         }
                     }
+                    this.renderCatRoom();
                     this.renderCatProfile();
                 } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'Error'}); }
             },
@@ -4506,7 +4572,142 @@
                 if(res.isConfirmed) {
                     Loader.show(); await remove(ref(db, `cat_shop/${key}`)); Loader.hide(); this.renderCatShop();
                 }
-            }
+            },
+            async checkMailBadge() {
+                const uid = appState.user?.uid;
+                if (!uid) return;
+                const snap = await get(ref(db, `mailbox/${uid}`));
+                const badge = document.getElementById('mail-badge');
+                if (badge) {
+                    if (snap.exists()) {
+                        const count = Object.keys(snap.val()).length;
+                        badge.innerText = count;
+                        badge.classList.remove('hidden');
+                        badge.classList.add('flex'); // ใส่ flex กลับเข้ามาเมื่อมีจดหมาย
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.classList.remove('flex');
+                    }
+                }
+            },
+
+            async showMailbox() {
+                Swal.fire({
+                    title: '<span style="font-family: \'Kanit\'; font-weight: 800; color: #1f2937;">กล่องจดหมาย</span>',
+                    html: `
+                        <div class="flex justify-end mb-2">
+                            <button onclick="app.showMailbox()" class="text-xs text-primary font-bold flex items-center gap-1 active:scale-90 transition">
+                                <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="mailbox-list" class="max-h-[60vh] overflow-y-auto no-scrollbar space-y-3">
+                            <div class="py-10 text-center"><div class="w-8 h-8 border-4 border-primary border-t-accent rounded-full animate-spin mx-auto"></div></div>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-4 font-medium">*จำกัดกล่องจดหมายสูงสุด 10 ฉบับ</p>
+                    `,
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: { popup: 'rounded-3xl p-5 w-[95%] max-w-sm' },
+                    didOpen: async () => {
+                        const listEl = document.getElementById('mailbox-list');
+                        const uid = appState.user.uid;
+                        const snap = await get(ref(db, `mailbox/${uid}`));
+                        
+                        if (!snap.exists()) {
+                            listEl.innerHTML = '<div class="py-10 text-center text-gray-400 text-sm"><i class="fa-solid fa-box-open text-3xl mb-2 text-gray-300 block"></i>ไม่มีจดหมายใหม่</div>';
+                            return;
+                        }
+
+                        const mails = snap.val();
+                        let html = '';
+                        
+                        Object.entries(mails).sort((a,b) => b[1].timestamp - a[1].timestamp).forEach(([mailId, data]) => {
+                            const imgUrl = `https://drive.google.com/thumbnail?id=${data.driveId}&sz=s800`;
+                            html += `
+                                <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center justify-between shadow-sm">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                                            <img src="${imgUrl}" class="w-10 h-10 object-contain drop-shadow-sm">
+                                        </div>
+                                        <div class="text-left min-w-0 pr-2">
+                                            <div class="text-xs font-bold text-dark truncate">${data.itemName}</div>
+                                            <div class="text-[10px] font-bold text-gray-500 mt-0.5">จำนวน: x${data.amount}</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="app.claimMail('${mailId}', '${data.itemCategory}', '${data.driveId}')" class="bg-primary text-white text-[10px] px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 shrink-0 transition hover:bg-cyan-400">
+                                        รับ
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        listEl.innerHTML = html;
+                    }
+                });
+            },
+
+            async claimMail(mailId, category, driveId) {
+                Loader.show();
+                const uid = appState.user.uid;
+                try {
+                    let updates = {};
+                    
+                    // รับของเข้าตัว
+                    if (category === 'frame' || category === 'cat_frame') {
+                        updates[`users/${uid}/unlocked_frames/${driveId}`] = true;
+                        if(!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
+                        appState.user.unlocked_frames[driveId] = true;
+                    } else if (category === 'cat' || category === 'bg') {
+                        updates[`users/${uid}/catData/unlocked/${driveId}`] = true;
+                        if(appState.user.catData) {
+                            if(!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
+                            appState.user.catData.unlocked[driveId] = true;
+                        }
+                    } else if (category === 'food') {
+                        const mailSnap = await get(ref(db, `mailbox/${uid}/${mailId}`));
+                        const amount = mailSnap.exists() ? mailSnap.val().amount : 1;
+                        const cur = appState.user.catData?.inventory?.[driveId] || 0;
+                        updates[`users/${uid}/catData/inventory/${driveId}`] = cur + amount;
+                        if(appState.user.catData) {
+                            if(!appState.user.catData.inventory) appState.user.catData.inventory = {};
+                            appState.user.catData.inventory[driveId] = cur + amount;
+                        }
+                    }
+
+                    // ลบจดหมายทิ้ง
+                    updates[`mailbox/${uid}/${mailId}`] = null;
+                    
+                    await update(ref(db), updates);
+                    Loader.hide();
+                    Toast.fire({ icon: 'success', title: 'รับไอเทมสำเร็จ!' });
+                    
+                    // รีเฟรชหน้าจดหมายและ Badge
+                    this.checkMailBadge();
+                    this.showMailbox(); 
+                    
+                } catch(e) {
+                    Loader.hide();
+                    Toast.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการรับของ' });
+                }
+            },
+
+            toggleRewardAmount(val) {
+                const amountInput = document.getElementById('rw-amount');
+                if (!val || !amountInput) return;
+                
+                // โครงสร้าง value ที่เราตั้งไว้คือ "type|category|driveId|name"
+                // เราเลยจะแยกข้อความด้วย '|' เพื่อเช็คแค่ตำแหน่งของ category (ตำแหน่งที่ 1)
+                const parts = val.split('|');
+                const category = parts[1];
+                
+                // เช็คเงื่อนไข: ถ้ารางวัลเป็น กรอบ(frame, cat_frame), แมว(cat), หรือ พื้นหลัง(bg)
+                if (category === 'frame' || category === 'cat_frame' || category === 'cat' || category === 'bg') {
+                    amountInput.style.display = 'none';
+                    amountInput.value = 1; // ล็อคจำนวนไว้ที่ 1
+                } else {
+                    amountInput.style.display = 'block';
+                }
+            },
+            
         };
 
         // Attach external views implementations globally inside Views namespace
@@ -4740,6 +4941,10 @@
             deleteAssignment: (c, a) => Views.deleteAssignment(c, a),
             gradeAssignment: (c, r, a) => Views.gradeAssignment(c, r, a),
             openGradeModal: (aId, uId) => Views.openGradeModal(aId, uId),
+            checkMailBadge: () => Views.checkMailBadge(),
+            showMailbox: () => Views.showMailbox(),
+            claimMail: (id, cat, drive) => Views.claimMail(id, cat, drive),
+            toggleRewardAmount: (val) => Views.toggleRewardAmount(val),
 
             handleAttachTypeChange: (val) => {
                 const con = document.getElementById('attach-value-container');
