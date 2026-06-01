@@ -356,6 +356,8 @@
             starterBg: '1asEdGRj5OtQKyosw9wvflum81ZllefKI'
         };
 
+        
+
         const RANK_DATA = [
             { name: 'SSS+++ Rank', min: 1500, label: '1500+', imgId: '1-0GijSb1x0t4DKEg56VxvQv4X_rgr9C_' },
             { name: 'SSS++ Rank', min: 1400, label: '1400 - 1499', imgId: '1dfMItADZXCDi65nAc5v9JLw0SYOcdmAH' },
@@ -374,6 +376,7 @@
             { name: 'A+ Rank', min: 100, label: '100 - 199', imgId: '1tDL9BbapyPUKttBUHzz6iVwJax-YOdwy' },
             { name: 'A Rank', min: 0, label: '0 - 99', imgId: '1AQ1vWexU-sQ49OiNxVYKSDkzO1cSNh9l' }
         ];
+        
 
         const getRankBadge = (crystalCount) => {
             const ct = parseInt(crystalCount) || 0;
@@ -395,17 +398,62 @@
             return { name: rank.name, image: `https://drive.google.com/thumbnail?id=${rank.img}&sz=s800` };
         }
         
-        const GACHA_REWARDS = [
-            { type: 'ticket', amount: 3, img: '1IA9uz5F0K3P-ZzWUy-VCxgG8j8JlVYCl', name: '3 Ticket', weight: 2, cardImg: '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf' },
-            { type: 'cs', amount: 200, img: '1U0_7YW6E_8m6mccGjcO8BjH4zmwLcbkf', name: '200 CS', weight: 4, cardImg: '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf' },
-            { type: 'ct', amount: 200, img: '1HxrGW1KpV-SLlxM2VrbXEmdQQwuYNvvQ', name: '200 CT', weight: 4, cardImg: '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf' },
-            { type: 'cs', amount: 150, img: '1m_IaJbE4mqRvxqH15Cn1oZuQ-NSwc0aj', name: '150 CS', weight: 10, cardImg: '1UKC0Joe_aPJJOirjYtIt7kexhl6lO4WE' },
-            { type: 'ct', amount: 150, img: '1AGY1uTXkjXCuE2XmL4l2qotSXZH8nbKP', name: '150 CT', weight: 10, cardImg: '1UKC0Joe_aPJJOirjYtIt7kexhl6lO4WE' },
-            { type: 'cs', amount: 100, img: '1fhwV0UJTme_jjnpPFIqHZE_cP3wwAp2Q', name: '100 CS', weight: 15, cardImg: '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC' },
-            { type: 'ct', amount: 100, img: '1FTJEJiFqMN5m1ZPMMxWqhEugkesymf5W', name: '100 CT', weight: 15, cardImg: '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC' },
-            { type: 'cs', amount: 50, img: '1aoS8o9XlcTBuba6jOpJeHMsq2STxte4j', name: '50 CS', weight: 20, cardImg: '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj' },
-            { type: 'ct', amount: 50, img: '1ATOP5iFnhzjETKrtDxAxUW7jwoR2zgZH', name: '50 CT', weight: 20, cardImg: '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj' }
-        ];
+        // --- Gacha System Constants ---
+        const RARITY_WEIGHTS = {
+            'A': 6000,
+            'A+': 4500,
+            'A++': 3000,
+
+            'S': 2500,
+            'S+': 1500,
+            'S++': 800,
+
+            'SS': 300,
+            'SS+': 150,
+            'SS++': 50,
+
+            'SSS': 20,
+            'SSS+': 5
+        };
+        // โลจิกคำนวณเรท: (Weight ของไอเทม / Weight รวมทั้งตู้) * 100
+        /*
+            โอกาสสุ่มโดยประมาณ
+            A      = 31.92%
+            A+     = 23.94%
+            A++    = 15.96%
+
+            S      = 13.30%
+            S+     = 7.98%
+            S++    = 4.26%
+
+            SS     = 1.60%
+            SS+    = 0.80%
+            SS++   = 0.27%
+
+            SSS    = 0.11%
+            SSS+   = 0.03%
+
+            รวม S ขึ้นไป ≈ 28.34%
+            รวม SS ขึ้นไป ≈ 2.81%
+            รวม SSS ขึ้นไป ≈ 0.13%
+        */
+
+        // เพิ่มตัวแปรนี้เข้าไป เพื่อผูกรูปภาพการ์ดกับ Rarity
+        const RARITY_CARD_BGS = {
+            'A': '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj',     // พื้นหลังระดับธรรมดา (50)
+            'A+': '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC',    // พื้นหลังระดับดี (75)
+            'A++': '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC',   
+            'S': '1UKC0Joe_aPJJOirjYtIt7kexhl6lO4WE',     // พื้นหลังระดับกลาง (100)
+            'S+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',    // พื้นหลังระดับกลาง (100)
+            'S++': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',   // พื้นหลังระดับสูง (150)
+            'SS': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
+            'SS+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',   // พื้นหลังระดับแรร์ (200 - Ticket)
+            'SS++': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
+            'SSS': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
+            'SSS+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf'
+        };
+
+            
 
         const extractDriveId = (input) => {
             if (!input) return '';
@@ -2296,7 +2344,7 @@
                             if (isFree) {
                                 actionBtn = `<button onclick="app.equipFrame('${frameImgUrl}')" class="w-full mt-3 bg-dark text-white text-xs py-2 rounded-xl font-bold hover:bg-gray-800 transition">สวมใส่ฟรี</button>`;
                             } else if (isLimited) {
-                                actionBtn = `<button disabled class="w-full mt-3 bg-gray-100 text-gray-400 text-xs py-2 rounded-xl font-bold cursor-not-allowed">Limited (เร็วๆ นี้)</button>`;
+                                actionBtn = `<button disabled class="w-full mt-3 bg-gray-100 text-gray-400 text-xs py-2 rounded-xl font-bold cursor-not-allowed">Limited</button>`;
                             } else if (isBought) {
                                 actionBtn = `<button onclick="app.equipFrame('${frameImgUrl}')" class="w-full mt-3 bg-primary text-white text-xs py-2 rounded-xl font-bold hover:bg-cyan-400 transition">ปลดล็อกแล้ว (สวมใส่)</button>`;
                             } else {
@@ -2610,111 +2658,220 @@
                     }
                 }
             },
-
-
-            // --- GACHA PREMIUM AAA SYSTEM ---
-            renderGacha() {
+            async renderGacha() {
                 const gachaView = document.getElementById('gacha-view');
-                const userTickets = appState.user.items?.ticket || 0;
+                const u = appState.user;
+                const isTeacher = u.role === 'teacher';
 
-                gachaView.innerHTML = `
-                    <!-- Gacha Background Generator (Idle) -->
-                    <div id="gacha-stars-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+                gachaView.innerHTML = `<div class="flex h-full w-full items-center justify-center"><div class="w-10 h-10 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div></div>`;
 
-                    <!-- Close Button overlay -->
-                    <button onclick="app.navigate('home')" class="absolute top-6 left-6 z-[60] w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/35 transition active:scale-90 shadow-sm border border-white/10">
-                        <i class="fa-solid fa-chevron-left text-lg"></i>
-                    </button>
-
-                    <!-- Ticket Balance Info -->
-                    <div class="absolute top-6 right-6 z-[60] bg-black/30 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/20">
-                        <img src="${ITEM_IMAGES.ticket}" class="w-5 h-5 object-contain">
-                        <span id="gacha-ticket-balance" class="text-white font-bold text-sm">${userTickets}</span>
-                    </div>
-
-                    <!-- Gold Overlay for Opening Animation -->
-                    <div id="gacha-gold-overlay" class="hidden opacity-0 absolute inset-0 bg-yellow-400/30 backdrop-blur-sm z-20 transition-opacity duration-1000 pointer-events-none"></div>
+                try {
+                    const [configSnap, bannersSnap] = await Promise.all([
+                        get(ref(db, 'gacha_config/main')),
+                        get(ref(db, 'gacha_banners'))
+                    ]);
                     
-                    <!-- White Flash Explosion -->
-                    <div id="gacha-flash" class="hidden opacity-0 absolute inset-0 bg-white z-[70] transition-opacity duration-300 pointer-events-none"></div>
+                    const mainBanner = configSnap.exists() && configSnap.val().cover ? configSnap.val().cover : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                    const banners = bannersSnap.exists() ? bannersSnap.val() : {};
+                    
+                    // เก็บข้อมูล banners ไว้ใน state เพื่อใช้ตอนเปิดตู้
+                    appState.gachaBanners = banners;
 
-                    <!-- GACHA IDLE & OPENING STATE (Absolute Centered) -->
-                    <div id="gacha-idle-state" class="absolute inset-0 flex flex-col items-center justify-center z-30 w-full h-full">
+                    let bannersHtml = '';
+                    if (Object.keys(banners).length === 0) {
+                        bannersHtml = `<div class="w-full text-center py-10 text-gray-500 font-bold bg-white/50 rounded-2xl backdrop-blur-md border border-white">ยังไม่มีตู้สุ่มเปิดให้บริการ</div>`;
+                    } else {
+                        // ปรับเป็นแนวนอน (Horizontal Scroll)
+                        bannersHtml = `<div class="flex flex-col drop-shadow-lg p-2 snap-mandatory no-scrollbar gap-2 w-full">`;
                         
-                        <!-- Radial Rays (Hidden initially) -->
-                        <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] gacha-rays"></div>
-
-                        <div class="flex flex-col items-center justify-center w-full relative">
-                            <!-- Ticket Image -->
-                            <img id="gacha-ticket" src="https://drive.google.com/thumbnail?id=1IA9uz5F0K3P-ZzWUy-VCxgG8j8JlVYCl&sz=s800" 
-                                 class="w-48 sm:w-64 h-auto object-contain animate-gacha-float drop-shadow-2xl transition-all duration-500 relative z-10 mb-8" alt="Gacha Ticket">
+                        Object.entries(banners).forEach(([bId, b]) => {
+                            // ตรวจสอบว่า b.coverId เป็น URL ทั่วไป (ขึ้นต้นด้วย http) หรือเป็นแค่ ID ของ Drive
+                            const coverImg = (b.coverId && b.coverId.startsWith('http')) 
+                                ? b.coverId 
+                                : `https://drive.google.com/thumbnail?id=${b.coverId}&sz=s800`;
                             
-                            <!-- Open Button -->
-                            <button id="gacha-btn-open" onclick="app.startGachaPull()" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-[80%] max-w-[280px]">
-                                OPEN 1 TICKET
+                            bannersHtml += `
+                                <div onclick="app.openGachaBanner('${bId}')" class="w-full shrink-0 snap-center bg-white rounded-3xl overflow-hidden shadow-lg border border-indigo-100 flex flex-col relative group cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]">
+                                    ${isTeacher ? `
+                                        <div class="absolute top-3 right-3 z-20 flex gap-2">
+                                            <button onclick="event.stopPropagation(); app.manageGachaBannerItems('${bId}')" class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-list"></i></button>
+                                            <button onclick="event.stopPropagation(); app.editGachaBanner('${bId}')" class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-pen"></i></button>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <div class="h-40 relative bg-cover bg-center shrink-0 transition-transform duration-500 group-hover:scale-105" style="background-image: url('${coverImg}');">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent"></div>
+                                        <div class="absolute bottom-4 left-4 right-4">
+                                            <h3 class="text-white font-extrabold text-xl drop-shadow-md truncate">${b.name}</h3>
+                                            <p class="text-indigo-200 text-xs font-bold mt-1 flex items-center gap-1">
+                                                แตะเพื่อเข้าสู่ตู้สุ่ม <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        bannersHtml += `</div>`;
+                    }
+
+                    gachaView.innerHTML = `
+                        <div id="gacha-main-menu" class="absolute inset-0 gacha-bg-pastel overflow-y-auto no-scrollbar pb-24 z-[100] flex flex-col">
+                            <button onclick="app.navigate('home')" class="fixed top-4 left-4 z-[110] w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-dark hover:bg-white transition active:scale-90 shadow-sm border border-gray-200">
+                                <i class="fa-solid fa-chevron-left text-lg"></i>
                             </button>
-                        </div>
-                    </div>
 
-                    <!-- GACHA REWARD REVEAL STATE (Absolute Centered) -->
-                    <div id="gacha-reveal-state" class="hidden absolute inset-0 flex-col items-center justify-center z-[60] bg-black/50 backdrop-blur-sm">
-                        
-                        <!-- Particle Reveal Layer -->
-                        <div id="gacha-reveal-particles" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+                            <div class="fixed top-4 right-4 z-[110] bg-white/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-gray-200 shadow-sm">
+                                <img src="${ITEM_IMAGES.ticket}" class="w-5 h-5 object-contain">
+                                <span id="gacha-main-ticket" class="text-dark font-extrabold">${(u.items?.ticket || 0).toLocaleString()}</span>
+                            </div>
 
-                        <!-- 3D Card Container (Exactly Centered) -->
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 gacha-perspective w-64 h-[24rem] sm:w-72 sm:h-[27rem] z-20">
-                            <div id="gacha-card-inner" class="gacha-card-wrapper w-full h-full relative">
-                                <!-- Back Face (White Glow Silhouette) -->
-                                <div class="gacha-card-face gacha-card-back"></div>
-                                
-                                <!-- Front Face (Actual Reward Card - Removed bg-black as requested) -->
-                                <div class="gacha-card-face rounded-[20px] overflow-hidden flex flex-col items-center justify-center">
-                                    <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s800" class="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-90 scale-105 transition-all duration-300">
-                                    
-                                    <!-- Reward Item Image (Dynamic) -->
-                                    <img id="gacha-reward-item" src="" class="scale-0 opacity-0 w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10 drop-shadow-[0_0_25px_rgba(255,255,255,0.8)] transition-all duration-[1500ms] ease-out mt-4">
-                                    
-                                    <!-- Reward Text -->
-                                    <div id="gacha-reward-name" class="opacity-0 absolute bottom-12 text-[#4f75a8] text-2xl font-extrabold tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-opacity duration-1000 z-10 bg-white/40 px-6 py-1.5 rounded-full backdrop-blur-sm border border-white/50">
-                                        ???
+                            <div class="w-full h-48 sm:h-64 bg-cover bg-center shadow-md relative shrink-0" style="background-image: url('${mainBanner}');">
+                                <div class="absolute"></div>
+                            </div>
+
+                            <div class="relative z-10 flex-1 flex flex-col pt-6">
+                                <div class="px-4 sm:px-6 mb-4 flex justify-between items-end shrink-0">
+                                    <div>
+                                        <h2 class="text-xl font-extrabold text-indigo-900 drop-shadow-sm">ตู้สุ่มกิจกรรม</h2>
+                                        <p class="text-xs text-indigo-500 font-bold">คลิกเพื่อเลือกตู้สุ่ม</p>
+                                    </div>
+                                    ${isTeacher ? `
+                                        <button onclick="app.addGachaBanner()" class="bg-dark text-white text-[10px] font-bold px-3 py-2 rounded-xl shadow-lg active:scale-95 transition"><i class="fa-solid fa-plus mr-1"></i> เพิ่มตู้</button>
+                                    ` : ''}
+                                </div>
+                                <div class="flex-1 min-h-0 relative">
+                                    <div class="absolute inset-0">
+                                        ${bannersHtml}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Claim Button (Absolute Bottom Centered) -->
-                        <button id="gacha-btn-claim" onclick="app.claimGacha()" class="opacity-0 absolute bottom-16 left-1/2 -translate-x-1/2 gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-3.5 px-16 rounded-[2rem] shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-1000 active:scale-95 z-30 border border-white/50 whitespace-nowrap">
-                            ได้รับ
-                        </button>
-                    </div>
-                `;
+                        <div id="gacha-banner-view" class="hidden absolute inset-0 z-[120] gacha-bg-pastel overflow-hidden">
+                            <div id="gacha-stars-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
 
-                // Setup Idle Particles
-                const container = document.getElementById('gacha-stars-container');
-                for (let i = 0; i < 20; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'gacha-bg-star';
-                    star.innerHTML = Math.random() > 0.5 ? '<i class="ri-sparkling-fill"></i>' : '<i class="fa-solid fa-star"></i>';
-                    
-                    const left = Math.random() * 100;
-                    const size = 0.5 + Math.random() * 1.5;
-                    const opacity = 0.2 + Math.random() * 0.6;
-                    const duration = 10 + Math.random() * 20; 
-                    const delay = Math.random() * -20; 
+                            <div class="absolute top-4 left-4 right-4 flex justify-between z-[60]">
+                                <button onclick="app.closeGachaBanner()" class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/35 transition active:scale-90 shadow-sm border border-white/10">
+                                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                                </button>
+                                <button onclick="app.showGachaDetails(appState.activeGachaBanner)" class="bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/10 text-white font-bold text-xs hover:bg-black/30 transition active:scale-95">
+                                    <i class="fa-solid fa-circle-info"></i> รายละเอียด
+                                </button>
+                            </div>
 
-                    star.style.left = `${left}%`;
-                    star.style.setProperty('--s', size);
-                    star.style.setProperty('--o', opacity);
-                    star.style.setProperty('--d', `${duration}s`);
-                    star.style.animationDelay = `${delay}s`;
-                    
-                    if (Math.random() > 0.7) star.style.filter = `blur(${Math.random() * 3}px) drop-shadow(0 0 10px white)`;
+                            <!-- Info overlays -->
+                            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[320px] z-[60] flex flex-col items-center gap-4">
+                                <div id="gacha-pity-counter" class="w-full text-center mb-[-5px]"></div>
+                                <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
+                                    <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
+                                    <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
+                                    <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                                </div>
+                                
+                                <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-full flex items-center justify-center gap-2">
+                                    สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
+                                </button>
 
-                    container.appendChild(star);
+                                ${isTeacher ? `
+                                <button onclick="app.triggerGachaPull(appState.activeGachaBanner, true)" class="bg-yellow-400 text-yellow-900 font-bold text-sm py-2.5 px-6 rounded-full shadow-lg hover:brightness-110 transition-all active:scale-95 border border-yellow-200 flex items-center gap-2">
+                                    <i class="fa-solid fa-flask"></i> ทดสอบสุ่ม (Admin)
+                                </button>
+                                ` : ''}
+                            </div>
+
+                            <div id="gacha-gold-overlay" class="hidden opacity-0 absolute inset-0 bg-yellow-400/30 backdrop-blur-sm z-20 transition-opacity duration-1000 pointer-events-none"></div>
+                            <div id="gacha-flash" class="hidden opacity-0 absolute inset-0 bg-white z-[70] transition-opacity duration-300 pointer-events-none"></div>
+
+                            <div id="gacha-idle-state" class="absolute inset-0 flex flex-col items-center justify-center z-30 w-full h-full pointer-events-none">
+                                <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] gacha-rays"></div>
+                                <img id="gacha-floating-item" src="" class="w-40 sm:w-56 h-auto object-contain animate-gacha-float drop-shadow-2xl transition-all duration-500 relative z-10 pb-20" alt="Gacha Item">
+                            </div>
+
+                            <div id="gacha-reveal-state" class="hidden absolute inset-0 flex-col items-center justify-center z-[80] bg-black/60 backdrop-blur-sm">
+                                <div id="gacha-reveal-particles" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+                                <div class="gacha-perspective w-64 h-[24rem] sm:w-72 sm:h-[27rem] z-20">
+                                    <div id="gacha-card-inner" class="gacha-card-wrapper w-full h-full relative">
+                                        <div class="gacha-card-face gacha-card-back"></div>
+                                        
+                                        <div class="gacha-card-face flex flex-col items-center justify-center bg-transparent relative">
+                                            
+                                            <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s800" class="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl">
+                                            
+                                            <img id="gacha-reward-item" src="" class="scale-0 opacity-0 w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10 drop-shadow-xl transition-all duration-[1500ms] ease-out mt-4">
+                                            <div id="gacha-reward-name" class="opacity-0 absolute bottom-12 text-indigo-900 text-xl font-extrabold tracking-widest drop-shadow-sm transition-opacity duration-1000 z-10 bg-white/90 px-6 py-2 rounded-xl text-center w-[85%] line-clamp-2 border border-indigo-100"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <button id="gacha-btn-claim" onclick="app.closeGachaAnim()" class="opacity-0 absolute bottom-16 left-1/2 -translate-x-1/2 gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-3.5 px-16 rounded-[2rem] shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-1000 active:scale-95 z-30 border border-white/50 whitespace-nowrap">
+                                    รับรางวัล
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // สร้างดาวลอยพื้นหลัง (Idle Particles)
+                    const container = document.getElementById('gacha-stars-container');
+                    for (let i = 0; i < 20; i++) {
+                        const star = document.createElement('div');
+                        star.className = 'gacha-bg-star';
+                        star.innerHTML = Math.random() > 0.5 ? '<i class="ri-sparkling-fill"></i>' : '<i class="fa-solid fa-star"></i>';
+                        const left = Math.random() * 100;
+                        const size = 0.5 + Math.random() * 1.5;
+                        const opacity = 0.2 + Math.random() * 0.6;
+                        const duration = 10 + Math.random() * 20; 
+                        const delay = Math.random() * -20; 
+                        star.style.left = `${left}%`;
+                        star.style.setProperty('--s', size);
+                        star.style.setProperty('--o', opacity);
+                        star.style.setProperty('--d', `${duration}s`);
+                        star.style.animationDelay = `${delay}s`;
+                        if (Math.random() > 0.7) star.style.filter = `blur(${Math.random() * 3}px) drop-shadow(0 0 10px white)`;
+                        container.appendChild(star);
+                    }
+
+                } catch (e) {
+                    gachaView.innerHTML = `<div class="p-10 text-center text-red-500">โหลดข้อมูล Gacha ไม่สำเร็จ</div>`;
                 }
             },
+            openGachaBanner(bId) {
+                appState.activeGachaBanner = bId;
+                const banner = appState.gachaBanners[bId];
+                const cardImg = `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s800`;
+                
+                document.getElementById('gacha-floating-item').src = cardImg;
+                document.getElementById('gacha-btn-card-img').src = cardImg;
+                document.getElementById('gacha-view-card-img').src = cardImg;
+                document.getElementById('gacha-view-card-count').innerText = appState.user.gacha_cards?.[bId] || 0;
 
+                // --- เพิ่มระบบคำนวณการันตี (Pity System) ---
+                appState.user.gacha_pity = appState.user.gacha_pity || {};
+                const pity = appState.user.gacha_pity[bId] || 0;
+                const maxPity = banner.pity || 50;
+                const pullsLeft = maxPity - pity;
+
+                const pityBox = document.getElementById('gacha-pity-counter');
+                if (pityBox) {
+                    if (pullsLeft > 0) {
+                        pityBox.innerHTML = `<span class="bg-red-500/90 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-red-400">⭐ การันตีในอีก ${pullsLeft} ครั้ง</span>`;
+                    } else {
+                        pityBox.innerHTML = `<span class="bg-green-500/90 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-green-400 animate-pulse">🌟 การันตีออกในการสุ่มครั้งนี้!</span>`;
+                    }
+                }
+                // ------------------------------------------
+
+                document.getElementById('gacha-main-menu').classList.add('hidden');
+                document.getElementById('gacha-banner-view').classList.remove('hidden');
+            },
+
+            closeGachaBanner() {
+                appState.activeGachaBanner = null;
+                document.getElementById('gacha-banner-view').classList.add('hidden');
+                document.getElementById('gacha-main-menu').classList.remove('hidden');
+            },
+
+           
+            
             async startGachaPull() {
                 const u = appState.user || {};
                 const currentTickets = (u.items && u.items.ticket) || 0;
@@ -2752,7 +2909,7 @@
                 // Clear old image early to prevent flashing & Apply dynamic card background based on rarity
                 document.getElementById('gacha-reward-item').src = "";
                 document.getElementById('gacha-card-bg').src = `https://drive.google.com/thumbnail?id=${reward.cardImg}&sz=s800`;
-
+                
                 // 1. Hide Button smoothly
                 document.getElementById('gacha-btn-open').classList.add('scale-90', 'opacity-0', 'pointer-events-none');
                 await sleep(300);
@@ -2788,7 +2945,7 @@
 
                 await sleep(300);
                 flash.classList.add('hidden');
-
+                
                 // 6. Flip Card Animation
                 const cardInner = document.getElementById('gacha-card-inner');
                 cardInner.classList.add('revealed');
@@ -2800,6 +2957,7 @@
 
                 // 8. Reveal Items & Text
                 const rewardItemImg = document.getElementById('gacha-reward-item');
+                
                 rewardItemImg.src = ""; // Clear old image just before setting
                 rewardItemImg.src = `https://drive.google.com/thumbnail?id=${reward.img}&sz=s800`;
                 rewardItemImg.classList.remove('scale-0', 'opacity-0');
@@ -3070,6 +3228,10 @@
                                     </button>
                                     <button onclick="app.showClassroomManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
                                         <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-users"></i></div><span class="font-medium">จัดการห้องเรียน / นร.</span></div>
+                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                                    </button>
+                                    <button onclick="app.editGachaMainConfig()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
+                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div><span class="font-medium">จัดการตู้สุ่ม (Gacha)</span></div>
                                         <i class="fa-solid fa-chevron-right text-gray-300"></i>
                                     </button>
                                 </div>
@@ -4707,6 +4869,907 @@
                     amountInput.style.display = 'block';
                 }
             },
+            // --- ระบบจัดการ Gacha สำหรับ Admin ---
+            async editGachaMainConfig() {
+                const snap = await get(ref(db, 'gacha_config/main'));
+                const cur = snap.exists() ? snap.val().cover : '';
+                const { value: url } = await Swal.fire({
+                    title: 'แก้ไขแบนเนอร์ Gacha',
+                    input: 'text',
+                    inputValue: cur,
+                    inputPlaceholder: 'URL รูปภาพ หรือ Google Drive Link',
+                    showCancelButton: true, confirmButtonText: 'บันทึก', confirmButtonColor: '#27D6F5'
+                });
+                if(url !== undefined) {
+                    Loader.show();
+                    await set(ref(db, 'gacha_config/main/cover'), url);
+                    Loader.hide(); Toast.fire({icon:'success', title:'บันทึกสำเร็จ'});
+                }
+            },
+
+            async addGachaBanner() {
+                const { value: form } = await Swal.fire({
+                    title: 'สร้างตู้สุ่มใหม่',
+                    html: `
+                        <div class="space-y-3 text-left text-sm font-sans">
+                            <div><label class="font-bold text-gray-500">ชื่อตู้สุ่ม</label><input id="gb-name" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="font-bold text-gray-500">รูปหน้าตู้ (Drive ID/Link)</label><input id="gb-cover" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="font-bold text-gray-500">ชื่อไอเทมที่ใช้สุ่ม (เช่น Card)</label><input id="gb-cname" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="font-bold text-gray-500">รูปไอเทมสุ่ม (Drive ID/Link)</label><input id="gb-cimg" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="font-bold text-gray-500">อัตราแลก: 1 Ticket ได้กี่ชิ้น?</label><input type="number" id="gb-rate" class="w-full p-2 border rounded-lg" value="3"></div>
+                            <div><label class="font-bold text-gray-500">การันตีเมื่อสุ่มครบ (ครั้ง)</label><input type="number" id="gb-pity" class="w-full p-2 border rounded-lg" value="50"></div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'สร้าง',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: {popup: 'rounded-3xl'},
+                    preConfirm: () => {
+                        // ใช้ ?.value เพื่อป้องกันตัวแปรเป็น null ป้องกันโค้ดแครช
+                        const coverInput = document.getElementById('gb-cover')?.value || '';
+                        const cimgInput = document.getElementById('gb-cimg')?.value || '';
+                        
+                        // แยกตรรกะ: ถ้ามีลิงก์ drive ค่อยสกัดไอดี ถ้าเป็น URL ทั่วไปให้เก็บค่าตรงๆ
+                        const finalCover = coverInput.includes('drive.google.com') ? extractDriveId(coverInput) : coverInput;
+                        const finalCimg = cimgInput.includes('drive.google.com') ? extractDriveId(cimgInput) : cimgInput;
+
+                        return {
+                            name: document.getElementById('gb-name')?.value || '',
+                            coverId: finalCover,
+                            cardName: document.getElementById('gb-cname')?.value || '',
+                            cardImage: finalCimg,
+                            ticketRate: parseInt(document.getElementById('gb-rate')?.value) || 1,
+                            pity: parseInt(document.getElementById('gb-pity')?.value) || 50,
+                            items: {}
+                        };
+                    }
+                });
+
+                if (form && form.name) {
+                    Loader.show();
+                    await push(ref(db, 'gacha_banners'), form);
+                    Loader.hide();
+                    Toast.fire({icon:'success', title:'สร้างตู้สุ่มสำเร็จ'});
+                    this.renderGacha();
+                }
+            },
+
+            async editGachaBanner(bId) {
+            // 1. ดึงข้อมูลตู้สุ่มปัจจุบันมาจาก Firebase ก่อน เพื่อนำค่าเดิมมาแสดงในฟอร์ม
+            Loader.show();
+            const snap = await get(ref(db, `gacha_banners/${bId}`));
+            Loader.hide();
+            
+            if (!snap.exists()) {
+                Toast.fire({icon: 'error', title: 'ไม่พบข้อมูลตู้สุ่มนี้'});
+                return;
+            }
+            
+            const banner = snap.val();
+
+            // 2. แสดงหน้าต่างแบบฟอร์มแก้ไข (SweetAlert2) พร้อมใส่ค่าเก่า (value) ในอินพุตแต่ละช่อง
+            const { value: formValues } = await Swal.fire({
+                title: 'แก้ไขรายละเอียดตู้สุ่ม',
+                html: `
+                    <div class="space-y-3 text-left text-sm font-sans">
+                        <div>
+                            <label class="font-bold text-gray-500">ชื่อตู้สุ่ม</label>
+                            <input id="gb-name-edit" class="w-full p-2 border rounded-lg" value="${banner.name || ''}">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500">รูปหน้าตู้ (Drive ID/Link)</label>
+                            <input id="gb-cover-edit" class="w-full p-2 border rounded-lg" value="${banner.coverId || ''}">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500">ชื่อไอเทมที่ใช้สุ่ม (เช่น Card)</label>
+                            <input id="gb-cname-edit" class="w-full p-2 border rounded-lg" value="${banner.cardName || ''}">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500">รูปไอเทมสุ่ม (Drive ID/Link)</label>
+                            <input id="gb-cimg-edit" class="w-full p-2 border rounded-lg" value="${banner.cardImage || ''}">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500">อัตราแลก: 1 Ticket ได้กี่ชิ้น?</label>
+                            <input type="number" id="gb-rate-edit" class="w-full p-2 border rounded-lg" value="${banner.ticketRate || 3}">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500">การันตีเมื่อสุ่มครบ (ครั้ง)</label>
+                            <input type="number" id="gb-pity-edit" class="w-full p-2 border rounded-lg" value="${banner.pity || 50}">
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#27D6F5',
+                customClass: { popup: 'rounded-3xl' },
+                preConfirm: () => {
+                    // 1. เติม -edit ให้ตรงกับ ID ของช่องกรอกในหน้าต่างแก้ไข และใส่ ?.value เพื่อความปลอดภัย
+                    const coverInput = document.getElementById('gb-cover-edit')?.value || '';
+                    const cimgInput = document.getElementById('gb-cimg-edit')?.value || '';
+                    
+                    // 2. ตรวจสอบเงื่อนไขลิงก์ตามปกติ
+                    const finalCover = coverInput.includes('drive.google.com') ? extractDriveId(coverInput) : coverInput;
+                    const finalCimg = cimgInput.includes('drive.google.com') ? extractDriveId(cimgInput) : cimgInput;
+
+                    // 3. ส่งค่ากลับโดยเปลี่ยน ID ทุกตัวให้มีคำว่า -edit ทั้งหมด
+                    return {
+                        name: document.getElementById('gb-name-edit')?.value || '',
+                        coverId: finalCover,
+                        cardName: document.getElementById('gb-cname-edit')?.value || '',
+                        cardImage: finalCimg,
+                        ticketRate: parseInt(document.getElementById('gb-rate-edit')?.value) || 1,
+                        pity: parseInt(document.getElementById('gb-pity-edit')?.value) || 50
+                    };
+                }
+            });
+
+            // 3. เมื่อผู้ใช้กดยืนยัน และกรอกข้อมูลชื่อตู้เรียบร้อย ให้ส่งคำสั่งอัปเดตไปยัง Firebase
+            if (formValues && formValues.name) {
+                Loader.show();
+                try {
+                    // ใช้คำสั่ง update เพื่อแก้ไขเฉพาะรายละเอียดตู้ โดยไม่ทำให้ข้อมูลของรางวัล (items) ด้านในตู้ถูกลบหายไป
+                    await update(ref(db, `gacha_banners/${bId}`), formValues);
+                    Loader.hide();
+                    Toast.fire({icon: 'success', title: 'แก้ไขรายละเอียดตู้สุ่มสำเร็จ'});
+                    
+                    // สั่งให้ระบบทำการรีเฟรชหน้าจอแสดงตู้ Gacha ใหม่เพื่อรับข้อมูลล่าสุดทันที
+                    this.renderGacha();
+                } catch(e) {
+                    Loader.hide();
+                    console.error(e);
+                    Toast.fire({icon: 'error', title: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'});
+                }
+            }
+        },
+
+            async addGachaItem(bId) {
+                // 1. ดึงข้อมูลไอเท็มทั้งหมดที่มีอยู่ในร้านค้าทุกร้านจาก Firebase
+                Loader.show();
+                const shopSnap = await get(ref(db, 'shop_items'));
+                Loader.hide();
+                
+                if (!shopSnap.exists()) {
+                    Toast.fire({ icon: 'error', title: 'ไม่พบข้อมูลไอเท็มในระบบร้านค้า' });
+                    return;
+                }
+                
+                const shopItems = shopSnap.val();
+                
+                // 2. สร้างรายการตัวเลือก (Dropdown Options) โดยเก็บข้อมูลประเภทและราคาไว้ในแท็ก html
+                let optionsHtml = '<option value="">-- เลือกไอเท็มจากร้านค้า --</option>';
+                for (const id in shopItems) {
+                    const item = shopItems[id];
+                    // แอบเก็บ data-type และ data-price ไว้เพื่อให้ javascript ดึงไปเช็คเงื่อนไขได้ง่ายๆ
+                    optionsHtml += `
+                        <option value="${id}" data-type="${item.type || ''}" data-price="${item.price || 0}">
+                            [${item.type || 'ทั่วไป'}] ${item.name} - ${item.price === 0 ? 'ของฟรี' : item.price + ' คอยน์'}
+                        </option>`;
+                }
+
+                // 3. แสดงหน้าต่างจัดการ
+                const { value: formValues } = await Swal.fire({
+                    title: 'เพิ่มไอเท็มเข้าตู้สุ่ม',
+                    html: `
+                        <div class="space-y-4 text-left text-sm font-sans">
+                            <div>
+                                <label class="font-bold text-gray-500">เลือกไอเท็ม</label>
+                                <select id="gacha-item-select" class="w-full p-2 border rounded-lg mt-1">
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            
+                            <div id="gacha-amount-container">
+                                <label class="font-bold text-gray-500">จำนวนที่ได้รับเมื่อสุ่มได้</label>
+                                <input type="number" id="gacha-item-amount" class="w-full p-2 border rounded-lg mt-1" value="1" min="1">
+                            </div>
+                            
+                            <div id="gacha-error-msg" class="text-red-500 text-xs hidden font-bold bg-red-50 p-2.5 rounded-lg border border-red-200"></div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'เพิ่มเข้าตู้',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: { popup: 'rounded-3xl' },
+                    didOpen: () => {
+                        // จับคู่ตัวแปร HTML Elements ข้างใน Swal
+                        const itemSelect = document.getElementById('gacha-item-select');
+                        const amountContainer = document.getElementById('gacha-amount-container');
+                        const amountInput = document.getElementById('gacha-item-amount');
+                        const errorMsg = document.getElementById('gacha-error-msg');
+                        const confirmButton = Swal.getConfirmButton();
+
+                        // ตรวจสอบทันทีเมื่อผู้ใช้งานกดเปลี่ยนการเลือกไอเท็ม (Change Event)
+                        itemSelect.addEventListener('change', () => {
+                            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+                            
+                            // หากยังไม่ได้เลือกไอเท็มใดๆ ให้รีเซ็ตหน้าต่างกลับเป็นสถานะปกติก่อน
+                            if (!selectedOption || !selectedOption.value) {
+                                amountContainer.classList.remove('hidden');
+                                errorMsg.classList.add('hidden');
+                                confirmButton.removeAttribute('disabled');
+                                return;
+                            }
+
+                            // ดึงข้อมูลประเภท (type) และราคา (price) ของไอเท็มที่เลือกชิ้นนั้นขึ้นมา
+                            const type = selectedOption.getAttribute('data-type'); 
+                            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+
+                            // รีเซ็ตค่ามาตรฐานก่อนเข้าเงื่อนไขตรวจสอบ
+                            errorMsg.classList.add('hidden');
+                            confirmButton.removeAttribute('disabled');
+                            amountContainer.classList.remove('hidden');
+                            amountInput.value = "1"; 
+
+                            // 🔥 เงื่อนไขที่ 1: หากเลือกเป็น "กรอบโปรไฟล์"
+                            if (type === 'frame' || type === 'กรอบโปรไฟล์') {
+                                // ข้อห้าม: ถ้าเป็นของฟรี (ราคาเป็น 0) ห้ามเอาเข้าตู้เด็ดขาด
+                                if (price === 0) {
+                                    errorMsg.textContent = '❌ ไม่สามารถเลือกกรอบโปรไฟล์ที่เป็น "ของฟรี" มาเข้าตู้ได้ครับ!';
+                                    errorMsg.classList.remove('hidden');
+                                    confirmButton.setAttribute('disabled', 'true'); // ล็อกปุ่มตกลง
+                                    amountContainer.classList.add('hidden');
+                                    return;
+                                }
+                                // ข้อห้าม: หากไม่ใช่ของฟรี ให้นำเข้าได้แต่ "ไม่สามารถระบุจำนวนได้"
+                                amountContainer.classList.add('hidden'); // ซ่อนกล่องกรอกจำนวน (ล็อกค่าภายในเป็น 1)
+                            }
+                            
+                            // 🔥 เงื่อนไขที่ 2: หากเลือกเป็น "แมว" หรือ "ภาพพื้นหลัง"
+                            else if (type === 'cat' || type === 'แมว' || type === 'bg' || type === 'ภาพพื้นหลัง' || type === 'background') {
+                                // ข้อห้าม: ไม่สามารถระบุจำนวนได้
+                                amountContainer.classList.add('hidden'); // ซ่อนกล่องกรอกจำนวน (ล็อกค่าภายในเป็น 1)
+                            }
+                            
+                            // 🔥 เงื่อนไขที่ 3: ไอเท็มประเภทอื่นๆ ทั่วไป
+                            else {
+                                amountContainer.classList.remove('hidden'); // เปิดให้แสดงกล่องกรอกและแก้ไขตัวเลขได้อิสระ
+                            }
+                        });
+                    },
+                    preConfirm: () => {
+                        const itemId = document.getElementById('gacha-item-select').value;
+                        const amountContainer = document.getElementById('gacha-amount-container');
+                        let amount = 1;
+
+                        if (!itemId) {
+                            Swal.showValidationMessage('กรุณาเลือกไอเท็มที่ต้องการก่อนครับ');
+                            return false;
+                        }
+
+                        // ถ้ากล่องระบุจำนวนถูกแสดงอยู่ (แปลว่าเป็นไอเท็มประเภทอื่น) ค่อยดึงค่าตัวเลขมาใช้งาน
+                        if (!amountContainer.classList.contains('hidden')) {
+                            amount = parseInt(document.getElementById('gacha-item-amount').value) || 1;
+                            if (amount < 1) {
+                                Swal.showValidationMessage('จำนวนไอเท็มต้องระบุอย่างน้อย 1 ชิ้นขึ้นไป');
+                                return false;
+                            }
+                        }
+
+                        return { itemId, amount };
+                    }
+                });
+
+                // 4. บันทึกข้อมูลลงฐานข้อมูล Firebase Gacha Banner
+                if (formValues) {
+                    Loader.show();
+                    try {
+                        const itemData = shopItems[formValues.itemId];
+                        const newGachaItem = {
+                            itemId: formValues.itemId,
+                            name: itemData.name,
+                            image: itemData.image || '',
+                            type: itemData.type || 'item',
+                            amount: formValues.amount, // จะเป็น 1 สำหรับกลุ่มที่ซ่อน หรือเป็นจำนวนที่กรอกมาสำหรับกลุ่มทั่วไป
+                            rate: 1 // ค่าตั้งต้นของเรทสุ่มในตู้
+                        };
+
+                        // อัปเดตเพิ่มเข้าไปในกิ่ง items ของตู้นั้นๆ
+                        await push(ref(db, `gacha_banners/${bId}/items`), newGachaItem);
+                        Loader.hide();
+                        Toast.fire({ icon: 'success', title: 'เพิ่มไอเท็มเข้าตู้สำเร็จ' });
+                        
+                        // สั่งอัปเดต Render ตารางหน้าจอไอเท็มใหม่ทันที
+                        if (typeof this.manageGachaItems === 'function') {
+                            this.manageGachaItems(bId);
+                        } else {
+                            this.renderGacha();
+                        }
+                    } catch (e) {
+                        Loader.hide();
+                        console.error(e);
+                        Toast.fire({ icon: 'error', title: 'ไม่สามารถเพิ่มไอเท็มได้ เกิดข้อผิดพลาดในระบบ' });
+                    }
+                }
+            },
+
+            async removeGachaItem(bId, itemId) {
+                Loader.show(); await remove(ref(db, `gacha_banners/${bId}/items/${itemId}`)); Loader.hide();
+                Swal.close(); this.manageGachaBannerItems(bId);
+            },
+
+            // --- ระบบสุ่ม และแสดงเรทสำหรับนักเรียน ---
+
+            showGachaDetails(bId) {
+                get(ref(db, `gacha_banners/${bId}/items`)).then(snap => {
+                    if(!snap.exists()) return Toast.fire({icon:'error', title:'ตู้ยังว่างเปล่า'});
+                    const items = Object.values(snap.val());
+                    const totalWeight = items.reduce((sum, item) => sum + (RARITY_WEIGHTS[item.rarity] || 0), 0);
+                    
+                    let html = '<div class="max-h-[60vh] overflow-y-auto space-y-2 text-left font-sans">';
+                    // เรียงตาม Rarity (จาก SSS+ ลงไป A)
+                    items.sort((a,b) => (RARITY_WEIGHTS[a.rarity]||0) - (RARITY_WEIGHTS[b.rarity]||0)).forEach(it => {
+                        const chance = ((RARITY_WEIGHTS[it.rarity] / totalWeight) * 100).toFixed(2);
+                        let img = it.driveId.length > 10 ? `https://drive.google.com/thumbnail?id=${it.driveId}&sz=s800` : (ITEM_IMAGES[it.driveId] || CAT_ASSETS[it.driveId] || ITEM_IMAGES.sc);
+                        html += `
+                            <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                                <img src="${img}" class="w-10 h-10 object-contain drop-shadow-sm">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-bold text-sm text-dark truncate">${it.name} ${it.amount ? 'x'+it.amount : ''}</div>
+                                    <div class="text-[10px] text-gray-500 font-bold">Rarity: <span class="text-indigo-500">${it.rarity}</span> ${it.isGuarantee ? '<span class="bg-pink-100 text-pink-500 px-1 rounded ml-1">การันตี</span>':''}</div>
+                                </div>
+                                <div class="font-extrabold text-sm text-indigo-600">${chance}%</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    Swal.fire({title: 'รายละเอียดและอัตราดรอป', html: html, showConfirmButton:false, showCloseButton:true, customClass:{popup:'rounded-3xl w-[95%] max-w-sm'}});
+                });
+            },
+
+            async triggerGachaPull(bId, isTest = false) {
+                const u = appState.user;
+                
+                // ถ้าเป็นครูกดปุ่มสุ่มปกติ (ไม่ใช่ปุ่มทดสอบ) ให้แจ้งเตือน
+                if (u.role === 'teacher' && !isTest) return Toast.fire({icon:'info', title:'โปรดใช้ปุ่ม "ทดสอบสุ่ม" ด้านล่าง'});
+
+                Loader.show();
+                const [bSnap, uCardSnap, uPitySnap] = await Promise.all([
+                    get(ref(db, `gacha_banners/${bId}`)),
+                    get(ref(db, `users/${u.uid}/gacha_cards/${bId}`)),
+                    get(ref(db, `users/${u.uid}/gacha_pity/${bId}`))
+                ]);
+                Loader.hide();
+
+                const banner = bSnap.val();
+                if (!banner || !banner.items) return Toast.fire({icon:'error', title:'ตู้สุ่มไม่มีไอเทม'});
+
+                let cards = uCardSnap.exists() ? uCardSnap.val() : 0;
+                let pity = uPitySnap.exists() ? uPitySnap.val() : 0;
+                
+                // ถ้านักเรียนสุ่มปกติ ต้องเช็คยอดการ์ด
+                if (!isTest) {
+                    if (cards < 1) {
+                        const tickets = u.items?.ticket || 0;
+                        if (tickets < 1) return Swal.fire({icon:'warning', title:'ไม่มีการ์ดและตั๋ว', text:`คุณต้องใช้ ${banner.cardName} 1 ใบในการสุ่ม หรือตั๋ว 1 ใบเพื่อแลก`, customClass:{popup:'rounded-3xl'}});
+                        
+                        const res = await Swal.fire({
+                            title: `แลกการ์ดสุ่ม?`, 
+                            text: `1 Ticket แลก ${banner.cardName} ได้ ${banner.ticketRate} ใบ`,
+                            showCancelButton: true, confirmButtonText: 'แลกเปลี่ยน', cancelButtonText: 'ยกเลิก', customClass:{popup:'rounded-3xl'}, confirmButtonColor: '#27D6F5'
+                        });
+                        
+                        if (res.isConfirmed) {
+                            Loader.show();
+                            cards += banner.ticketRate;
+                            await update(ref(db, `users/${u.uid}`), {
+                                'items/ticket': tickets - 1,
+                                [`gacha_cards/${bId}`]: cards
+                            });
+                            appState.user.items.ticket = tickets - 1;
+                            appState.user.gacha_cards = appState.user.gacha_cards || {};
+                            appState.user.gacha_cards[bId] = cards;
+                            document.getElementById('gacha-main-ticket').innerText = (tickets - 1).toLocaleString();
+                            Loader.hide();
+                            // รีเฟรชยอดการ์ดใน UI ทันที
+                            document.getElementById('gacha-view-card-count').innerText = cards;
+                            return; 
+                        } else {
+                            return;
+                        }
+                    }
+                }
+
+                // เริ่มโลจิกสุ่ม
+                let selectedItem = null;
+                const itemsList = Object.values(banner.items);
+                
+                // Pity Check
+                if (!isTest && pity + 1 >= banner.pity) {
+                    const guaranteeItems = itemsList.filter(i => i.isGuarantee);
+                    if(guaranteeItems.length > 0) {
+                        selectedItem = guaranteeItems[Math.floor(Math.random() * guaranteeItems.length)];
+                    }
+                }
+
+                // สุ่มปกติตาม Rarity Weight
+                if (!selectedItem) {
+                    const totalWeight = itemsList.reduce((sum, i) => sum + (RARITY_WEIGHTS[i.rarity] || 0), 0);
+                    let rand = Math.random() * totalWeight;
+                    let sum = 0;
+                    for (let i of itemsList) {
+                        sum += (RARITY_WEIGHTS[i.rarity] || 0);
+                        if (rand <= sum) { selectedItem = i; break; }
+                    }
+                }
+
+                if (!selectedItem) selectedItem = itemsList[0]; 
+
+                // ตัดยอดการ์ด และอัปเดต Pity (เฉพาะการสุ่มปกติ)
+                if (!isTest) {
+                    let newPity = selectedItem.isGuarantee ? 0 : pity + 1;
+                    let updates = {
+                        [`gacha_cards/${bId}`]: cards - 1,
+                        [`gacha_pity/${bId}`]: newPity
+                    };
+                    await update(ref(db, `users/${u.uid}`), updates);
+                    
+                    // ** ต้องอัปเดตสถานะในแอพด้วย (สำคัญมากเพื่อให้รอบต่อไปคำนวณถูก) **
+                    appState.user.gacha_cards[bId] = cards - 1;
+                    appState.user.gacha_pity = appState.user.gacha_pity || {};
+                    appState.user.gacha_pity[bId] = newPity;
+                    
+                    document.getElementById('gacha-view-card-count').innerText = cards - 1;
+                } else {
+                    Toast.fire({icon: 'info', title: 'โหมดทดสอบ', text: 'ผลการสุ่มจะไม่ถูกบันทึกลงคลังและไม่นับสถิติ'});
+                }
+
+                // เล่น Animation และแสดงผล
+                window.app._pendingGachaReward = selectedItem;
+                this.playGachaAnimation(selectedItem);
+            },
+
+            async playGachaAnimation(item) {
+                // === [ส่วนที่เพิ่มใหม่: เช็คและเปลี่ยน ID รูปภาพตาม Amount] ===
+                const dynamicGachaImages = {
+                    cs: {
+                        200: '1U0_7YW6E_8m6mccGjcO8BjH4zmwLcbkf',
+                        150: '1m_IaJbE4mqRvxqH15Cn1oZuQ-NSwc0aj',
+                        100: '1fhwV0UJTme_jjnpPFIqHZE_cP3wwAp2Q',
+                        50: '1aoS8o9XlcTBuba6jOpJeHMsq2STxte4j'
+                    },
+                    ct: {
+                        200: '1HxrGW1KpV-SLlxM2VrbXEmdQQwuYNvvQ',
+                        150: '1AGY1uTXkjXCuE2XmL4l2qotSXZH8nbKP',
+                        100: '1FTJEJiFqMN5m1ZPMMxWqhEugkesymf5W',
+                        50: '1ATOP5iFnhzjETKrtDxAxUW7jwoR2zgZH'
+                    }
+                };
+
+                let finalDriveId = item.driveId;
+                // ถ้ามีประเภท (cs/ct) และตรงกับจำนวน (amount) ที่ตั้งไว้ ให้ใช้ ID รูปใหม่
+                if (dynamicGachaImages[item.driveId] && dynamicGachaImages[item.driveId][item.amount]) {
+                    finalDriveId = dynamicGachaImages[item.driveId][item.amount];
+                }
+                // =======================================================
+
+                // 1. เริ่ม Preload รูปภาพพื้นหลังการ์ดใหม่ไว้ในหน่วยความจำทันที
+                const bgDriveId = RARITY_CARD_BGS[item.rarity] || '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj';
+                const targetBgUrl = `https://drive.google.com/thumbnail?id=${bgDriveId}&sz=s800`;
+                const imgPreload = new Image();
+                imgPreload.src = targetBgUrl;
+
+                // 2. รีเซ็ตแอนิเมชันและเคลียร์รูปภาพเก่าออกจากการ์ดจริงเพื่อไม่ให้ค้าง
+                const cardInner = document.getElementById('gacha-card-inner');
+                if (cardInner) cardInner.classList.remove('revealed'); // สั่งให้การ์ดคว่ำลงก่อนเริ่มสุ่ม
+
+                const cardBg = document.getElementById('gacha-card-bg');
+                if (cardBg) cardBg.src = ''; 
+                
+                const itemImg = document.getElementById('gacha-reward-item');
+                if (itemImg) {
+                    itemImg.src = '';
+                    itemImg.classList.remove('scale-100', 'opacity-100');
+                    itemImg.classList.add('scale-0', 'opacity-0');
+                }
+
+                const itemName = document.getElementById('gacha-reward-name');
+                if (itemName) {
+                    itemName.innerText = '';
+                    itemName.classList.add('opacity-0');
+                }
+                
+                const gold = document.getElementById('gacha-gold-overlay');
+                const flash = document.getElementById('gacha-flash');
+                const rays = document.getElementById('gacha-rays');
+                const reveal = document.getElementById('gacha-reveal-state');
+                const btnClaim = document.getElementById('gacha-btn-claim');
+                
+                const floatingItem = document.getElementById('gacha-floating-item');
+                const btnOpen = document.getElementById('gacha-btn-open');
+
+                // ซ่อนปุ่ม Open
+                btnOpen.classList.add('scale-90', 'opacity-0', 'pointer-events-none');
+                await sleep(300);
+
+                // เขย่าไอเทมตรงกลาง
+                gold.classList.remove('hidden');
+                gold.classList.add('opacity-100');
+                floatingItem.classList.remove('animate-gacha-float');
+                floatingItem.classList.add('gacha-shake', 'brightness-[1.5]', 'drop-shadow-[0_0_30px_rgba(255,255,255,1)]');
+                rays.classList.remove('hidden');
+
+                // ช่วงที่แอนิเมชันเขย่า (1.5 วินาที)
+                await sleep(1500); 
+                
+                flash.classList.remove('hidden');
+                flash.classList.add('opacity-100');
+                await sleep(400);
+
+                gold.classList.add('hidden');
+                reveal.classList.remove('hidden');
+                reveal.classList.add('flex');
+                
+                flash.classList.remove('opacity-100');
+                flash.classList.add('opacity-0');
+                
+                // 3. จังหวะที่แสงขาวกำลังจางหาย เอาภาพที่ Preload เสร็จแล้วไปใส่ที่การ์ดจริง
+                if (cardBg) cardBg.src = targetBgUrl;
+                
+                await sleep(300);
+                flash.classList.add('hidden');
+
+                // Particle
+                this.createGachaParticles();
+       
+                // Card flip
+                cardInner.classList.add('revealed');
+                await sleep(1000);
+                
+                // === [แก้ไขใหม่: ใส่ตัวแปรกันแคช และดึงภาพจาก finalDriveId] ===
+                const cacheBuster = new Date().getTime();
+                itemImg.src = finalDriveId.length > 10 
+                    ? `https://drive.google.com/thumbnail?id=${finalDriveId}&sz=s800&t=${cacheBuster}` 
+                    : (ITEM_IMAGES[finalDriveId] || CAT_ASSETS[finalDriveId] || ITEM_IMAGES.sc);
+                
+                itemImg.classList.remove('scale-0', 'opacity-0');
+                itemImg.classList.add('scale-100', 'opacity-100');
+                
+                itemName.innerText = item.name + (item.amount ? ` x${item.amount}` : '');
+                itemName.classList.remove('opacity-0');
+
+                await sleep(500);
+                btnClaim.classList.remove('opacity-0', 'pointer-events-none');
+            },
+
+            async closeGachaAnim() {
+                const u = appState.user;
+                const item = window.app._pendingGachaReward;
+
+                // มอบของรางวัลให้ผู้เล่น
+                if (item && u.role === 'student') {
+                    Loader.show();
+                    let updates = {};
+                    if (['frame', 'cat_frame'].includes(item.type)) {
+                        updates[`users/${u.uid}/unlocked_frames/${item.driveId}`] = true;
+                        if(!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
+                        appState.user.unlocked_frames[item.driveId] = true;
+                    } else if (['cat', 'bg'].includes(item.type)) {
+                        updates[`users/${u.uid}/catData/unlocked/${item.driveId}`] = true;
+                        if(appState.user.catData) {
+                            if(!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
+                            appState.user.catData.unlocked[item.driveId] = true;
+                        }
+                    } else if (item.type === 'food') {
+                        const cur = appState.user.catData?.inventory?.[item.driveId] || 0;
+                        updates[`users/${u.uid}/catData/inventory/${item.driveId}`] = cur + item.amount;
+                    } else if (item.type === 'currency') {
+                        const cur = appState.user.items?.[item.driveId] || 0;
+                        updates[`users/${u.uid}/items/${item.driveId}`] = cur + item.amount;
+                    }
+                    
+                    await update(ref(db), updates);
+                    Loader.hide();
+                }
+
+                // Reset Animation กลับเข้าสู่โหมดหน้าตู้ปกติ
+                document.getElementById('gacha-reveal-state').classList.add('hidden');
+                document.getElementById('gacha-reveal-state').classList.remove('flex');
+                document.getElementById('gacha-card-inner').classList.remove('revealed');
+                document.getElementById('gacha-reward-item').classList.add('scale-0', 'opacity-0');
+                document.getElementById('gacha-reward-name').classList.add('opacity-0');
+                document.getElementById('gacha-btn-claim').classList.add('opacity-0', 'pointer-events-none');
+                document.getElementById('gacha-rays').classList.add('hidden');
+
+                const floatingItem = document.getElementById('gacha-floating-item');
+                floatingItem.classList.remove('gacha-shake', 'brightness-[1.5]', 'drop-shadow-[0_0_30px_rgba(255,255,255,1)]');
+                floatingItem.classList.add('animate-gacha-float');
+
+                const btnOpen = document.getElementById('gacha-btn-open');
+                btnOpen.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
+
+                // --- รีเฟรชยอดการ์ดและรีเฟรชป้ายการันตี (Pity) ในหน้าจอทันที ---
+                const bId = appState.activeGachaBanner;
+                if (bId) {
+                    document.getElementById('gacha-view-card-count').innerText = appState.user.gacha_cards?.[bId] || 0;
+                    
+                    const banner = appState.gachaBanners[bId];
+                    const pity = appState.user.gacha_pity?.[bId] || 0;
+                    const maxPity = banner.pity || 50;
+                    const pullsLeft = maxPity - pity;
+                    
+                    const pityBox = document.getElementById('gacha-pity-counter');
+                    if (pityBox) {
+                        if (pullsLeft > 0) {
+                            pityBox.innerHTML = `<span class="bg-red-500/90 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-red-400">⭐ การันตีในอีก ${pullsLeft} ครั้ง</span>`;
+                        } else {
+                            pityBox.innerHTML = `<span class="bg-green-500/90 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-green-400 animate-pulse">🌟 การันตีออกในการสุ่มครั้งนี้!</span>`;
+                        }
+                    }
+                }
+            },
+
+            // --- GACHA BANNER ITEMS MANAGEMENT (ADMIN UI) ---
+            async manageGachaBannerItems(bId) {
+                Loader.show();
+                // 1. โหลดข้อมูลตู้สุ่ม, ร้านค้ากรอบ, และร้านค้าแมว มาพร้อมกันเพื่อเตรียมไปโชว์ใน Dropdown
+                const [bSnap, fSnap, cSnap] = await Promise.all([
+                    get(ref(db, `gacha_banners/${bId}`)), 
+                    get(ref(db, 'shop_frames')), 
+                    get(ref(db, 'cat_shop'))
+                ]);
+                Loader.hide();
+                
+                const banner = bSnap.exists() ? bSnap.val() : null;
+                if(!banner) return;
+
+                // 2. บันทึกข้อมูลร้านค้าลงตัวแปรโกลบอลให้ฟังก์ชัน addGachaItemModal เอาไปสร้างเป็น Dropdown
+                window.app._tempGachaAddData = { 
+                    shop: fSnap.exists() ? fSnap.val() : {}, 
+                    catShop: cSnap.exists() ? cSnap.val() : {} 
+                };
+
+                let itemsHtml = '<div class="max-h-[50vh] overflow-y-auto flex flex-col gap-2 p-1 text-left no-scrollbar">';
+                const items = banner.items || {};
+                
+                // 3. วาดรายการไอเทมที่มีอยู่ในตู้
+                if(Object.keys(items).length === 0) {
+                    itemsHtml += '<p class="text-gray-500 text-center py-6 text-xs font-bold">ยังไม่มีไอเทมในตู้นี้</p>';
+                } else {
+                    Object.entries(items).forEach(([itemId, item]) => {
+                        const imgUrl = item.driveId.length > 10 ? `https://drive.google.com/thumbnail?id=${item.driveId}&sz=s200` : (ITEM_IMAGES[item.driveId] || CAT_ASSETS[item.driveId] || ITEM_IMAGES.sc);
+                        itemsHtml += `
+                            <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                                    <img src="${imgUrl}" class="w-10 h-10 object-contain rounded-xl bg-white p-1 border shadow-sm shrink-0">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-extrabold text-sm text-indigo-950 truncate">${item.name} <span class="text-indigo-600">x${item.amount || 1}</span></div>
+                                        <div class="text-[10px] text-indigo-500 font-bold mt-0.5 flex items-center gap-1.5">
+                                            <span>ระดับ: <b class="text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded">${item.rarity}</b></span>
+                                            ${item.isGuarantee ? '<span class="text-red-500 bg-red-50 px-1 rounded font-extrabold"><i class="fa-solid fa-star text-[8px]"></i> การันตี</span>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-1 ml-2">
+                                    <button onclick="app.editGachaItemModal('${bId}', '${itemId}')" class="w-8 h-8 bg-yellow-500 text-white rounded-xl flex items-center justify-center text-xs active:scale-90 transition shadow-sm"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="app.deleteGachaItem('${bId}', '${itemId}')" class="w-8 h-8 bg-red-500 text-white rounded-xl flex items-center justify-center text-xs active:scale-90 transition shadow-sm"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                itemsHtml += '</div>';
+
+                Swal.fire({
+                    title: `<span class="text-lg font-extrabold text-indigo-950">รายการในตู้: ${banner.name}</span>`,
+                    html: `
+                        <button onclick="app.addGachaItemModal('${bId}')" class="w-full mb-3 bg-indigo-600 text-white font-extrabold py-3 px-4 rounded-2xl text-xs shadow-md shadow-indigo-200 hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus text-sm"></i> เพิ่มไอเทมใหม่ลงในตู้นี้
+                        </button>
+                        ${itemsHtml}
+                    `,
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: { popup: 'rounded-[2rem]' }
+                });
+            },
+
+            async addGachaItemModal(bId, itemId = null) {
+                let itemData = { name: '', driveId: 'ticket', type: 'currency', rarity: 'A', amount: 1, isGuarantee: false };
+                
+                if(itemId) {
+                    Loader.show();
+                    const snap = await get(ref(db, `gacha_banners/${bId}/items/${itemId}`));
+                    Loader.hide();
+                    if(snap.exists()) itemData = snap.val();
+                }
+
+                // ดึงข้อมูลร้านค้าที่ถูกโหลดเก็บไว้แล้ว
+                const data = window.app._tempGachaAddData || { shop: {}, catShop: {} };
+
+                // 1. สร้างกลุ่มตัวเลือก: สกุลเงิน (Presets)
+                const presets = [
+                    { id: 'ct', name: 'Crystal (CT)' },
+                    { id: 'ticket', name: 'Ticket' },
+                    { id: 'cc', name: 'CatCoin (CC)' },
+                    { id: 'cd', name: 'Cat Diamond (CD)' },
+                    { id: 'ce', name: 'Cat Emerald (CE)' },
+                    { id: 'cs', name: 'ClassStar (CS)' },
+                    { id: 'sc', name: 'S-Card' }
+                ];
+
+                let optHtml = '<option value="">-- เลือกไอเท็มเข้าตู้สุ่ม --</option>';
+                
+                optHtml += '<optgroup label="สกุลเงิน / ทั่วไป">';
+                presets.forEach(p => {
+                    const isSelected = itemData.driveId === p.id ? 'selected' : '';
+                    // เพิ่ม data-category ให้รู้ว่าเป็นของอะไร
+                    optHtml += `<option value="currency|${p.id}|${p.name}" data-type="currency" data-price="-1" data-category="currency" ${isSelected}>${p.name}</option>`;
+                });
+                optHtml += '</optgroup>';
+
+                // 2. สร้างกลุ่มตัวเลือก: ร้านค้ากรอบโปรไฟล์ (เพิ่มการฝัง data-category)
+                optHtml += '<optgroup label="ร้านค้า: กรอบโปรไฟล์">';
+                Object.entries(data.shop).forEach(([k, v]) => {
+                    const isSelected = itemData.driveId === v.driveId ? 'selected' : '';
+                    const catStr = v.category || 'free'; 
+                    // ฝัง data-category="${catStr}" ลงไปให้ Javascript เอาไปเช็คได้
+                    optHtml += `<option value="frame|${v.driveId}|${v.name}" data-type="frame" data-price="${v.price || 0}" data-category="${catStr}" ${isSelected}>[กรอบ] ${v.name} (${v.price === 0 ? (catStr==='event'?'Event':'ฟรี') : v.price + ' SC'})</option>`;
+                });
+                optHtml += '</optgroup>';
+
+                // 3. สร้างกลุ่มตัวเลือก: ร้านค้าแมว (แมว, อาหาร, พื้นหลัง, กรอบแมว)
+                optHtml += '<optgroup label="ร้านค้า: แมวและอื่นๆ">';
+                Object.entries(data.catShop).forEach(([k, v]) => {
+                    const isSelected = itemData.driveId === (v.driveId || k) ? 'selected' : '';
+                    const catStr = v.category || '';
+                    optHtml += `<option value="${v.type}|${v.driveId || k}|${v.name}" data-type="${v.type}" data-price="${v.price || 0}" data-category="${catStr}" ${isSelected}>[${v.type}] ${v.name} (${v.price === 0 ? 'ฟรี/กิจกรรม' : v.price + ' SC'})</option>`;
+                });
+                optHtml += '</optgroup>';
+
+                // ตัวเลือกแบบกำหนดเอง (Custom)
+                const isCustom = itemId && itemData.type === 'custom';
+                optHtml += `<option value="custom" data-type="custom" data-price="-1" data-category="custom" ${isCustom ? 'selected' : ''}>+ ระบุรูปภาพ / Drive ID เอง</option>`;
+
+                let rarityOpts = '';
+                Object.keys(RARITY_WEIGHTS).forEach(r => {
+                    rarityOpts += `<option value="${r}" ${itemData.rarity === r ? 'selected' : ''}>ระดับ ${r}</option>`;
+                });
+
+                Swal.fire({
+                    title: `<span class="text-base font-extrabold text-indigo-950">${itemId ? 'แก้ไขรายละเอียดไอเทม' : 'เพิ่มไอเทมใหม่เข้าตู้'}</span>`,
+                    html: `
+                        <div class="flex flex-col gap-3 text-left p-1 text-xs">
+                            <div>
+                                <label class="block font-bold mb-1 text-indigo-900">1. ค้นหาและเลือกไอเทม</label>
+                                <input type="text" id="gacha-item-search" placeholder="🔍 พิมพ์ชื่อไอเทมเพื่อค้นหา..." class="w-full p-2 mb-2 border border-indigo-100 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-950">
+                                
+                                <select id="edit-gacha-item-preset" class="w-full p-3 border border-indigo-100 rounded-xl bg-indigo-50/30 focus:outline-none font-bold text-indigo-950">
+                                    ${optHtml}
+                                </select>
+                                <div id="gacha-item-error" class="hidden mt-2 text-red-500 font-bold bg-red-50 p-2.5 rounded-lg border border-red-200"></div>
+                            </div>
+                            
+                            <div id="custom-drive-id-box" style="display: none;">
+                                <label class="block font-bold mb-1 text-indigo-900">ระบุ Google Drive ID รูปภาพ</label>
+                                <input id="edit-gacha-item-driveid" value="${itemData.type === 'custom' ? itemData.driveId : ''}" placeholder="วางลิงก์หรือไอดีรูปการ์ดสุ่ม" class="w-full p-3 border border-indigo-100 rounded-xl bg-indigo-50/30 focus:outline-none text-indigo-950">
+                                
+                                <label class="block font-bold mb-1 mt-2 text-indigo-900">ชื่อแสดงผลเวลากดสุ่มได้</label>
+                                <input id="edit-gacha-item-name" value="${itemData.type === 'custom' ? itemData.name : ''}" placeholder="เช่น คริสตัลสุดหรู หรือ แร่แมวม่วง" class="w-full p-3 border border-indigo-100 rounded-xl bg-indigo-50/30 focus:outline-none font-bold text-indigo-950">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block font-bold mb-1 text-indigo-900">2. ระดับเรทสุ่ม (Rarity)</label>
+                                    <select id="edit-gacha-item-rarity" class="w-full p-3 border border-indigo-100 rounded-xl bg-indigo-50/30 focus:outline-none font-bold text-indigo-950">
+                                        ${rarityOpts}
+                                    </select>
+                                </div>
+                                <div id="gacha-amount-container">
+                                    <label class="block font-bold mb-1 text-indigo-900">3. จำนวนที่จะแจก</label>
+                                    <input id="edit-gacha-item-amount" type="number" value="${itemData.amount || 1}" min="1" class="w-full p-3 border border-indigo-100 rounded-xl bg-indigo-50/30 focus:outline-none font-bold text-indigo-950">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 py-2 mt-1 border-t border-dashed border-indigo-100">
+                                <input id="edit-gacha-item-guarantee" type="checkbox" ${itemData.isGuarantee ? 'checked' : ''} class="w-4 h-4 text-indigo-600 border-indigo-200 rounded focus:ring-0">
+                                <label for="edit-gacha-item-guarantee" class="font-bold text-indigo-900 cursor-pointer select-none">ตั้งค่าเป็นของรางวัลรับประกันหลุดเรท (Pity Guarantee)</label>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'บันทึกข้อมูล',
+                    cancelButtonText: 'ยกเลิก',
+                    customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl bg-indigo-600 font-bold px-6 text-sm', cancelButton: 'rounded-xl text-sm' },
+                    didOpen: () => {
+                        const itemSelect = document.getElementById('edit-gacha-item-preset');
+                        const searchInput = document.getElementById('gacha-item-search');
+                        const customBox = document.getElementById('custom-drive-id-box');
+                        const amountContainer = document.getElementById('gacha-amount-container');
+                        const errorMsg = document.getElementById('gacha-item-error');
+                        const confirmBtn = Swal.getConfirmButton();
+
+                        // ระบบค้นหา (กรองจากข้อความใน Dropdown)
+                        const allOptions = Array.from(itemSelect.options);
+                        searchInput.addEventListener('keyup', (e) => {
+                            const term = e.target.value.toLowerCase();
+                            allOptions.forEach(opt => {
+                                const text = opt.text.toLowerCase();
+                                opt.style.display = text.includes(term) ? 'block' : 'none';
+                            });
+                        });
+
+                        // ฟังก์ชันตรวจสอบเงื่อนไขแบบเรียลไทม์
+                        const updateUI = () => {
+                            const selectedOpt = itemSelect.options[itemSelect.selectedIndex];
+                            if (!selectedOpt || !selectedOpt.value) return;
+
+                            const type = selectedOpt.getAttribute('data-type');
+                            const price = parseFloat(selectedOpt.getAttribute('data-price'));
+                            const category = selectedOpt.getAttribute('data-category'); // ดึงหมวดหมู่มาตรวจสอบ
+
+                            // รีเซ็ตสถานะกลับเป็นค่าเริ่มต้นก่อนตรวจสอบเงื่อนไข
+                            errorMsg.classList.add('hidden');
+                            confirmBtn.removeAttribute('disabled');
+                            amountContainer.style.display = 'block';
+                            customBox.style.display = 'none';
+
+                            if (type === 'custom') {
+                                customBox.style.display = 'block';
+                            } 
+                            else if (type === 'frame' || type === 'cat_frame') {
+                                // 🔥 เงื่อนไขใหม่: บล็อกเฉพาะราคา = 0 และ ต้องอยู่ในหมวด 'free' เท่านั้น
+                                if (price === 0 && category === 'free') {
+                                    errorMsg.innerHTML = '❌ ไม่สามารถนำ <b>"กรอบโปรไฟล์แจกฟรี"</b> มาใส่ในตู้สุ่มได้ครับ';
+                                    errorMsg.classList.remove('hidden');
+                                    confirmBtn.setAttribute('disabled', 'true'); 
+                                    amountContainer.style.display = 'none'; 
+                                } else {
+                                    // หากเป็น Event (ราคาอาจจะ 0) หรือเป็นกรอบเสียเงิน ให้นำเข้าได้ แต่ห้ามระบุจำนวน
+                                    amountContainer.style.display = 'none'; 
+                                }
+                            }
+                            else if (type === 'cat' || type === 'bg') {
+                                // แมว และ พื้นหลัง ห้ามระบุจำนวน
+                                amountContainer.style.display = 'none';
+                            }
+                        };
+
+                        itemSelect.addEventListener('change', updateUI);
+                        updateUI(); 
+                    },
+                    preConfirm: () => {
+                        const itemSelect = document.getElementById('edit-gacha-item-preset');
+                        const selectedOpt = itemSelect.options[itemSelect.selectedIndex];
+                        const rawVal = itemSelect.value;
+                        
+                        let type, driveId, name;
+
+                        if (rawVal === 'custom') {
+                            type = 'custom';
+                            driveId = extractDriveId(document.getElementById('edit-gacha-item-driveid').value.trim());
+                            name = document.getElementById('edit-gacha-item-name').value.trim();
+                        } else {
+                            const parts = rawVal.split('|');
+                            type = parts[0];
+                            driveId = parts[1];
+                            name = parts[2];
+                        }
+
+                        if(!name || !driveId) { Swal.showValidationMessage('กรุณาเลือกไอเทมหรือระบุข้อมูลให้ครบถ้วน'); return false; }
+
+                        const rarity = document.getElementById('edit-gacha-item-rarity').value;
+                        const isGuarantee = document.getElementById('edit-gacha-item-guarantee').checked;
+                        
+                        // ตรวจสอบว่าช่อง Amount ถูกซ่อนไว้หรือไม่ (ถ้าถูกซ่อน = ให้เป็น null)
+                        const amountContainer = document.getElementById('gacha-amount-container');
+                        let amount = amountContainer.style.display === 'none' 
+                            ? null 
+                            : (parseInt(document.getElementById('edit-gacha-item-amount').value) || 1);
+
+                        return { type, driveId, name, rarity, amount, isGuarantee };
+                    }
+                }).then(async (res) => {
+                    if(res.isConfirmed) {
+                        Loader.show();
+                        const targetId = itemId || push(ref(db, `gacha_banners/${bId}/items`)).key;
+                        await update(ref(db, `gacha_banners/${bId}/items/${targetId}`), res.value);
+                        Loader.hide();
+                        Toast.fire({ icon: 'success', title: 'บันทึกไอเทมลงตู้สุ่มสำเร็จแล้ว' });
+                        this.manageGachaBannerItems(bId); 
+                    }
+                });
+            }
             
         };
 
@@ -4928,7 +5991,7 @@
             });
         };
         
-
+        //window.app add
         window.app = {
             login: (e) => { e.preventDefault(); Auth.login(document.getElementById('login-username').value, document.getElementById('login-password').value); },
             logout: Auth.logout, navigate: (id) => Views.navigate(id),
@@ -4945,6 +6008,62 @@
             showMailbox: () => Views.showMailbox(),
             claimMail: (id, cat, drive) => Views.claimMail(id, cat, drive),
             toggleRewardAmount: (val) => Views.toggleRewardAmount(val),
+            // --- ระบบ Gacha ใหม่ ---
+            editGachaMainConfig: () => Views.editGachaMainConfig(),
+            addGachaBanner: () => Views.addGachaBanner(),
+            editGachaBanner: (id) => Views.editGachaBanner(id),
+            manageGachaBannerItems: (id) => Views.manageGachaBannerItems(id),
+            addGachaItemModal: (id) => Views.addGachaItemModal(id),
+            removeGachaItem: (bId, itemId) => Views.removeGachaItem(bId, itemId),
+            showGachaDetails: (id) => Views.showGachaDetails(id),
+            triggerGachaPull: (id, isTest) => Views.triggerGachaPull(id, isTest),
+            closeGachaAnim: () => Views.closeGachaAnim(),
+            openGachaBanner: (id) => Views.openGachaBanner(id),
+            closeGachaBanner: () => Views.closeGachaBanner(),
+            // --- GACHA MANAGER ACTIONS ---
+            manageGachaBannerItems: (bId) => Views.manageGachaBannerItems(bId),
+            editGachaItemModal: (bId, itemId) => Views.addGachaItemModal(bId, itemId),
+            addGachaItemModal: (bId) => Views.addGachaItemModal(bId),
+            // --- ฟังก์ชันลบไอเทมออกจากตู้สุ่ม ---
+            async deleteGachaItem(bId, itemId) {
+                const result = await Swal.fire({
+                    title: '<span class="text-lg font-extrabold text-indigo-950">ยืนยันการลบไอเทม?</span>',
+                    text: "เมื่อลบแล้ว ไอเทมนี้จะหายไปจากตู้สุ่มทันทีและไม่สามารถกู้คืนได้",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444', // สีแดง
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'ใช่, ลบเลย!',
+                    cancelButtonText: 'ยกเลิก',
+                    customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl font-bold text-xs px-4 py-2.5', cancelButton: 'rounded-xl text-xs px-4 py-2.5' }
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        Loader.show();
+                        // ทำการลบข้อมูลตำแหน่งไอเทมนี้ออกจาก Firebase Database
+                        await remove(ref(db, `gacha_banners/${bId}/items/${itemId}`));
+                        Loader.hide();
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'ลบไอเทมออกจากตู้สุ่มเรียบร้อยแล้ว'
+                        });
+
+                        // สั่งให้หน้าต่างรายการไอเทมโหลดข้อมูลใหม่เพื่ออัปเดต UI ทันที
+                        this.manageGachaBannerItems(bId);
+
+                    } catch (error) {
+                        Loader.hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: error.message,
+                            customClass: { popup: 'rounded-[2rem]' }
+                        });
+                    }
+                }
+            },
 
             handleAttachTypeChange: (val) => {
                 const con = document.getElementById('attach-value-container');
