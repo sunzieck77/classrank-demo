@@ -2783,7 +2783,7 @@
                             <div id="gacha-flash" class="hidden opacity-0 absolute inset-0 bg-white z-[70] transition-opacity duration-300 pointer-events-none"></div>
 
                             <div id="gacha-idle-state" class="absolute inset-0 flex flex-col items-center justify-center z-30 w-full h-full pointer-events-none">
-                                <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] gacha-rays"></div>
+                                <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320vw] h-[320vw] gacha-rays"></div>
                                 <img id="gacha-floating-item" src="" class="w-40 sm:w-56 h-auto object-contain animate-gacha-float drop-shadow-2xl transition-all duration-500 relative z-10 pb-20" alt="Gacha Item">
                             </div>
 
@@ -5437,7 +5437,6 @@
                     itemName.innerText = '';
                     itemName.classList.add('opacity-0');
                 }
-                
                 const gold = document.getElementById('gacha-gold-overlay');
                 const flash = document.getElementById('gacha-flash');
                 const rays = document.getElementById('gacha-rays');
@@ -5460,10 +5459,11 @@
 
                 // ช่วงที่แอนิเมชันเขย่า (1.5 วินาที)
                 await sleep(1500); 
-                
                 flash.classList.remove('hidden');
                 flash.classList.add('opacity-100');
                 await sleep(400);
+        
+
 
                 gold.classList.add('hidden');
                 reveal.classList.remove('hidden');
