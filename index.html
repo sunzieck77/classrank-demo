@@ -2893,6 +2893,10 @@
                     document.getElementById('gacha-ticket-balance').innerText = newTicketCount;
                 }
 
+                // รีเซ็ตการ์ดให้คว่ำลงก่อนเผื่อค้างจากรอบที่แล้ว
+                const cardInner = document.getElementById('gacha-card-inner');
+                if (cardInner) cardInner.classList.remove('revealed');
+
                 // Weighted Randomize Reward
                 const rand = Math.random() * 100;
                 let sum = 0;
@@ -2904,6 +2908,9 @@
                         break;
                     }
                 }
+                
+                // Clone Object ป้องกันการแก้ไขข้อมูลต้นทาง
+                reward = { ...reward };
                 window.currentGachaReward = reward;
                 
                 // Clear old image early to prevent flashing & Apply dynamic card background based on rarity
@@ -2947,7 +2954,6 @@
                 flash.classList.add('hidden');
                 
                 // 6. Flip Card Animation
-                const cardInner = document.getElementById('gacha-card-inner');
                 cardInner.classList.add('revealed');
 
                 await sleep(1000); // Wait for flip transition
@@ -2955,22 +2961,84 @@
                 // 7. Particle Explosion
                 this.createGachaParticles();
 
-                // 8. Reveal Items & Text
+                // 8. Reveal Items & Text (ดัดแปลงเพิ่มแอนิเมชันของซ้ำที่นี่)
                 const rewardItemImg = document.getElementById('gacha-reward-item');
+                const rewardName = document.getElementById('gacha-reward-name');
+                const claimBtn = document.getElementById('gacha-btn-claim');
                 
-                rewardItemImg.src = ""; // Clear old image just before setting
-                rewardItemImg.src = `https://drive.google.com/thumbnail?id=${reward.img}&sz=s800`;
+                // เพิ่ม transition เตรียมไว้สำหรับทำแอนิเมชัน Fade เข้า/ออก
+                rewardItemImg.classList.add('transition-all', 'duration-500', 'ease-in-out');
+                rewardName.classList.add('transition-all', 'duration-500', 'ease-in-out');
+
+                // ใส่ Cache buster ให้รูปโชว์เสมอ
+                const cacheBuster = new Date().getTime();
+                rewardItemImg.src = `https://drive.google.com/thumbnail?id=${reward.img || reward.driveId}&sz=s800&t=${cacheBuster}`;
+                
                 rewardItemImg.classList.remove('scale-0', 'opacity-0');
                 rewardItemImg.classList.add('scale-100', 'opacity-100');
 
-                const rewardName = document.getElementById('gacha-reward-name');
                 rewardName.innerText = reward.name;
                 rewardName.classList.remove('opacity-0');
                 
-                await sleep(500);
-                document.getElementById('gacha-btn-claim').classList.remove('opacity-0', 'pointer-events-none');
-            },
+                // ตรวจสอบว่าไอเท็มที่สุ่มได้ ผู้เล่นมีแล้วหรือยัง?
+                let isDuplicate = false;
+                let checkId = reward.img || reward.driveId;
 
+                if (['frame', 'cat_frame'].includes(reward.type)) {
+                    if (appState.user.unlocked_frames && appState.user.unlocked_frames[checkId]) isDuplicate = true;
+                } else if (['cat', 'bg'].includes(reward.type)) {
+                    if (appState.user.catData && appState.user.catData.unlocked && appState.user.catData.unlocked[checkId]) isDuplicate = true;
+                }
+
+                if (isDuplicate) {
+                    // [กรณีได้ของซ้ำ] 
+                    // 1. ให้เวลาเด็กได้ดีใจดูไอเท็มแป๊บนึง (1.5 วินาที)
+                    await sleep(1500);
+
+                    // 2. เริ่ม Fade Out (ย่อรูปภาพและข้อความให้หายไป)
+                    rewardItemImg.classList.remove('scale-100');
+                    rewardItemImg.classList.add('scale-50', 'opacity-0');
+                    rewardName.classList.add('opacity-0');
+
+                    // 3. รอให้ภาพหายไปสนิท 0.5 วินาที
+                    await sleep(500);
+
+                    // 4. เปลี่ยนภาพและข้อความเป็น CatCoin
+                    rewardItemImg.src = `https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s800`; // Link รูป CC ของคุณ
+                    rewardName.innerText = '10 CatCoin (ไอเท็มซ้ำ)';
+
+                    // 5. เริ่ม Fade In (เด้งภาพ CatCoin ขึ้นมา)
+                    rewardItemImg.classList.remove('opacity-0', 'scale-50');
+                    rewardItemImg.classList.add('scale-100');
+                    rewardName.classList.remove('opacity-0');
+
+                    // 6. รอให้ภาพ CatCoin เด้งเสร็จ 0.5 วินาที
+                    await sleep(500);
+
+                    // 7. แจ้งเตือนเด้งให้ทราบ
+                    await Swal.fire({
+                        icon: 'info',
+                        title: 'คุณมีไอเท็มนี้แล้ว!',
+                        text: `ระบบได้เปลี่ยน ${reward.name} เป็น 10 CatCoin ให้โดยอัตโนมัติ 🪙`,
+                        confirmButtonColor: '#f59e0b',
+                        customClass: { popup: 'rounded-[2rem]' }
+                    });
+
+                    // 8. แอบแก้ไขตัวแปรรางวัล ให้เปลี่ยนเป็น CC เพื่อให้ฟังก์ชันกดรับ (claimGacha) เซฟเข้ากระเป๋าได้ถูกต้อง
+                    reward.type = 'currency';
+                    reward.driveId = 'cc';
+                    reward.amount = 10;
+                    reward.name = 'CatCoin';
+                    window.currentGachaReward = reward;
+
+                    // 9. แสดงปุ่มให้กดรับรางวัล
+                    claimBtn.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    // [กรณีได้ของใหม่ ไม่ซ้ำ]
+                    await sleep(500);
+                    claimBtn.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            },
             createGachaParticles() {
                 const container = document.getElementById('gacha-reveal-particles');
                 container.innerHTML = ''; // clear old
@@ -5429,8 +5497,82 @@
                 itemName.innerText = item.name + (item.amount ? ` x${item.amount}` : '');
                 itemName.classList.remove('opacity-0');
 
-                await sleep(500);
-                btnClaim.classList.remove('opacity-0', 'pointer-events-none');
+                // เรียกใช้ฟังก์ชันตรวจสอบของซ้ำตรงนี้แทนการโชว์ปุ่มรับรางวัลทันที
+                await this.playDuplicateAnimation();
+            },
+
+            async playDuplicateAnimation() {
+                const item = window.app._pendingGachaReward;
+                if (!item) return;
+
+                let isDuplicate = false;
+                const rewardImg = document.getElementById('gacha-reward-item');
+                const rewardName = document.getElementById('gacha-reward-name');
+                const claimBtn = document.getElementById('gacha-btn-claim');
+
+                // 1. เช็กว่ามีไอเทมนี้หรือยัง (เช็กเฉพาะของสวมใส่ กรอบ, แมว, พื้นหลัง)
+                if (['frame', 'cat_frame'].includes(item.type)) {
+                    if (appState.user.unlocked_frames && appState.user.unlocked_frames[item.driveId]) isDuplicate = true;
+                } else if (['cat', 'bg'].includes(item.type)) {
+                    if (appState.user.catData && appState.user.catData.unlocked && appState.user.catData.unlocked[item.driveId]) isDuplicate = true;
+                }
+
+                if (isDuplicate) {
+                    // [กรณีได้ของซ้ำ]
+                    claimBtn.classList.add('opacity-0', 'pointer-events-none'); // ซ่อนปุ่มไว้ก่อน
+                    
+                    rewardImg.classList.add('transition-all', 'duration-500', 'ease-in-out');
+                    rewardName.classList.add('transition-all', 'duration-500', 'ease-in-out');
+
+                    // รอให้เด็กๆ เห็นไอเทมแป๊บนึง (1.5 วิ)
+                    await sleep(1500);
+
+                    // Fade Out: ย่อและจางหายไป
+                    rewardImg.classList.remove('scale-100'); 
+                    rewardImg.classList.add('scale-50', 'opacity-0');
+                    rewardName.classList.add('opacity-0');
+
+                    // รอ Fade Out เสร็จ (0.5 วิ)
+                    await sleep(500);
+
+                    // เปลี่ยนรูปและชื่อเป็น CatCoin (ใช้ลิงก์จากตัวแปร CAT_ASSETS.cc ในระบบของคุณ)
+                    rewardImg.src = CAT_ASSETS.cc || 'https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s800'; 
+                    rewardName.innerText = 'เปลี่ยนเป็น 10 CC';
+
+                    // Fade In: เด้งรูปลงมาใหม่
+                    rewardImg.classList.remove('opacity-0', 'scale-50');
+                    rewardImg.classList.add('scale-70'); 
+                    rewardName.classList.remove('opacity-0');
+
+                    // รอ Fade In เสร็จ (0.5 วิ)
+                    await sleep(500);
+
+                    // โชว์แจ้งเตือน
+                    await Swal.fire({
+                        icon: 'info',
+                        title: 'อ๊ะ! คุณมีไอเท็มนี้แล้ว',
+                        text: `เปลี่ยนเป็น Catcoin 10 CC อัตโนมัติ!`,
+                        confirmButtonColor: '#f59e0b',
+                        confirmButtonText: 'รับรางวัล',
+                        customClass: { popup: 'rounded-[2rem]' }
+                    });
+
+                    // แอบเปลี่ยนข้อมูลของรางวัลให้กลายเป็น CatCoin เพื่อให้บันทึกเข้ากระเป๋าได้ถูกต้อง
+                    window.app._pendingGachaReward = {
+                        type: 'currency',
+                        driveId: 'cc',
+                        amount: 10,
+                        name: 'CatCoin'
+                    };
+
+                    // โชว์ปุ่มรับรางวัล
+                    claimBtn.classList.remove('opacity-0', 'pointer-events-none');
+
+                } else {
+                    // [กรณีได้ของใหม่] โชว์ปุ่มรับรางวัลตามปกติ
+                    await sleep(500);
+                    claimBtn.classList.remove('opacity-0', 'pointer-events-none');
+                }
             },
 
             async closeGachaAnim() {
@@ -5442,13 +5584,14 @@
                     Loader.show();
                     let updates = {};
                     
-                    // ป้องกันบั๊ก Object ว่างเปล่าสำหรับผู้ใช้ใหม่
+                    // ป้องกันบั๊ก Object ว่างเปล่า
                     if (!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
                     if (!appState.user.catData) appState.user.catData = {};
                     if (!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
                     if (!appState.user.catData.inventory) appState.user.catData.inventory = {};
                     if (!appState.user.items) appState.user.items = {};
 
+                    // บันทึกของรางวัล (ถ้าได้ของซ้ำ โค้ดจะวิ่งไปเข้าหมวด currency อัตโนมัติ เพราะเราแอบเปลี่ยน type มันไว้ในขั้นตอนที่ 1 แล้ว)
                     if (['frame', 'cat_frame'].includes(item.type)) {
                         updates[`users/${u.uid}/unlocked_frames/${item.driveId}`] = true;
                         appState.user.unlocked_frames[item.driveId] = true; 
@@ -5458,20 +5601,15 @@
                         appState.user.catData.unlocked[item.driveId] = true; 
                         
                     } else if (item.type === 'food') {
-                        // === [แก้ไขเพิ่มเติม: ค้นหา Key ของอาหารจากร้านค้า (เช่น food_1)] ===
-                        let foodKey = item.driveId; // ค่าเริ่มต้น
+                        let foodKey = item.driveId; 
                         
-                        // โหลดข้อมูลร้านค้าแมวเพื่อแปลง Drive ID กลับเป็นรหัสตาราง เช่น food_1
                         if (!window.renderStore.catShop || Object.keys(window.renderStore.catShop).length === 0) {
                             const snap = await get(ref(db, 'cat_shop'));
                             window.renderStore.catShop = snap.exists() ? snap.val() : {};
                         }
-                        
-                        // ลูปหาไอเท็มในร้านค้าที่มี Drive ID ตรงกับที่สุ่มได้
                         for (const k in window.renderStore.catShop) {
                             if (window.renderStore.catShop[k].driveId === item.driveId) {
-                                foodKey = k; 
-                                break;
+                                foodKey = k; break;
                             }
                         }
 
@@ -5479,8 +5617,7 @@
                         const finalAmt = cur + (item.amount || 1);
                         updates[`users/${u.uid}/catData/inventory/${foodKey}`] = finalAmt;
                         appState.user.catData.inventory[foodKey] = finalAmt; 
-                        // =========================================================
-
+                        
                     } else if (item.type === 'currency') {
                         if (['cc', 'cd', 'ce'].includes(item.driveId)) {
                             const cur = appState.user.catData.inventory[item.driveId] || 0;
@@ -5515,16 +5652,14 @@
                 const btnOpen = document.getElementById('gacha-btn-open');
                 btnOpen.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
 
-                // --- รีเฟรชยอดการ์ดและรีเฟรชป้ายการันตี (Pity) ในหน้าจอทันที ---
+                // รีเฟรชหน้าจอ
                 const bId = appState.activeGachaBanner;
                 if (bId) {
                     document.getElementById('gacha-view-card-count').innerText = appState.user.gacha_cards?.[bId] || 0;
-                    
                     const banner = appState.gachaBanners[bId];
                     const pity = appState.user.gacha_pity?.[bId] || 0;
                     const maxPity = banner.pity || 50;
                     const pullsLeft = maxPity - pity;
-                    
                     const pityBox = document.getElementById('gacha-pity-counter');
                     if (pityBox) {
                         if (pullsLeft > 0) {
