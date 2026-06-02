@@ -5441,22 +5441,58 @@
                 if (item && u.role === 'student') {
                     Loader.show();
                     let updates = {};
+                    
+                    // ป้องกันบั๊ก Object ว่างเปล่าสำหรับผู้ใช้ใหม่
+                    if (!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
+                    if (!appState.user.catData) appState.user.catData = {};
+                    if (!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
+                    if (!appState.user.catData.inventory) appState.user.catData.inventory = {};
+                    if (!appState.user.items) appState.user.items = {};
+
                     if (['frame', 'cat_frame'].includes(item.type)) {
                         updates[`users/${u.uid}/unlocked_frames/${item.driveId}`] = true;
-                        if(!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
-                        appState.user.unlocked_frames[item.driveId] = true;
+                        appState.user.unlocked_frames[item.driveId] = true; 
+                        
                     } else if (['cat', 'bg'].includes(item.type)) {
                         updates[`users/${u.uid}/catData/unlocked/${item.driveId}`] = true;
-                        if(appState.user.catData) {
-                            if(!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
-                            appState.user.catData.unlocked[item.driveId] = true;
-                        }
+                        appState.user.catData.unlocked[item.driveId] = true; 
+                        
                     } else if (item.type === 'food') {
-                        const cur = appState.user.catData?.inventory?.[item.driveId] || 0;
-                        updates[`users/${u.uid}/catData/inventory/${item.driveId}`] = cur + item.amount;
+                        // === [แก้ไขเพิ่มเติม: ค้นหา Key ของอาหารจากร้านค้า (เช่น food_1)] ===
+                        let foodKey = item.driveId; // ค่าเริ่มต้น
+                        
+                        // โหลดข้อมูลร้านค้าแมวเพื่อแปลง Drive ID กลับเป็นรหัสตาราง เช่น food_1
+                        if (!window.renderStore.catShop || Object.keys(window.renderStore.catShop).length === 0) {
+                            const snap = await get(ref(db, 'cat_shop'));
+                            window.renderStore.catShop = snap.exists() ? snap.val() : {};
+                        }
+                        
+                        // ลูปหาไอเท็มในร้านค้าที่มี Drive ID ตรงกับที่สุ่มได้
+                        for (const k in window.renderStore.catShop) {
+                            if (window.renderStore.catShop[k].driveId === item.driveId) {
+                                foodKey = k; 
+                                break;
+                            }
+                        }
+
+                        const cur = appState.user.catData.inventory[foodKey] || 0;
+                        const finalAmt = cur + (item.amount || 1);
+                        updates[`users/${u.uid}/catData/inventory/${foodKey}`] = finalAmt;
+                        appState.user.catData.inventory[foodKey] = finalAmt; 
+                        // =========================================================
+
                     } else if (item.type === 'currency') {
-                        const cur = appState.user.items?.[item.driveId] || 0;
-                        updates[`users/${u.uid}/items/${item.driveId}`] = cur + item.amount;
+                        if (['cc', 'cd', 'ce'].includes(item.driveId)) {
+                            const cur = appState.user.catData.inventory[item.driveId] || 0;
+                            const finalAmt = cur + (item.amount || 1);
+                            updates[`users/${u.uid}/catData/inventory/${item.driveId}`] = finalAmt;
+                            appState.user.catData.inventory[item.driveId] = finalAmt; 
+                        } else {
+                            const cur = appState.user.items[item.driveId] || 0;
+                            const finalAmt = cur + (item.amount || 1);
+                            updates[`users/${u.uid}/items/${item.driveId}`] = finalAmt;
+                            appState.user.items[item.driveId] = finalAmt; 
+                        }
                     }
                     
                     await update(ref(db), updates);
