@@ -956,7 +956,8 @@
                         <div class="shrink-0 mt-6 sm:mt-8 px-4 sm:px-5">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                                 <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
-                                    <i class="fa-solid fa-trophy text-yellow-500 animate-bounce"></i> ทำเนียบอันดับนักเรียน
+                                    <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s800" class="w-9 h-9 object-contain" alt="Leaderboard">
+                                    ทำเนียบอันดับนักเรียน
                                 </h3>
                                 <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold self-start sm:self-auto shadow-inner">
                                     <button onclick="app.changeRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${appState.rankingCriteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
@@ -2725,7 +2726,7 @@
                                 <span id="gacha-main-ticket" class="text-dark font-extrabold">${(u.items?.ticket || 0).toLocaleString()}</span>
                             </div>
 
-                            <div class="w-full h-48 sm:h-64 bg-cover bg-center shadow-md relative shrink-0" style="background-image: url('${mainBanner}');">
+                            <div class="w-full h-44 bg-cover bg-center shadow-md relative shrink-0" style="background-image: url('${mainBanner}');">
                                 <div class="absolute"></div>
                             </div>
 
