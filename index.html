@@ -385,11 +385,16 @@
         };
 
         const CAT_RANKS = [
-            { min: 24, name: 'Superior', img: '1LNec3aTa_98wv2qid9_NyBneu1vZs64p' },
-            { min: 19, name: 'Supreme', img: '11fUatPIERxaZop85r3c2IQ1AtgSHeTQa' },
-            { min: 14, name: 'Diamond', img: '1INsDntnkVgc7R3IFGoHgWnfvZ7iUgA9p' },
-            { min: 9, name: 'Gold', img: '1FaAk1rPB6qbWIWzQMyoevsMlNS6UZfIL' },
-            { min: 5, name: 'Amethyst', img: '1RfHv1-UdoRMh975etewQZemIkd_tnvCJ' },
+            { min: 50, name: 'Superior', img: '1oUm-GY3M5f9gdFQ62KZkDxDfJo66fvCG' },
+            { min: 46, name: 'Emperor', img: '1fg9BxYenut4r-HTHB3ps68cXpps_Ml9q' },
+            { min: 40, name: 'Master-Gold', img: '1zAgHJhmzBL0Hl4N5pxGUTJWwMEhaUeIy' },
+            { min: 36, name: 'Alpha-Crimson', img: '11fUatPIERxaZop85r3c2IQ1AtgSHeTQa' },
+            { min: 30, name: 'Diamond-SS+', img: '1ldQ6QYJONHyYr_C2ogqzMsOXHWYfezZd' },
+            { min: 24, name: 'Diamond-S', img: '1INsDntnkVgc7R3IFGoHgWnfvZ7iUgA9p' },
+            { min: 19, name: 'Gold-SS+', img: '1FaAk1rPB6qbWIWzQMyoevsMlNS6UZfIL' },
+            { min: 14, name: 'Gold-S', img: '1xR_QNtBxQGJJ2cXbMpyCQzfkR8VOThAv' },
+            { min: 9, name: 'Amethyst', img: '1RfHv1-UdoRMh975etewQZemIkd_tnvCJ' },
+            { min: 5, name: 'Silver-SS+', img: '1C9Ihg3nHs_1rJf3b3Mp9uOflyvigHFCY' },
             { min: 0, name: 'Silver', img: '1tZRrizfjjg7mUJbRM0d92cLHvLbNcP-D' }
         ];
         const getCatRank = (level) => {
@@ -1675,7 +1680,7 @@
                                                 <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s800" class="w-20 h-20 sm:w-24 sm:h-24 object-contain animate-bounce-slow drop-shadow-lg">
                                                 <div class="flex-1 min-w-0 flex flex-col justify-center">
                                                     <div class="flex items-center gap-1.5 mb-0.5">
-                                                        <img src="${catRank.image}" class="h-4 sm:h-5 object-contain">
+                                                        <img src="${catRank.image}" class="h-8 sm:h-8 object-contain">
                                                         <h4 class="font-extrabold text-white text-sm sm:text-base drop-shadow-md truncate">${catName}</h4>
                                                     </div>
                                                     <span class="text-[9px] sm:text-[10px] font-bold text-white/90 uppercase tracking-widest drop-shadow mb-2">Lv. ${catLevel} • ${catRank.name}</span>
@@ -4153,7 +4158,7 @@
                         <!-- Cat Name & Rank Overlay -->
                         <div class="mt-4 flex flex-col items-center bg-black/30 backdrop-blur-sm px-6 py-2 rounded-[2rem] border border-white/20">
                             <div class="flex items-center gap-2">
-                                <img src="${rank.image}" class="h-6 w-auto object-contain drop-shadow">
+                                <img src="${rank.image}" class="h-10 w-auto object-contain drop-shadow">
                                 <h2 class="text-xl font-extrabold text-white tracking-wide drop-shadow-md">${catData.name}</h2>
                             </div>
                             <span class="text-xs text-white/80 font-bold mt-0.5 tracking-widest">Lv. ${catData.level} ${rank.name}</span>
