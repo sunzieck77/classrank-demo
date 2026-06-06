@@ -4899,12 +4899,27 @@
                     } else if (category === 'food') {
                         const mailSnap = await get(ref(db, `mailbox/${uid}/${mailId}`));
                         const amount = mailSnap.exists() ? mailSnap.val().amount : 1;
-                        const cur = appState.user.catData?.inventory?.[driveId] || 0;
-                        updates[`users/${uid}/catData/inventory/${driveId}`] = cur + amount;
-                        if(appState.user.catData) {
-                            if(!appState.user.catData.inventory) appState.user.catData.inventory = {};
-                            appState.user.catData.inventory[driveId] = cur + amount;
+                        
+                        // 1. ค้นหา Shop Key (เช่น food_1) จาก Drive ID 
+                        let foodKey = driveId; 
+                        if (!window.renderStore.catShop || Object.keys(window.renderStore.catShop).length === 0) {
+                            const snap = await get(ref(db, 'cat_shop'));
+                            window.renderStore.catShop = snap.exists() ? snap.val() : {};
                         }
+                        for (const k in window.renderStore.catShop) {
+                            if (window.renderStore.catShop[k].driveId === driveId) {
+                                foodKey = k; 
+                                break;
+                            }
+                        }
+
+                        // 2. บันทึกข้อมูลด้วย foodKey แทน driveId
+                        const cur = appState.user.catData?.inventory?.[foodKey] || 0;
+                        updates[`users/${uid}/catData/inventory/${foodKey}`] = cur + amount;
+                        
+                        if(!appState.user.catData) appState.user.catData = {};
+                        if(!appState.user.catData.inventory) appState.user.catData.inventory = {};
+                        appState.user.catData.inventory[foodKey] = cur + amount;
                     }
 
                     // ลบจดหมายทิ้ง
