@@ -4188,7 +4188,24 @@
                     window.renderStore.catShop = allItems;
 
                     const cat = appState.catShopCategory || 'cat';
-                    const filteredItems = Object.entries(allItems).filter(([k, v]) => v.type === cat);
+                    
+                    // เพิ่มการเรียงลำดับ (Sort) ตรงนี้ครับ
+                    const filteredItems = Object.entries(allItems)
+                        .filter(([k, v]) => v.type === cat)
+                        .sort((a, b) => {
+                            const itemA = a[1];
+                            const itemB = b[1];
+
+                            // ดัน Limited ไปไว้ล่างสุด (หมวดอาหารไม่มี Limited)
+                            const isLimitedA = itemA.isLimited && itemA.type !== 'food';
+                            const isLimitedB = itemB.isLimited && itemB.type !== 'food';
+
+                            if (isLimitedA && !isLimitedB) return 1;
+                            if (!isLimitedA && isLimitedB) return -1;
+
+                            // เรียงราคาจากน้อยไปมาก
+                            return (itemA.price || 0) - (itemB.price || 0);
+                        });
 
                     let gridHtml = '';
                     if (filteredItems.length === 0) {
@@ -4216,6 +4233,9 @@
                             let buyBtn = '';
                             if (isOwned) {
                                 buyBtn = `<button disabled class="w-full mt-auto bg-gray-500 text-gray-300 text-[10px] py-1.5 rounded-lg font-bold shadow-sm cursor-not-allowed border border-gray-400/50"><i class="fa-solid fa-check-circle"></i> มีแล้ว</button>`;
+                            } else if (val.isLimited && val.type !== 'food') {
+                                // ปุ่มปิดใช้งานสำหรับ Limited
+                                buyBtn = `<button disabled class="w-full mt-auto bg-gray-700 text-gray-400 text-[10px] py-1.5 rounded-lg font-bold shadow-sm cursor-not-allowed"><i class="fa-solid fa-lock"></i> ยังไม่เปิดขาย</button>`;
                             } else {
                                 buyBtn = `<button onclick="app.buyCatShopItem('${key}')" class="w-full mt-auto bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[10px] py-1.5 rounded-lg font-bold shadow-sm active:scale-95 flex items-center justify-center gap-1"><img src="${ITEM_IMAGES.sc}" class="w-3 h-3"> ${(val.price || 0).toLocaleString()}</button>`;
                             }
@@ -4451,6 +4471,11 @@
                 const u = appState.user; 
                 const item = window.renderStore.catShop[key];
                 if (!item || !u) return;
+
+                // เช็คว่าเป็นไอเทม Limited หรือไม่
+                if (item.isLimited && item.type !== 'food') {
+                    return Swal.fire({ icon: 'warning', title: 'ยังไม่เปิดขาย', text: 'ไอเทมชิ้นนี้เป็นไอเทม Limited ยังไม่เปิดให้แลกในขณะนี้', customClass:{popup:'rounded-3xl'} });
+                }
 
                 const price = item.price || 0; 
                 const sc = (u.items && u.items.sc) || 0;
@@ -4718,7 +4743,7 @@
                     title: '<span style="font-family: \'Kanit\';">เพิ่มไอเทมแมว</span>',
                     html: `
                         <div class="text-left font-sans text-xs space-y-3 mt-3">
-                            <select id="cat-sh-type" class="w-full p-2 border rounded-lg bg-gray-50" onchange="document.getElementById('type-specific').innerHTML = this.value === 'food' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความหิว (%)</label><input type=\\'number\\' id=\\'c-hunger\\' class=\\'w-full p-2 border rounded-lg mb-2\\' value=\\'30\\'><label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความสุข (%)</label><input type=\\'number\\' id=\\'c-happy\\' class=\\'w-full p-2 border rounded-lg\\' value=\\'15\\'>' : (this.value === 'cat' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>ระดับ</label><select id=\\'c-cat\\' class=\\'w-full p-2 border rounded-lg\\'><option value=\\'Rare\\'>Rare</option><option value=\\'Legend\\'>Legend</option><option value=\\'Limited\\'>Limited</option><option value=\\'Mythic\\'>Mythic</option></select>' : '')">
+                            <select id="cat-sh-type" class="w-full p-2 border rounded-lg bg-gray-50" onchange="document.getElementById('type-specific').innerHTML = this.value === 'food' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความหิว (%)</label><input type=\\'number\\' id=\\'c-hunger\\' class=\\'w-full p-2 border rounded-lg mb-2\\' value=\\'30\\'><label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความสุข (%)</label><input type=\\'number\\' id=\\'c-happy\\' class=\\'w-full p-2 border rounded-lg\\' value=\\'15\\'>' : (this.value === 'cat' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>ระดับ</label><select id=\\'c-cat\\' class=\\'w-full p-2 border rounded-lg\\'><option value=\\'Rare\\'>Rare</option><option value=\\'Legend\\'>Legend</option><option value=\\'Limited\\'>Limited</option><option value=\\'Mythic\\'>Mythic</option></select>' : ''); document.getElementById('c-limited-container').style.display = this.value === 'food' ? 'none' : 'flex';">
                                 <option value="cat">สัตว์เลี้ยงแมว</option>
                                 <option value="food">อาหารแมว</option>
                                 <option value="cat_frame">กรอบโปรไฟล์</option>
@@ -4728,6 +4753,10 @@
                             <div><label class="block text-gray-500 mb-1 font-bold">Drive Link</label><input type="text" id="cat-sh-drive" class="w-full p-2 border rounded-lg"></div>
                             <div><label class="block text-gray-500 mb-1 font-bold">ราคา (SC)</label><input type="number" id="cat-sh-price" class="w-full p-2 border rounded-lg" value="10000"></div>
                             <div id="type-specific" class="pt-2 border-t border-gray-100"><label class='block text-gray-500 mb-1 font-bold'>ระดับ</label><select id='c-cat' class='w-full p-2 border rounded-lg'><option value='Rare'>Rare</option><option value='Legend'>Legend</option><option value='Limited'>Limited</option><option value='Mythic'>Mythic</option></select></div>
+                            <div class="flex items-center gap-2 pt-2 border-t border-gray-100" id="c-limited-container">
+                                <input type="checkbox" id="c-limited" class="w-4 h-4 accent-primary">
+                                <label for="c-limited" class="font-bold text-gray-600">ตั้งค่าเป็น Limited (ยังไม่เปิดขาย)</label>
+                            </div>
                         </div>
                     `,
                     showCancelButton: true, confirmButtonText: 'บันทึก', confirmButtonColor: '#27D6F5', customClass: {popup: 'rounded-3xl'},
@@ -4736,11 +4765,13 @@
                         const name = document.getElementById('cat-sh-name').value;
                         const driveId = extractDriveId(document.getElementById('cat-sh-drive').value);
                         const price = parseInt(document.getElementById('cat-sh-price').value) || 0;
+                        const isLimited = document.getElementById('c-limited') ? document.getElementById('c-limited').checked : false;
+
                         if (!name || !driveId) { Swal.showValidationMessage('กรอกข้อมูลให้ครบ'); return false; }
                         let extra = {};
                         if(type === 'food') { extra.hunger = parseInt(document.getElementById('c-hunger').value) || 0; extra.happy = parseInt(document.getElementById('c-happy').value) || 0; }
                         if(type === 'cat') { extra.category = document.getElementById('c-cat').value; }
-                        return { type, name, driveId, price, ...extra };
+                        return { type, name, driveId, price, isLimited, ...extra };
                     }
                 });
 
@@ -4759,7 +4790,7 @@
                     title: '<span style="font-family: \'Kanit\';">แก้ไขไอเทมแมว</span>',
                     html: `
                         <div class="text-left font-sans text-xs space-y-3 mt-3 overflow-y-auto no-scrollbar max-h-[50vh]">
-                            <select id="cat-sh-type" class="w-full p-2 border rounded-lg bg-gray-50" onchange="document.getElementById('type-specific').innerHTML = this.value === 'food' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความหิว (%)</label><input type=\\'number\\' id=\\'c-hunger\\' class=\\'w-full p-2 border rounded-lg mb-2\\' value=\\'${item.hunger||30}\\'><label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความสุข (%)</label><input type=\\'number\\' id=\\'c-happy\\' class=\\'w-full p-2 border rounded-lg\\' value=\\'${item.happy||15}\\'>' : (this.value === 'cat' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>ระดับ</label><select id=\\'c-cat\\' class=\\'w-full p-2 border rounded-lg\\'><option value=\\'Rare\\' ${item.category==='Rare'?'selected':''}>Rare</option><option value=\\'Legend\\' ${item.category==='Legend'?'selected':''}>Legend</option><option value=\\'Limited\\' ${item.category==='Limited'?'selected':''}>Limited</option><option value=\\'Mythic\\' ${item.category==='Mythic'?'selected':''}>Mythic</option></select>' : '')">
+                            <select id="cat-sh-type" class="w-full p-2 border rounded-lg bg-gray-50" onchange="document.getElementById('type-specific').innerHTML = this.value === 'food' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความหิว (%)</label><input type=\\'number\\' id=\\'c-hunger\\' class=\\'w-full p-2 border rounded-lg mb-2\\' value=\\'${item.hunger||30}\\'><label class=\\'block text-gray-500 mb-1 font-bold\\'>เพิ่มความสุข (%)</label><input type=\\'number\\' id=\\'c-happy\\' class=\\'w-full p-2 border rounded-lg\\' value=\\'${item.happy||15}\\'>' : (this.value === 'cat' ? '<label class=\\'block text-gray-500 mb-1 font-bold\\'>ระดับ</label><select id=\\'c-cat\\' class=\\'w-full p-2 border rounded-lg\\'><option value=\\'Rare\\' ${item.category==='Rare'?'selected':''}>Rare</option><option value=\\'Legend\\' ${item.category==='Legend'?'selected':''}>Legend</option><option value=\\'Limited\\' ${item.category==='Limited'?'selected':''}>Limited</option><option value=\\'Mythic\\' ${item.category==='Mythic'?'selected':''}>Mythic</option></select>' : ''); document.getElementById('c-limited-container').style.display = this.value === 'food' ? 'none' : 'flex';">
                                 <option value="cat" ${item.type === 'cat' ? 'selected' : ''}>สัตว์เลี้ยงแมว</option>
                                 <option value="food" ${item.type === 'food' ? 'selected' : ''}>อาหารแมว</option>
                                 <option value="bg" ${item.type === 'bg' ? 'selected' : ''}>พื้นหลังห้อง</option>
@@ -4771,6 +4802,10 @@
                             <div id="type-specific" class="pt-2 border-t border-gray-100">
                                 ${item.type === 'food' ? `<label class='block text-gray-500 mb-1 font-bold'>เพิ่มความหิว (%)</label><input type='number' id='c-hunger' class='w-full p-2 border rounded-lg mb-2' value='${item.hunger}'><label class='block text-gray-500 mb-1 font-bold'>เพิ่มความสุข (%)</label><input type='number' id='c-happy' class='w-full p-2 border rounded-lg' value='${item.happy}'>` : (item.type === 'cat' ? `<label class='block text-gray-500 mb-1 font-bold'>ระดับ</label><select id='c-cat' class='w-full p-2 border rounded-lg'><option value='Rare' ${item.category==='Rare'?'selected':''}>Rare</option><option value='Legend' ${item.category==='Legend'?'selected':''}>Legend</option><option value='Limited' ${item.category==='Limited'?'selected':''}>Limited</option><option value='Mythic' ${item.category==='Mythic'?'selected':''}>Mythic</option></select>` : '')}
                             </div>
+                            <div class="flex items-center gap-2 pt-2 border-t border-gray-100" id="c-limited-container" style="display: ${item.type === 'food' ? 'none' : 'flex'};">
+                                <input type="checkbox" id="c-limited" class="w-4 h-4 accent-primary" ${item.isLimited ? 'checked' : ''}>
+                                <label for="c-limited" class="font-bold text-gray-600">ตั้งค่าเป็น Limited (ยังไม่เปิดขาย)</label>
+                            </div>
                         </div>
                     `,
                     showCancelButton: true, confirmButtonText: 'บันทึก', confirmButtonColor: '#27D6F5', customClass: {popup: 'rounded-3xl'},
@@ -4779,6 +4814,8 @@
                         const name = document.getElementById('cat-sh-name').value;
                         const driveId = extractDriveId(document.getElementById('cat-sh-drive').value);
                         const price = parseInt(document.getElementById('cat-sh-price').value) || 0;
+                        const isLimited = document.getElementById('c-limited') ? document.getElementById('c-limited').checked : false;
+
                         if (!name || !driveId) { Swal.showValidationMessage('กรอกข้อมูลให้ครบ'); return false; }
                         
                         let extra = {};
@@ -4787,7 +4824,7 @@
                             extra.happy = parseInt(document.getElementById('c-happy').value) || 0;
                         }
                         if(type === 'cat') { extra.category = document.getElementById('c-cat').value; }
-                        return { type, name, driveId, price, ...extra };
+                        return { type, name, driveId, price, isLimited, ...extra };
                     }
                 });
 
