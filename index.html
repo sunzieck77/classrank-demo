@@ -392,7 +392,7 @@
             { min: 30, name: 'Diamond-SS+', img: '1ldQ6QYJONHyYr_C2ogqzMsOXHWYfezZd' },
             { min: 24, name: 'Diamond-S', img: '1INsDntnkVgc7R3IFGoHgWnfvZ7iUgA9p' },
             { min: 19, name: 'Gold-SS+', img: '1FaAk1rPB6qbWIWzQMyoevsMlNS6UZfIL' },
-            { min: 14, name: 'Gold-S', img: '1xR_QNtBxQGJJ2cXbMpyCQzfkR8VOThAv' },
+            { min: 14, name: 'Gold-S', img: '1XAIiosEdKaI62wXIni7cIFeyIN47cw55' },
             { min: 9, name: 'Amethyst', img: '1RfHv1-UdoRMh975etewQZemIkd_tnvCJ' },
             { min: 5, name: 'Silver-SS+', img: '1C9Ihg3nHs_1rJf3b3Mp9uOflyvigHFCY' },
             { min: 0, name: 'Silver', img: '1tZRrizfjjg7mUJbRM0d92cLHvLbNcP-D' }
@@ -445,17 +445,17 @@
 
         // เพิ่มตัวแปรนี้เข้าไป เพื่อผูกรูปภาพการ์ดกับ Rarity
         const RARITY_CARD_BGS = {
-            'A': '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj',     // พื้นหลังระดับธรรมดา (50)
-            'A+': '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC',    // พื้นหลังระดับดี (75)
+            'A': '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj',    
+            'A+': '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC',    
             'A++': '1vHJovbh3RQP5FWLiF5p_AFyjU_uncAgC',   
-            'S': '1UKC0Joe_aPJJOirjYtIt7kexhl6lO4WE',     // พื้นหลังระดับกลาง (100)
+            'S': '1UKC0Joe_aPJJOirjYtIt7kexhl6lO4WE',     
             'S+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',    // พื้นหลังระดับกลาง (100)
             'S++': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',   // พื้นหลังระดับสูง (150)
             'SS': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
             'SS+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',   // พื้นหลังระดับแรร์ (200 - Ticket)
-            'SS++': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
-            'SSS': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf',
-            'SSS+': '15GuOqerS0BFqjfQnyPKV3ozGkGo07SZf'
+            'SS++': '1vjdWARU9TsIJiUINj_qVp3b7nZAyRxD4',
+            'SSS': '1vjdWARU9TsIJiUINj_qVp3b7nZAyRxD4',
+            'SSS+': '1vjdWARU9TsIJiUINj_qVp3b7nZAyRxD4'
         };
 
             
@@ -5367,11 +5367,34 @@
                     if (cards < 1) {
                         const tickets = u.items?.ticket || 0;
                         if (tickets < 1) return Swal.fire({icon:'warning', title:'ไม่มีการ์ดและตั๋ว', text:`คุณต้องใช้ ${banner.cardName} 1 ใบในการสุ่ม หรือตั๋ว 1 ใบเพื่อแลก`, customClass:{popup:'rounded-3xl'}});
-                        
-                        const res = await Swal.fire({
-                            title: `แลกการ์ดสุ่ม?`, 
-                            text: `1 Ticket แลก ${banner.cardName} ได้ ${banner.ticketRate} ใบ`,
-                            showCancelButton: true, confirmButtonText: 'แลกเปลี่ยน', cancelButtonText: 'ยกเลิก', customClass:{popup:'rounded-3xl'}, confirmButtonColor: '#27D6F5'
+                            
+                            const cardImgUrl = banner.cardImage.includes('http') ? banner.cardImage : `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s800`;
+                            
+                            const res = await Swal.fire({
+                                title: `<span style="font-family: 'Kanit'; font-weight: bold; color: #1f2937;">แลกการ์ดสุ่ม?</span>`, 
+                                html: `
+                                    <div class="flex items-center justify-center gap-8 my-6">
+                                        <div class="flex flex-col items-center">
+                                            <img src="${ITEM_IMAGES.ticket}" class="w-16 h-16 object-contain hover:scale-110 transition-transform">
+                                            <span class="text-sm font-bold text-gray-600 mt-3">1 Ticket</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-center text-primary mb-7">
+                                            <i class="fa-solid fa-arrow-right text-3xl animate-pulse"></i>
+                                        </div>
+                                        
+                                        <div class="flex flex-col items-center">
+                                            <img src="${cardImgUrl}" class="w-16 h-16 object-contain hover:scale-110 transition-transform">
+                                            <span class="text-sm font-bold text-indigo-600 mt-3">x${banner.ticketRate} ${banner.cardName}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-400 font-medium">*1 Ticket เพื่อแลกรับไอเท็มนี้</p>
+                                `,
+                                showCancelButton: true, 
+                                confirmButtonText: 'แลกเปลี่ยน', 
+                                cancelButtonText: 'ยกเลิก', 
+                                customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl font-bold py-2.5 px-6', cancelButton: 'rounded-xl font-bold py-2.5 px-6' }, 
+                                confirmButtonColor: '#27D6F5'
                         });
                         
                         if (res.isConfirmed) {
