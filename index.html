@@ -18,7 +18,7 @@
     <link rel="icon" type="image/x-icon" href="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;6   00;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- Tailwind Configuration -->
     <script>
@@ -75,18 +75,18 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-nav {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95); /* เพิ่มความทึบนิดหน่อย */
+            backdrop-filter: blur(4px); /* ลดความเบลอลงเหลือ 4px หรือเอาออกเลยก็ได้ */
             border-top: 1px solid #f3f4f6;
         }
 
         .item-card-shadow { box-shadow: 0 4px 15px -3px rgba(39, 214, 245, 0.2); }
 
         @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            50% { transform: translate3d(0, -6px, 0); }
         }
-        .animate-bounce-slow { animation: floatSlow 3.5s ease-in-out infinite; }
+        .animate-bounce-slow { animation: floatSlow 3.5s ease-in-out infinite; will-change: transform;}
 
         @keyframes shimmer {
             0% { background-position: -1000px 0; }
@@ -121,6 +121,7 @@
             pointer-events: none;
             z-index: 0;
             animation: bubbleFloat 15s linear infinite;
+            will-change: transform, opacity;
         }
 
         /* AAA Gacha Animation Styles */
@@ -215,8 +216,41 @@
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+        /* CSS สำหรับ Loading Dot 3 จุด */
+    .loader {
+      width: 60px;
+      aspect-ratio: 2;
+      --_g: no-repeat radial-gradient(circle closest-side, #ff9fd7 90%, #0000);
+      --_h: no-repeat radial-gradient(circle closest-side, #ffee00 90%, #0000);
+      --_j: no-repeat radial-gradient(circle closest-side, #00fbff 90%, #0000);
+      background: 
+        var(--_g) 0%   50%,
+        var(--_h) 50%  50%,
+        var(--_j) 100% 50%;
+      background-size: calc(100%/4) 50%;
+      animation: l3 1s infinite linear;
+    }
+    @keyframes l3 {
+        20% {background-position: 0%   0%, 50%  50%, 100%  50%}
+        40% {background-position: 0% 100%, 50%   0%, 100%  50%}
+        60% {background-position: 0%  50%, 50% 100%, 100%   0%}
+        80% {background-position: 0%  50%, 50%  50%, 100% 100%}
+    }
+    #login-view {
+        background: url(https://images4.alphacoders.com/114/thumb-1920-1145051.png);
+        background-size: cover;
+        background-position: center;
+        background-blend-mode: color-dodge;
+    }
     </style>
 </head>
+<div id="loading-screen" class=" fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background-color: #fff7d7;">
+    <div class="flex flex-col items-center gap-4">
+        <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1781162895/logo_b5vteb.ico" class="w-16 h-16 animate-bounce" alt="Cat Room Logo">
+        <div class="loader "></div>
+    </div>
+</div>
+
 <body class="text-gray-800 antialiased">
 
     <div id="app-container">
@@ -238,7 +272,7 @@
             </div>
 
             <div class="top-[2rem] relative z-10 -mt-8 flex justify-center w-full max-w-xl">
-                <img src="https://drive.google.com/thumbnail?id=12j1Jro0Z8dp211IQ66raJHRkrJ9HP0cb&sz=s800" class="w-full h-auto object-contain" alt="Cat Room Banner" onerror="this.onerror=null; this.src='https://placehold.co/800x400/27D6F5/ffffff?text=Cat+Room'">
+                <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1781162895/Login_CATROOM_Cover_fr6en5.png" class="w-full h-auto object-contain" alt="Cat Room Banner" onerror="this.onerror=null; this.src='https://placehold.co/800x400/27D6F5/ffffff?text=Cat+Room'">
             </div>
 
             <div class="w-full shrink-0 max-w-xl bg-white rounded-[2.5rem] shadow-xl flex flex-col relative z-10 transition-all duration-300 pb-2 -mt-8">
@@ -267,7 +301,7 @@
             <header id="main-header" class="shrink-0 bg-white px-5 py-2 flex items-center justify-between z-20">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-white overflow-hidden border border-gray-100">
-                        <img src="https://drive.google.com/thumbnail?id=1nu-1oVJYoYUWE0s4ItmknnoirCzPh3Lv&sz=s800" class="w-[90%] h-[90%] object-contain" alt="Cat Room Logo">
+                        <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1781162895/logo_uatqpc.png" class="w-[90%] h-[90%] object-contain" alt="Cat Room Logo">
                     </div>
                     <h2 id="header-title" class="text-lg font-bold text-dark">หน้าหลัก</h2>
                 </div>
@@ -342,16 +376,16 @@
 
         // Constants & Assets
         const ITEM_IMAGES = {
-            cs: 'https://drive.google.com/thumbnail?id=1uW6iQ82drZGx9Q_V2Ng2mF82yP97BN6V&sz=s800',
-            ct: 'https://lh3.googleusercontent.com/d/1R8J1RNHqbTJkVBIA-Qwzvr6pW8QFdy09=s800',
-            ticket: 'https://lh3.googleusercontent.com/d/1IA9uz5F0K3P-ZzWUy-VCxgG8j8JlVYCl=s800',
-            sc: 'https://lh3.googleusercontent.com/d/15wB6zP1ohPfhzTikD9pElwvwAE8SiB8S=s800'
+            cs: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159759/thumbnail_gvejaf.png',
+            ct: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159800/1R8J1RNHqbTJkVBIA-Qwzvr6pW8QFdy09_s400_wwtfzk.png',
+            ticket: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159821/1IA9uz5F0K3P-ZzWUy-VCxgG8j8JlVYCl_s800_sgmydi.png',
+            sc: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159829/15wB6zP1ohPfhzTikD9pElwvwAE8SiB8S_s400_shtwq0.png'
         };
 
         const CAT_ASSETS = {
-            cc: 'https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s800',
-            cd: 'https://drive.google.com/thumbnail?id=1tb2ZCng1T1vXxYRekv0qA8orrRSgbWyo&sz=s800',
-            ce: 'https://drive.google.com/thumbnail?id=1hDpNpe2mApJWP1Vqxw8NNEra1hBbDm10&sz=s800',
+            cc: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166138/CatCoin_u6g2gd.png',
+            cd: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166137/Cat_Diamond_v2zfuu.png',
+            ce: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166138/Cat_Emerald_epfonf.png',
             starterCat: '1j0cmSK2e7xXzncXwvYVG19X_klNdX5oN',
             starterBg: '1asEdGRj5OtQKyosw9wvflum81ZllefKI'
         };
@@ -359,33 +393,33 @@
         
 
         const RANK_DATA = [
-            { name: 'SSS+++ Rank', min: 1500, label: '1500+', imgId: '1-0GijSb1x0t4DKEg56VxvQv4X_rgr9C_' },
-            { name: 'SSS++ Rank', min: 1400, label: '1400 - 1499', imgId: '1dfMItADZXCDi65nAc5v9JLw0SYOcdmAH' },
-            { name: 'SSS+ Rank', min: 1300, label: '1300 - 1399', imgId: '1SiJcMuJwnNwQXEwDqCgoXt7Bgjd1Fh5C' },
-            { name: 'SSS Rank', min: 1200, label: '1200 - 1299', imgId: '1Ke0TaApKo8ppL5CS93VLD80pObHICiL-' },
-            { name: 'SS+++ Rank', min: 1100, label: '1100 - 1199', imgId: '1M66m5IPBiXta0q5VagBa02mrO7VOzWlF' },
-            { name: 'SS++ Rank', min: 1000, label: '1000 - 1099', imgId: '14dLjebudnwTYwUfz2rs5nDBFZRPLNvpm' },
-            { name: 'SS+ Rank', min: 900, label: '900 - 999', imgId: '1wXpb5pVfslP1DFYCKFL6xGkx3iNAdIVI' },
-            { name: 'SS Rank', min: 800, label: '800 - 899', imgId: '1qwtOvJS6jN_lCk6XW6T-nWz6xfRuqIAX' },
-            { name: 'S+++ Rank', min: 700, label: '700 - 799', imgId: '18IJnRuuX1R7E48Nxf3bHDRRnOAa-i8rJ' },
-            { name: 'S++ Rank', min: 600, label: '600 - 699', imgId: '1uefw2YdmKmFwAezSooN48fVtoNrqHxve' },
-            { name: 'S+ Rank', min: 500, label: '500 - 599', imgId: '1z8Jp7yOkyZw7VwkPyLBYTS_OYZe38FRi' },
-            { name: 'S Rank', min: 400, label: '400 - 499', imgId: '1_Dx9FJDQD03AcwiNMB4OcqX4Npbka3vl' },
-            { name: 'A+++ Rank', min: 300, label: '300 - 399', imgId: '10nJDG3wc9FRJl8dZ7Hv0Hnfn8fH3VA62' },
-            { name: 'A++ Rank', min: 200, label: '200 - 299', imgId: '1Weiemu6aaTrtyuwq3Pm_NZWovtjtr4gS' },
-            { name: 'A+ Rank', min: 100, label: '100 - 199', imgId: '1tDL9BbapyPUKttBUHzz6iVwJax-YOdwy' },
-            { name: 'A Rank', min: 0, label: '0 - 99', imgId: '1AQ1vWexU-sQ49OiNxVYKSDkzO1cSNh9l' }
+            { name: 'Celestial', min: 1500, label: '1500+', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166647/SSS_m7awzp.png' },
+            { name: 'SSS++ Rank', min: 1400, label: '1400 - 1499', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166648/SSS_o7amum.png' },
+            { name: 'SSS+ Rank', min: 1300, label: '1300 - 1399', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166648/SSS_nzhjcn.png' },
+            { name: 'SSS Rank', min: 1200, label: '1200 - 1299', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166649/SSS_vuzcqd.png' },
+            { name: 'SS+++ Rank', min: 1100, label: '1100 - 1199', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166646/SS_m1rmfr.png' },
+            { name: 'SS++ Rank', min: 1000, label: '1000 - 1099', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166646/SS_t5w0ku.png' },
+            { name: 'SS+ Rank', min: 900, label: '900 - 999', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166646/SS_e7aq3l.png' },
+            { name: 'SS Rank', min: 800, label: '800 - 899', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166646/SS_iqfuh0.png' },
+            { name: 'S+++ Rank', min: 700, label: '700 - 799', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166645/S_bgubcu.png' },
+            { name: 'S++ Rank', min: 600, label: '600 - 699', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166644/S_jznf6r.png' },
+            { name: 'S+ Rank', min: 500, label: '500 - 599', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166645/S_z5yd0y.png' },
+            { name: 'S Rank', min: 400, label: '400 - 499', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166646/S_rzsxhm.png' },
+            { name: 'A+++ Rank', min: 300, label: '300 - 399', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166645/A_c5txor.png' },
+            { name: 'A++ Rank', min: 200, label: '200 - 299', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166644/A_dge6cu.png' },
+            { name: 'A+ Rank', min: 100, label: '100 - 199', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166644/A_lcgbdv.png' },
+            { name: 'A Rank', min: 0, label: '0 - 99', imgId: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166644/A_ir17yp.png' }
         ];
         
 
         const getRankBadge = (crystalCount) => {
             const ct = parseInt(crystalCount) || 0;
             const rank = RANK_DATA.find(r => ct >= r.min) || RANK_DATA[RANK_DATA.length - 1];
-            return { name: rank.name, image: `https://drive.google.com/thumbnail?id=${rank.imgId}&sz=s800` };
+            return { name: rank.name, image: rank.imgId};
         };
 
         const CAT_RANKS = [
-            { min: 50, name: 'Superior', img: '1oUm-GY3M5f9gdFQ62KZkDxDfJo66fvCG' },
+            { min: 60, name: 'Superior', img: '1oUm-GY3M5f9gdFQ62KZkDxDfJo66fvCG' },
             { min: 46, name: 'Emperor', img: '1fg9BxYenut4r-HTHB3ps68cXpps_Ml9q' },
             { min: 40, name: 'Monarch', img: '1zAgHJhmzBL0Hl4N5pxGUTJWwMEhaUeIy' },
             { min: 36, name: 'Alpha Crimson', img: '11fUatPIERxaZop85r3c2IQ1AtgSHeTQa' },
@@ -776,41 +810,71 @@
 
                 // Basic drag functionality
                 let isDragging = false;
-                let startY, startX, initialTop, initialLeft;
+                let offsetX = 0, offsetY = 0; // เปลี่ยนมาใช้ตัวแปรเก็บระยะห่าง (Offset) แทน
+                let currentEvtX = 0, currentEvtY = 0;
 
                 const startDrag = (e) => {
-                    isDragging = true;
+                    // ป้องกันปัญหาสำหรับเม้าส์ (ต้องคลิกซ้ายเท่านั้นถึงจะลากได้)
+                    if (e.type.includes('mouse') && e.button !== 0) return;
+
                     const evt = e.type.includes('mouse') ? e : e.touches[0];
-                    startY = evt.clientY;
-                    startX = evt.clientX;
+                    if (!evt) return;
+
+                    // 1. ดึงพิกัดตำแหน่งปัจจุบันของ Widget บนหน้าจอ
                     const rect = widget.getBoundingClientRect();
-                    initialTop = rect.top;
-                    initialLeft = rect.left;
-                    widget.style.bottom = 'auto'; // switch to top/left positioning
+                    
+                    // 2. คำนวณหาจุดตัด (Offset) ว่าเมาส์จิ้มอยู่ส่วนไหนของตัวแมว
+                    offsetX = evt.clientX - rect.left;
+                    offsetY = evt.clientY - rect.top;
+
+                    // 3. ล็อกตำแหน่งให้อยู่ในรูป top/left ทันที ก่อนจะสั่งล้าง bottom/right เพื่อกันปัญหาวาร์ปไปมุมซ้ายบน
+                    widget.style.top = `${rect.top}px`;
+                    widget.style.left = `${rect.left}px`;
+                    widget.style.bottom = 'auto'; 
                     widget.style.right = 'auto';
+                    
+                    isDragging = true;
                 };
 
+                let ticking = false; 
                 const moveDrag = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault(); // prevent scroll
+                    e.preventDefault();
+                    
                     const evt = e.type.includes('mouse') ? e : e.touches[0];
-                    const dy = evt.clientY - startY;
-                    const dx = evt.clientX - startX;
+                    if (!evt) return; 
                     
-                    let newTop = initialTop + dy;
-                    let newLeft = initialLeft + dx;
-                    
-                    // Constrain to screen
-                    const maxTop = window.innerHeight - widget.offsetHeight - 70; // 70 nav height
-                    const maxLeft = window.innerWidth - widget.offsetWidth;
-                    newTop = Math.max(60, Math.min(newTop, maxTop));
-                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                    currentEvtX = evt.clientX;
+                    currentEvtY = evt.clientY;
 
-                    widget.style.top = `${newTop}px`;
-                    widget.style.left = `${newLeft}px`;
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            if (!isDragging) return; 
+                            
+                            // 4. พิกัดใหม่ของแมว = พิกัดเมาส์ปัจจุบัน ลบด้วย ระยะห่าง offset ตอนเริ่มจิ้ม
+                            let newTop = currentEvtY - offsetY;
+                            let newLeft = currentEvtX - offsetX;
+                            
+                            // จำกัดขอบเขตหน้าจอ
+                            const maxTop = window.innerHeight - widget.offsetHeight - 70; 
+                            const maxLeft = window.innerWidth - widget.offsetWidth;
+                            newTop = Math.max(60, Math.min(newTop, maxTop));
+                            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                            
+                            widget.style.top = `${newTop}px`;
+                            widget.style.left = `${newLeft}px`;
+                            
+                            ticking = false; 
+                        });
+                        ticking = true; 
+                    }
                 };
 
-                const stopDrag = () => { isDragging = false; };
+                const stopDrag = () => { 
+                    if (isDragging) {
+                        setTimeout(() => { isDragging = false; }, 50); 
+                    }
+                };
 
                 widget.addEventListener('mousedown', startDrag);
                 window.addEventListener('mousemove', moveDrag);
@@ -819,6 +883,7 @@
                 widget.addEventListener('touchstart', startDrag, {passive: false});
                 window.addEventListener('touchmove', moveDrag, {passive: false});
                 window.addEventListener('touchend', stopDrag);
+                
 
                 // Tap to talk
                 widget.addEventListener('click', () => {
@@ -1772,7 +1837,7 @@
                             <div class="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none"></div>
                             
                             <div class="w-28 h-28 sm:w-32 sm:h-32 mb-4 flex items-center justify-center relative z-10">
-                                <img src="https://drive.google.com/thumbnail?id=${r.imgId}&sz=s800" class="max-w-full max-h-full object-contain drop-shadow-xl transform scale-[1.25]">
+                                <img src="${r.imgId}" class="max-w-full max-h-full object-contain drop-shadow-xl transform scale-[1.25]">
                             </div>
                             
                             <div class="font-extrabold text-base sm:text-lg text-dark mb-2.5 relative z-10">${r.name}</div>
@@ -6793,6 +6858,15 @@
         document.getElementById('login-form').addEventListener('submit', window.app.login);
 
         Auth.initAdmin().then(() => { Auth.checkSession(); });
+        window.addEventListener('load', function() {
+                    const loadingScreen = document.getElementById('loading-screen');
+                    if (loadingScreen) {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.remove();
+                        }, 500); // รอ 0.5 วินาทีให้เอฟเฟกต์เฟดจบ ค่อยลบทิ้ง
+                    }
+                });
 
     </script>
 </body>
