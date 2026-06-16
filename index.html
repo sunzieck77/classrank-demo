@@ -1212,18 +1212,22 @@
                                 <p class="text-xs sm:text-sm text-gray-500 mt-1 truncate"><i class="fa-solid fa-graduation-cap mr-1"></i> ${infoText}</p>
                             </div>
 
-                            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-6 sm:mt-8">
-                                <button onclick="app.showBagModal()" class="bg-white hover:border-primary/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-sm active:scale-95 group">
+                            <div class="grid grid-cols-2 gap-2 mt-4 sm:mt-4">
+                                <button onclick="app.showBagModal()" class="bg-white hover:border-primary/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-lg active:scale-95 group">
                                     <div class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><i class="ri-wallet-3-fill text-xl sm:text-2xl"></i></div>
                                     <span class="text-[10px] sm:text-xs font-bold text-gray-700">กระเป๋าไอเทม</span>
                                 </button>
-                                <button onclick="app.showFramesModal()" class="bg-white hover:border-accent/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-sm active:scale-95 group">
+                                <button onclick="app.showFramesModal()" class="bg-white hover:border-accent/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-lg active:scale-95 group">
                                     <div class="w-10 h-10 rounded-full bg-pink-50 text-accent flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors"><i class="ri-magic-fill text-xl sm:text-2xl"></i></div>
                                     <span class="text-[10px] sm:text-xs font-bold text-gray-700">กรอบโปรไฟล์</span>
                                 </button>
-                                <button onclick="app.showExchangeModal()" class="bg-white hover:border-yellow-500/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-sm active:scale-95 group">
-                                    <div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-colors"><i class="ri-exchange-fill text-xl sm:text-2xl"></i></div>
+                                <button onclick="app.showExchangeModal()" class="bg-white hover:border-purple-500/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-lg active:scale-95 group">
+                                    <div class="w-10 h-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors"><i class="ri-exchange-fill text-xl sm:text-2xl"></i></div>
                                     <span class="text-[10px] sm:text-xs font-bold text-gray-700">แลกเปลี่ยน SC</span>
+                                </button>
+                                <button onclick="app.showExchangeCSModal()" class="bg-white hover:border-yellow-500/50 border border-gray-100 py-3 sm:py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-lg active:scale-95 group">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-colors"><i class="ri-exchange-funds-fill text-xl sm:text-2xl"></i></div>
+                                    <span class="text-[10px] sm:text-xs font-bold text-gray-700">แลกเปลี่ยน CS</span>
                                 </button>
                             </div>
                         </div>
@@ -1639,7 +1643,7 @@
                                 <div class="flex items-center gap-2">
                                     <img src="${ITEM_IMAGES.sc}" class="w-10 h-10 object-contain drop-shadow-sm animate-bounce">
                                     <div>
-                                        <div class="text-[9px] text-purple-400 font-bold uppercase tracking-wider">สิทธิประโยชน์ที่ได้รับ</div>
+                                        <div class="text-[9px] text-purple-400 font-bold uppercase tracking-wider">สรุป</div>
                                         <div class="font-bold text-purple-950 text-xs">ได้รับทั้งหมด</div>
                                     </div>
                                 </div>
@@ -1736,6 +1740,177 @@
                             icon: 'success',
                             title: 'แลกเปลี่ยนสำเร็จ!',
                             text: `ใช้ ${csToExchange} CS แลกรับ ${scGained.toLocaleString()} SC เรียบร้อยแล้ว`,
+                            confirmButtonColor: '#27D6F5',
+                            customClass: { popup: 'rounded-[2rem]' }
+                        });
+                        this.navigate('profile');
+                    } catch (err) {
+                        Loader.hide();
+                        Toast.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการแลกเปลี่ยนข้อมูล' });
+                    }
+                }
+            },
+            async showExchangeCSModal() {
+                const u = appState.user || {};
+                if (u.role === 'teacher') {
+                    return Swal.fire({
+                        icon: 'info',
+                        title: 'ฟังก์ชันสำหรับนักเรียน',
+                        text: 'บัญชีอาจารย์ไม่จำเป็นต้องใช้ระบบแลกเปลี่ยนไอเทม',
+                        confirmButtonColor: '#27D6F5',
+                        customClass: { popup: 'rounded-[2rem]' }
+                    });
+                }
+
+                const items = u.items || { cs: 0, ct: 0, ticket: 0, sc: 0 };
+                const currentCT = items.ct || 0;
+                const currentCS = items.cs || 0;
+                
+                // คำนวณขีดจำกัดจำนวน CT สูงสุดที่สามารถใช้แลกได้จริง (ต้องเป็นทวีคูณของ 3)
+                const maxCSGain = Math.floor(currentCT / 3);
+                const maxCTSpend = maxCSGain * 3;
+
+                let modalContentHtml = `
+                    <div class="text-left font-sans text-sm space-y-4 mt-2 max-h-[65vh] overflow-y-auto no-scrollbar pb-2">
+                        <div class="flex items-center justify-between bg-gradient-to-r from-cyan-50/50 to-yellow-50/50 p-4 rounded-2xl border border-gray-100 shadow-sm shrink-0">
+                            <div class="flex flex-col items-center flex-1">
+                                <img src="${ITEM_IMAGES.ct}" class="w-12 h-12 object-contain mb-1 drop-shadow-sm">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">คุณมี</span>
+                                <span class="font-extrabold text-cyan-500">${currentCT.toLocaleString()} CT</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center px-2">
+                                <div class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-primary">
+                                    <i class="ri-arrow-right-line text-lg animate-pulse"></i>
+                                </div>
+                                <span class="text-[9px] text-gray-400 font-bold mt-1">3 CT = 1 CS</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-1">
+                                <img src="${ITEM_IMAGES.cs}" class="w-12 h-12 object-contain mb-1 drop-shadow-sm">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">คุณมี</span>
+                                <span class="font-extrabold text-amber-500">${currentCS.toLocaleString()} CS</span>
+                            </div>
+                        </div>
+
+                        ${maxCSGain < 1 ? `
+                            <div class="p-3 bg-red-50 text-red-700 rounded-xl text-xs flex items-center gap-2 border border-red-100 font-semibold shrink-0">
+                                <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                                <span>คุณต้องการ Crystal อย่างน้อย 3 CT เพื่อแลก ClassStar 1 CS</span>
+                            </div>
+                        ` : `
+                            <div class="bg-gray-50/70 p-4 rounded-2xl border border-gray-100 space-y-4 shrink-0">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">ใส่จำนวนที่ต้องการแลก</span>
+                                    <div class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
+                                        <input type="number" id="exch-ct-spend-input" min="3" max="${maxCTSpend}" step="3" value="3" class="w-12 text-center font-bold text-dark text-sm bg-transparent border-none outline-none focus:ring-0 p-0">
+                                        <span class="text-xs text-gray-400 font-bold">CT</span>
+                                    </div>
+                                </div>
+                                <div class="relative pt-1">
+                                    <input type="range" id="exch-ct-spend-slider" min="3" max="${maxCTSpend}" step="3" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-50/50 p-4 rounded-2xl border border-amber-100 flex items-center justify-between shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <img src="${ITEM_IMAGES.cs}" class="w-10 h-10 object-contain drop-shadow-sm animate-bounce">
+                                    <div>
+                                        <div class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">สรุป</div>
+                                        <div class="font-bold text-amber-950 text-xs">ได้รับ CS ทั้งหมด</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="exch-cs-gain-total" class="text-2xl font-extrabold text-amber-500">1</span>
+                                    <span class="text-xs font-bold text-amber-500">CS</span>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+
+                const { value: ctCost } = await Swal.fire({
+                    title: '<span style="font-family: \'Kanit\'; font-weight: bold; color: #1f2937;">แลก ClassStar (CS)</span>',
+                    html: modalContentHtml,
+                    showCancelButton: true,
+                    confirmButtonText: 'ยืนยันการแลกเปลี่ยน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: {
+                        popup: 'rounded-[2rem] p-5 w-[95%] max-w-sm',
+                        confirmButton: 'rounded-xl font-bold py-2.5 px-6',
+                        cancelButton: 'rounded-xl font-bold py-2.5 px-6'
+                    },
+                    didOpen: () => {
+                        if (maxCSGain < 1) return;
+                        
+                        const slider = document.getElementById('exch-ct-spend-slider');
+                        const numInput = document.getElementById('exch-ct-spend-input');
+                        const gainTotalSpan = document.getElementById('exch-cs-gain-total');
+
+                        const updateValues = (val) => {
+                            let ctVal = parseInt(val) || 0;
+                            
+                            if (ctVal > maxCTSpend) ctVal = maxCTSpend;
+                            if (ctVal < 3) ctVal = 3;
+
+                            // บังคับให้ปัดเศษเป็นทวีคูณของ 3 เผื่อกรณีผู้ใช้งานพิมพ์ตัวเลขอื่นเข้ามาเองในช่อง input
+                            ctVal = Math.floor(ctVal / 3) * 3;
+                            if (ctVal < 3) ctVal = 3;
+
+                            slider.value = ctVal;
+                            numInput.value = ctVal;
+                            
+                            // คำนวณจำนวน CS ที่จะได้รับ (3 CT = 1 CS)
+                            const csGain = ctVal / 3;
+                            gainTotalSpan.innerText = csGain.toLocaleString();
+                        };
+
+                        slider.addEventListener('input', (e) => updateValues(e.target.value));
+                        numInput.addEventListener('change', (e) => updateValues(e.target.value));
+                        numInput.addEventListener('keyup', (e) => {
+                            if (e.key === 'Enter') updateValues(e.target.value);
+                        });
+                    },
+                    preConfirm: () => {
+                        if (maxCSGain < 1) {
+                            Swal.showValidationMessage('คุณมี Crystal ไม่เพียงพอสำหรับการแลกเปลี่ยน');
+                            return false;
+                        }
+                        const numInput = document.getElementById('exch-ct-spend-input');
+                        let ctVal = parseInt(numInput.value) || 0;
+                        ctVal = Math.floor(ctVal / 3) * 3;
+
+                        if (!ctVal || ctVal < 3) {
+                            Swal.showValidationMessage('กรุณากรอกจำนวน CT อย่างน้อย 3 CT');
+                            return false;
+                        }
+                        if (ctVal > currentCT) {
+                            Swal.showValidationMessage(`คุณมี Crystal ไม่เพียงพอ (มีอยู่ ${currentCT} CT)`);
+                            return false;
+                        }
+                        return ctVal; // ส่งจำนวน CT ที่จ่ายออกไปทำงานต่อ
+                    }
+                });
+
+                if (ctCost) {
+                    Loader.show();
+                    try {
+                        const csToGain = ctCost / 3;
+                        const newCT = currentCT - ctCost;
+                        const newCS = currentCS + csToGain;
+
+                        const updates = {};
+                        updates[`users/${u.uid}/items/ct`] = newCT;
+                        updates[`users/${u.uid}/items/cs`] = newCS;
+
+                        await update(ref(db), updates);
+                        appState.user.items.ct = newCT;
+                        appState.user.items.cs = newCS;
+
+                        Loader.hide();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'แลกเปลี่ยนสำเร็จ!',
+                            text: `ใช้ ${ctCost.toLocaleString()} CT แลกรับ ${csToGain.toLocaleString()} CS เรียบร้อยแล้ว`,
                             confirmButtonColor: '#27D6F5',
                             customClass: { popup: 'rounded-[2rem]' }
                         });
@@ -7082,7 +7257,9 @@
             deleteStudent: (uid, c, r) => Views.deleteStudent(uid, c, r), handleExcelUpload: (e, c, r) => Views.handleExcelUpload(e, c, r),
 
             showBagModal: () => Views.showBagModal(), showFramesModal: () => Views.showFramesModal(), equipFrame: (url) => Views.equipFrame(url),
-            showExchangeModal: () => Views.showExchangeModal(), showStudentProfileDetail: (uid) => Views.showStudentProfileDetail(uid),
+            showExchangeModal: () => Views.showExchangeModal(), 
+            showExchangeCSModal: () => Views.showExchangeCSModal(), 
+            showStudentProfileDetail: (uid) => Views.showStudentProfileDetail(uid),
             showRankCriteria: () => Views.showRankCriteria(),
             changeRankingCriteria: (c) => { appState.rankingCriteria = c; appState.rankingPage = 1; Views.renderHome(); },
             changeRankingPage: (dir) => { appState.rankingPage = (appState.rankingPage || 1) + dir; Views.renderLeaderboard(); },
