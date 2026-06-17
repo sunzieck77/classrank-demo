@@ -791,6 +791,7 @@
                 this.renderBottomNav();
                 Views.navigate('home');
                 this.initDraggablePet();
+                Views.checkTaskBadge(); // เพิ่มบรรทัดนี้
             },
             renderBottomNav() {
                 const nav = document.getElementById('bottom-nav-list');
@@ -807,7 +808,10 @@
                 nav.innerHTML = menus.filter(m => m.roles.includes(role)).map(m => `
                     <li class="flex-1 shrink-0">
                         <button onclick="app.navigate('${m.id}')" id="nav-btn-${m.id}" class="w-full flex flex-col items-center justify-center text-gray-400 hover:text-primary transition gap-1 nav-btn">
-                            <i class="fa-solid ${m.icon} text-xl"></i>
+                            <div class="relative">
+                                <i class="fa-solid ${m.icon} text-xl"></i>
+                                ${m.id === 'tasks' ? '<span id="nav-task-badge" class="hidden absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-red-500 border border-white rounded-full"></span>' : ''}
+                            </div>
                             <span class="text-[10px] font-medium">${m.label}</span>
                         </button>
                     </li>
@@ -2259,11 +2263,24 @@
                         if(mySub.status === 'ต้องแก้ไข') statusColor = 'bg-red-100 text-red-700';
                         if(mySub.status === 'รอตรวจ') statusColor = 'bg-yellow-100 text-yellow-700';
 
+                        // --- เพิ่มส่วนตรวจสอบของขวัญตรงนี้ ---
+                        let giftIconHtml = '';
+                        if (mySub.attachment) {
+                            if (!mySub.attachment.claimed) {
+                                giftIconHtml = `<span class="ml-2 text-pink-500 animate-pulse shrink-0 drop-shadow-sm"><i class="fa-solid fa-gift"></i></span>`;
+                            } else {
+                                giftIconHtml = `<span class="ml-2 text-gray-300 shrink-0"><i class="fa-solid fa-gift"></i></span>`;
+                            }
+                        }
+
                         itemsHtml += `
                             <div onclick="app.showAssignmentDetail('${aId}')" 
                                  class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between active:scale-95 transition cursor-pointer hover:border-primary/50">
-                                <div class="min-w-0 pr-3">
-                                    <h4 class="font-bold text-dark text-sm truncate">${aData.title}</h4>
+                                <div class="min-w-0 pr-3 flex-1">
+                                    <div class="flex items-center">
+                                        <h4 class="font-bold text-dark text-sm truncate">${aData.title}</h4>
+                                        ${giftIconHtml}
+                                    </div>
                                     <p class="text-xs text-gray-500 mt-1 truncate">${aData.detail}</p>
                                 </div>
                                 <div class="${statusColor} px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-white/50 shrink-0">
@@ -2275,6 +2292,9 @@
                     listHtml = `<div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-24 space-y-3 w-full">${itemsHtml}</div>`;
                 }
                 subContainer.innerHTML = listHtml;
+                
+                // สั่งรีเฟรช Badge ทันทีที่โหลดหน้านี้
+                this.checkTaskBadge();
             },
 
             async renderStudentAllTasks(assignments) {
@@ -5536,6 +5556,45 @@
                     }
                 }
             },
+            async checkTaskBadge() {
+                const u = appState.user;
+                if (!u || u.role !== 'student') return;
+                
+                const badge = document.getElementById('nav-task-badge');
+                if (!badge) return;
+
+                const classId = `${u.class}-${u.room}`.replace(/\./g, '_');
+                
+                try {
+                    const assignsRef = ref(db, `assignments/${classId}`);
+                    const assignSnap = await get(assignsRef);
+                    if (!assignSnap.exists()) {
+                        badge.classList.add('hidden');
+                        return;
+                    }
+                    
+                    const subRef = ref(db, 'submissions');
+                    const subSnap = await get(subRef);
+                    const allSubs = subSnap.exists() ? subSnap.val() : {};
+                    
+                    let hasUnclaimedGift = false;
+                    for (const aId of Object.keys(assignSnap.val())) {
+                        const mySub = allSubs[aId]?.[u.uid];
+                        if (mySub && mySub.attachment && mySub.attachment.claimed === false) {
+                            hasUnclaimedGift = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasUnclaimedGift) {
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                } catch(e) {
+                    console.error("Task badge check error", e);
+                }
+            },
 
             async showMailbox() {
                 Swal.fire({
@@ -7208,6 +7267,7 @@
             showTitleManager: () => Views.showTitleManager(),
             addOrEditTitleModal: (id) => Views.addOrEditTitleModal(id),
             deleteTitle: (id) => Views.deleteTitle(id),
+            checkTaskBadge: () => Views.checkTaskBadge(),
 
 
 
@@ -7323,6 +7383,9 @@
                     Loader.hide();
                     Swal.fire({icon: 'success', title: 'สำเร็จ', text: `คุณได้รับ ${att.itemName} เรียบร้อยแล้ว!`, customClass: {popup: 'rounded-3xl'}});
                     Views.showAssignmentDetail(assignId); 
+
+                    Views.checkTaskBadge(); // รีเฟรชจุดแดง
+                    if(appState.currentView === 'tasks') Views.renderTasks(); // รีเฟรชลิสต์เพื่อให้ของขวัญเปลี่ยนเป็นสีเทา
                 } catch(e) {
                     Loader.hide();
                     Swal.fire({icon: 'error', title: 'Error', text: 'เกิดข้อผิดพลาดในการรับของ', customClass: {popup: 'rounded-3xl'}});
