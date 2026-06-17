@@ -487,6 +487,41 @@
             รวม SS ขึ้นไป ≈ 2.81%
             รวม SSS ขึ้นไป ≈ 0.13%
         */
+        const getAdjustedRarityWeight = (rarity, catLevel) => {
+            let baseWeight = RARITY_WEIGHTS[rarity] || 0;
+            // ไม่เพิ่มเรทให้เกลือระดับ A เพื่อให้เปอร์เซ็นต์ระดับ S ขึ้นไปเด่นขึ้น
+            if (['A', 'A+', 'A++'].includes(rarity)) return baseWeight;
+
+            let bonusMultiplier = 0;
+            if (catLevel >= 50) {
+                // เลเวล 50 ขึ้นไป เพิ่มตัวคูณแบบก้าวกระโดด (เช่น เวล 50 = +150% หรือ x2.5)
+                bonusMultiplier = (catLevel * 0.03); 
+            } else {
+                // เลเวล 1-49 เพิ่มตัวคูณทีละนิด (เช่น เวล 20 = +20% หรือ x1.2)
+                bonusMultiplier = (catLevel * 0.01); 
+            }
+            
+            return Math.floor(baseWeight * (1 + bonusMultiplier));
+        };
+
+        const getCatLuckBadgeHtml = (catLevel) => {
+            const currentRank = CAT_RANKS.find(r => catLevel >= r.min) || CAT_RANKS[CAT_RANKS.length - 1];
+            const rankImgUrl = `https://drive.google.com/thumbnail?id=${currentRank.img}&sz=w100-h100`;
+            const currentCatLevel = appState?.user?.catData?.level || 1;
+            
+            let extraStyle = "border-gray-300 bg-white/90 text-gray-700 hover:bg-white";
+            if (catLevel >= 60) {
+                extraStyle = "border-amber-400 bg-gradient-to-r from-amber-50 to-white text-amber-900 shadow-[0_0_8px_rgba(251,191,36,0.6)] hover:brightness-105";
+            } else if (catLevel >= 40) {
+                extraStyle = "border-slate-300 bg-slate-50 text-slate-800 hover:bg-white";
+            }
+
+            return `
+            <button onclick="app.showGachaDetails(appState.activeGachaBanner)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${extraStyle} backdrop-blur-md text-[11px] font-bold shadow-sm transition-all w-max active:scale-95 cursor-pointer" title="แรงค์: ${currentRank.name} | ดูรายละเอียดอัตราดรอปและโชคแมว">
+                <img src="${rankImgUrl}" alt="${currentRank.name}" class="w-8 h-8 object-contain drop-shadow-sm" loading="lazy" />
+                <span class="font-bold text-sm" >Lv: ${currentCatLevel}: รายละเอียด</span>
+            </button>`;
+        };
 
         // เพิ่มตัวแปรนี้เข้าไป เพื่อผูกรูปภาพการ์ดกับ Rarity
         const RARITY_CARD_BGS = {
@@ -2991,180 +3026,183 @@
                     }
                 }
             },
-            async renderGacha() {
-                const gachaView = document.getElementById('gacha-view');
-                const u = appState.user;
-                const isTeacher = u.role === 'teacher';
+        async renderGacha() {
+            const gachaView = document.getElementById('gacha-view');
+            const u = appState.user;
+            const isTeacher = u.role === 'teacher';
+            const currentCatLevel = appState?.user?.catData?.level || 1;
 
-                gachaView.innerHTML = `<div class="flex h-full w-full items-center justify-center"><div class="w-10 h-10 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div></div>`;
+            gachaView.innerHTML = `<div class="flex h-full w-full items-center justify-center"><div class="w-10 h-10 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div></div>`;
 
-                try {
-                    const [configSnap, bannersSnap] = await Promise.all([
-                        get(ref(db, 'gacha_config/main')),
-                        get(ref(db, 'gacha_banners'))
-                    ]);
+            try {
+                const [configSnap, bannersSnap] = await Promise.all([
+                    get(ref(db, 'gacha_config/main')),
+                    get(ref(db, 'gacha_banners'))
+                ]);
+                
+                const mainBanner = configSnap.exists() && configSnap.val().cover ? configSnap.val().cover : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                const banners = bannersSnap.exists() ? bannersSnap.val() : {};
+                
+                // เก็บข้อมูล banners ไว้ใน state เพื่อใช้ตอนเปิดตู้
+                appState.gachaBanners = banners;
+
+                let bannersHtml = '';
+                if (Object.keys(banners).length === 0) {
+                    bannersHtml = `<div class="w-full text-center py-10 text-gray-500 font-bold bg-white/50 rounded-2xl backdrop-blur-md border border-white">ยังไม่มีตู้สุ่มเปิดให้บริการ</div>`;
+                } else {
+                    // ปรับ Container ให้เป็นแนวตั้ง (Vertical Flex) และเอา snap ออกเพื่อให้เลื่อนสมูทขึ้น
+                    bannersHtml = `<div class="flex flex-col drop-shadow-lg p-2 gap-4 w-full">`;
                     
-                    const mainBanner = configSnap.exists() && configSnap.val().cover ? configSnap.val().cover : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
-                    const banners = bannersSnap.exists() ? bannersSnap.val() : {};
-                    
-                    // เก็บข้อมูล banners ไว้ใน state เพื่อใช้ตอนเปิดตู้
-                    appState.gachaBanners = banners;
-
-                    let bannersHtml = '';
-                    if (Object.keys(banners).length === 0) {
-                        bannersHtml = `<div class="w-full text-center py-10 text-gray-500 font-bold bg-white/50 rounded-2xl backdrop-blur-md border border-white">ยังไม่มีตู้สุ่มเปิดให้บริการ</div>`;
-                    } else {
-                        // ปรับ Container ให้เป็นแนวตั้ง (Vertical Flex) และเอา snap ออกเพื่อให้เลื่อนสมูทขึ้น
-                        bannersHtml = `<div class="flex flex-col drop-shadow-lg p-2 gap-4 w-full">`;
+                    Object.entries(banners).forEach(([bId, b]) => {
+                        // ตรวจสอบว่า b.coverId เป็น URL ทั่วไป (ขึ้นต้นด้วย http) หรือเป็นแค่ ID ของ Drive
+                        const coverImg = (b.coverId && b.coverId.startsWith('http')) 
+                            ? b.coverId 
+                            : `https://drive.google.com/thumbnail?id=${b.coverId}&sz=s800`;
                         
-                        Object.entries(banners).forEach(([bId, b]) => {
-                            // ตรวจสอบว่า b.coverId เป็น URL ทั่วไป (ขึ้นต้นด้วย http) หรือเป็นแค่ ID ของ Drive
-                            const coverImg = (b.coverId && b.coverId.startsWith('http')) 
-                                ? b.coverId 
-                                : `https://drive.google.com/thumbnail?id=${b.coverId}&sz=s800`;
-                            
-                            bannersHtml += `
-                                <div onclick="app.openGachaBanner('${bId}')" class="w-full shrink-0 bg-white rounded-3xl overflow-hidden shadow-lg border border-indigo-100 flex flex-col relative group cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]">
-                                    ${isTeacher ? `
-                                        <div class="absolute top-3 right-3 z-20 flex gap-2">
-                                            <button onclick="event.stopPropagation(); app.manageGachaBannerItems('${bId}')" class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-list"></i></button>
-                                            <button onclick="event.stopPropagation(); app.editGachaBanner('${bId}')" class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-pen"></i></button>
-                                        </div>
-                                    ` : ''}
-                                    
-                                    <div class="h-40 relative bg-cover bg-center shrink-0 transition-transform duration-500 group-hover:scale-105" style="background-image: url('${coverImg}');">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent"></div>
-                                        <div class="absolute bottom-4 left-4 right-4">
-                                            <h3 class="text-white font-extrabold text-xl drop-shadow-md truncate">${b.name}</h3>
-                                            <p class="text-indigo-200 text-xs font-bold mt-1 flex items-center gap-1">
-                                                แตะเพื่อเข้าสู่ตู้สุ่ม <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                                            </p>
-                                        </div>
+                        bannersHtml += `
+                            <div onclick="app.openGachaBanner('${bId}')" class="w-full shrink-0 bg-white rounded-3xl overflow-hidden shadow-lg border border-indigo-100 flex flex-col relative group cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]">
+                                ${isTeacher ? `
+                                    <div class="absolute top-3 right-3 z-20 flex gap-2">
+                                        <button onclick="event.stopPropagation(); app.manageGachaBannerItems('${bId}')" class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-list"></i></button>
+                                        <button onclick="event.stopPropagation(); app.editGachaBanner('${bId}')" class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-pen"></i></button>
                                     </div>
-                                </div>
-                            `;
-                        });
-                        bannersHtml += `</div>`;
-                    }
-
-                    gachaView.innerHTML = `
-                        <div id="gacha-main-menu" class="absolute inset-0 gacha-bg-pastel overflow-hidden z-[100] flex flex-col">
-                            <button onclick="app.navigate('home')" class="fixed top-4 left-4 z-[110] w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-dark hover:bg-white transition active:scale-90 shadow-sm border border-gray-200">
-                                <i class="fa-solid fa-chevron-left text-lg"></i>
-                            </button>
-
-                            <div class="fixed top-4 right-4 z-[110] bg-white/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-gray-200 shadow-sm">
-                                <img src="${ITEM_IMAGES.ticket}" class="w-5 h-5 object-contain">
-                                <span id="gacha-main-ticket" class="text-dark font-extrabold">${(u.items?.ticket || 0).toLocaleString()}</span>
-                            </div>
-
-                            <div class="w-full h-44 bg-cover bg-center shadow-md relative shrink-0" style="background-image: url('${mainBanner}');">
-                                <div class="absolute"></div>
-                            </div>
-
-                            <div class="relative z-10 flex-1 flex flex-col pt-6 min-h-0"> <div class="px-4 sm:px-6 mb-4 flex justify-between items-end shrink-0">
-                                    <div>
-                                        <h2 class="text-xl font-extrabold text-indigo-900 drop-shadow-sm">ตู้สุ่มกิจกรรม</h2>
-                                        <p class="text-xs text-indigo-500 font-bold">คลิกเพื่อเลือกตู้สุ่ม</p>
-                                    </div>
-                                    ${isTeacher ? `
-                                        <button onclick="app.addGachaBanner()" class="bg-dark text-white text-[10px] font-bold px-3 py-2 rounded-xl shadow-lg active:scale-95 transition"><i class="fa-solid fa-plus mr-1"></i> เพิ่มตู้</button>
-                                    ` : ''}
-                                </div>
-                                <div class="flex-1 min-h-0 relative">
-                                    <div class="absolute inset-0 overflow-y-auto no-scrollbar pb-32 px-2 sm:px-4">
-                                        ${bannersHtml}
+                                ` : ''}
+                                
+                                <div class="h-40 relative bg-cover bg-center shrink-0 transition-transform duration-500 group-hover:scale-105" style="background-image: url('${coverImg}');">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent"></div>
+                                    <div class="absolute bottom-4 left-4 right-4">
+                                        <h3 class="text-white font-extrabold text-xl drop-shadow-md truncate">${b.name}</h3>
+                                        <p class="text-indigo-200 text-xs font-bold mt-1 flex items-center gap-1">
+                                            แตะเพื่อเข้าสู่ตู้สุ่ม <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
+                        `;
+                    });
+                    bannersHtml += `</div>`;
+                }
+
+                gachaView.innerHTML = `
+                    <div id="gacha-main-menu" class="absolute inset-0 gacha-bg-pastel overflow-hidden z-[100] flex flex-col">
+                        <button onclick="app.navigate('home')" class="fixed top-4 left-4 z-[110] w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-dark hover:bg-white transition active:scale-90 shadow-sm border border-gray-200">
+                            <i class="fa-solid fa-chevron-left text-lg"></i>
+                        </button>
+
+                        <div class="fixed top-4 right-4 z-[110] bg-white/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-gray-200 shadow-sm">
+                            <img src="${ITEM_IMAGES.ticket}" class="w-5 h-5 object-contain">
+                            <span id="gacha-main-ticket" class="text-dark font-extrabold">${(u.items?.ticket || 0).toLocaleString()}</span>
                         </div>
 
-                        <div id="gacha-banner-view" class="hidden absolute inset-0 z-[120] gacha-bg-pastel overflow-hidden">
-                            <div id="gacha-stars-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+                        <div class="w-full h-44 bg-cover bg-center shadow-md relative shrink-0" style="background-image: url('${mainBanner}');">
+                            <div class="absolute"></div>
+                        </div>
 
-                            <div class="absolute top-4 left-4 right-4 flex justify-between z-[60]">
-                                <button onclick="app.closeGachaBanner()" class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/35 transition active:scale-90 shadow-sm border border-white/10">
-                                    <i class="fa-solid fa-arrow-left text-lg"></i>
-                                </button>
-                                <button onclick="app.showGachaDetails(appState.activeGachaBanner)" class="bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/10 text-white font-bold text-xs hover:bg-black/30 transition active:scale-95">
-                                    <i class="fa-solid fa-circle-info"></i> รายละเอียด
-                                </button>
-                            </div>
-
-                            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[320px] z-[60] flex flex-col items-center gap-4">
-                                <div id="gacha-pity-counter" class="w-full text-center mb-[-5px]"></div>
-                                <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
-                                    <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
-                                    <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
-                                    <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                        <div class="relative z-10 flex-1 flex flex-col pt-6 min-h-0"> 
+                            <div class="px-4 sm:px-6 mb-4 flex justify-between items-end shrink-0">
+                                <div>
+                                    <h2 class="text-xl font-extrabold text-indigo-900 drop-shadow-sm">ตู้สุ่มกิจกรรม</h2>
+                                    <p class="text-xs text-indigo-500 font-bold">คลิกเพื่อเลือกตู้สุ่ม</p>
                                 </div>
-                                
-                                <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-full flex items-center justify-center gap-2">
-                                    สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
-                                </button>
-
                                 ${isTeacher ? `
-                                <button onclick="app.triggerGachaPull(appState.activeGachaBanner, true)" class="bg-yellow-400 text-yellow-900 font-bold text-sm py-2.5 px-6 rounded-full shadow-lg hover:brightness-110 transition-all active:scale-95 border border-yellow-200 flex items-center gap-2">
-                                    <i class="fa-solid fa-flask"></i> ทดสอบสุ่ม (Admin)
-                                </button>
+                                    <button onclick="app.addGachaBanner()" class="bg-dark text-white text-[10px] font-bold px-3 py-2 rounded-xl shadow-lg active:scale-95 transition"><i class="fa-solid fa-plus mr-1"></i> เพิ่มตู้</button>
                                 ` : ''}
                             </div>
-
-                            <div id="gacha-gold-overlay" class="hidden opacity-0 absolute inset-0 bg-yellow-400/30 backdrop-blur-sm z-20 transition-opacity duration-1000 pointer-events-none"></div>
-                            <div id="gacha-flash" class="hidden opacity-0 absolute inset-0 bg-white z-[70] transition-opacity duration-300 pointer-events-none"></div>
-
-                            <div id="gacha-idle-state" class="absolute inset-0 flex flex-col items-center justify-center z-30 w-full h-full pointer-events-none">
-                                <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320vw] h-[320vw] gacha-rays"></div>
-                                <img id="gacha-floating-item" src="" class="w-40 sm:w-56 h-auto object-contain animate-gacha-float drop-shadow-2xl transition-all duration-500 relative z-10 pb-20" alt="Gacha Item">
-                            </div>
-
-                            <div id="gacha-reveal-state" class="hidden absolute inset-0 flex-col items-center justify-center z-[80] bg-black/60 backdrop-blur-sm">
-                                <div id="gacha-reveal-particles" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
-                                <div class="gacha-perspective w-64 h-[24rem] sm:w-72 sm:h-[27rem] z-20">
-                                    <div id="gacha-card-inner" class="gacha-card-wrapper w-full h-full relative">
-                                        <div class="gacha-card-face gacha-card-back"></div>
-                                        
-                                        <div class="gacha-card-face flex flex-col items-center justify-center bg-transparent relative">
-                                            
-                                            <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s800" class="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl">
-                                            
-                                            <img id="gacha-reward-item" src="" class="scale-0 opacity-0 w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10 drop-shadow-xl transition-all duration-[1500ms] ease-out mt-4">
-                                            <div id="gacha-reward-name" class="opacity-0 absolute bottom-12 text-indigo-900 text-xl font-extrabold tracking-widest drop-shadow-sm transition-opacity duration-1000 z-10 bg-white/90 px-6 py-2 rounded-xl text-center w-[85%] line-clamp-2 border border-indigo-100"></div>
-                                        </div>
-
-                                    </div>
+                            <div class="flex-1 min-h-0 relative">
+                                <div class="absolute inset-0 overflow-y-auto no-scrollbar pb-32 px-2 sm:px-4">
+                                    ${bannersHtml}
                                 </div>
-                                <button id="gacha-btn-claim" onclick="app.closeGachaAnim()" class="opacity-0 absolute bottom-16 left-1/2 -translate-x-1/2 gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-3.5 px-16 rounded-[2rem] shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-1000 active:scale-95 z-30 border border-white/50 whitespace-nowrap">
-                                    รับรางวัล
-                                </button>
                             </div>
                         </div>
-                    `;
+                    </div>
 
-                    // สร้างดาวลอยพื้นหลัง (Idle Particles)
-                    const container = document.getElementById('gacha-stars-container');
-                    for (let i = 0; i < 20; i++) {
-                        const star = document.createElement('div');
-                        star.className = 'gacha-bg-star';
-                        star.innerHTML = Math.random() > 0.5 ? '<i class="ri-sparkling-fill"></i>' : '<i class="fa-solid fa-star"></i>';
-                        const left = Math.random() * 100;
-                        const size = 0.5 + Math.random() * 1.5;
-                        const opacity = 0.2 + Math.random() * 0.6;
-                        const duration = 10 + Math.random() * 20; 
-                        const delay = Math.random() * -20; 
-                        star.style.left = `${left}%`;
-                        star.style.setProperty('--s', size);
-                        star.style.setProperty('--o', opacity);
-                        star.style.setProperty('--d', `${duration}s`);
-                        star.style.animationDelay = `${delay}s`;
-                        if (Math.random() > 0.7) star.style.filter = `blur(${Math.random() * 3}px) drop-shadow(0 0 10px white)`;
-                        container.appendChild(star);
-                    }
+                    <div id="gacha-banner-view" class="hidden absolute inset-0 z-[120] gacha-bg-pastel overflow-hidden">
+                        <div id="gacha-stars-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
 
-                } catch (e) {
-                    gachaView.innerHTML = `<div class="p-10 text-center text-red-500">โหลดข้อมูล Gacha ไม่สำเร็จ</div>`;
+                        <div class="absolute top-4 left-4 right-4 flex justify-between z-[60]">
+                            <div class="absolute top-4 left-4 right-4 flex justify-between z-[60]">
+                                <button onclick="app.closeGachaBanner()" class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/35 transition active:scale-90 shadow-sm border border-white/10 shrink-0">
+                                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                                </button>
+                                
+                                <div class="flex justify-end items-center w-full mt-1.5 ml-3 px-2">
+                                    ${getCatLuckBadgeHtml(currentCatLevel)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[320px] z-[60] flex flex-col items-center gap-4">
+                            <div id="gacha-pity-counter" class="w-full text-center mb-[-5px]"></div>
+                            <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
+                                <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
+                                <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
+                                <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                            </div>
+                            
+                            <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-full flex items-center justify-center gap-2">
+                                สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
+                            </button>
+
+                            ${isTeacher ? `
+                            <button onclick="app.triggerGachaPull(appState.activeGachaBanner, true)" class="bg-yellow-400 text-yellow-900 font-bold text-sm py-2.5 px-6 rounded-full shadow-lg hover:brightness-110 transition-all active:scale-95 border border-yellow-200 flex items-center gap-2">
+                                <i class="fa-solid fa-flask"></i> ทดสอบสุ่ม (Admin)
+                            </button>
+                            ` : ''}
+                        </div>
+
+                        <div id="gacha-gold-overlay" class="hidden opacity-0 absolute inset-0 bg-yellow-400/30 backdrop-blur-sm z-20 transition-opacity duration-1000 pointer-events-none"></div>
+                        <div id="gacha-flash" class="hidden opacity-0 absolute inset-0 bg-white z-[70] transition-opacity duration-300 pointer-events-none"></div>
+
+                        <div id="gacha-idle-state" class="absolute inset-0 flex flex-col items-center justify-center z-30 w-full h-full pointer-events-none">
+                            <div id="gacha-rays" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320vw] h-[320vw] gacha-rays"></div>
+                            <img id="gacha-floating-item" src="" class="w-40 sm:w-56 h-auto object-contain animate-gacha-float drop-shadow-2xl transition-all duration-500 relative z-10 pb-20" alt="Gacha Item">
+                        </div>
+
+                        <div id="gacha-reveal-state" class="hidden absolute inset-0 flex-col items-center justify-center z-[80] bg-black/60 backdrop-blur-sm">
+                            <div id="gacha-reveal-particles" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+                            <div class="gacha-perspective w-64 h-[24rem] sm:w-72 sm:h-[27rem] z-20">
+                                <div id="gacha-card-inner" class="gacha-card-wrapper w-full h-full relative">
+                                    <div class="gacha-card-face gacha-card-back"></div>
+                                    
+                                    <div class="gacha-card-face flex flex-col items-center justify-center bg-transparent relative">
+                                        <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s800" class="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl">
+                                        <img id="gacha-reward-item" src="" class="scale-0 opacity-0 w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10 drop-shadow-xl transition-all duration-[1500ms] ease-out mt-4">
+                                        <div id="gacha-reward-name" class="opacity-0 absolute bottom-12 text-indigo-900 text-xl font-extrabold tracking-widest drop-shadow-sm transition-opacity duration-1000 z-10 bg-white/90 px-6 py-2 rounded-xl text-center w-[85%] line-clamp-2 border border-indigo-100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="gacha-btn-claim" onclick="app.closeGachaAnim()" class="opacity-0 absolute bottom-16 left-1/2 -translate-x-1/2 gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-3.5 px-16 rounded-[2rem] shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-1000 active:scale-95 z-30 border border-white/50 whitespace-nowrap">
+                                รับรางวัล
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // สร้างดาวลอยพื้นหลัง (Idle Particles)
+                const container = document.getElementById('gacha-stars-container');
+                for (let i = 0; i < 20; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'gacha-bg-star';
+                    star.innerHTML = Math.random() > 0.5 ? '<i class="ri-sparkling-fill"></i>' : '<i class="fa-solid fa-star"></i>';
+                    const left = Math.random() * 100;
+                    const size = 0.5 + Math.random() * 1.5;
+                    const opacity = 0.2 + Math.random() * 0.6;
+                    const duration = 10 + Math.random() * 20; 
+                    const delay = Math.random() * -20; 
+                    star.style.left = `${left}%`;
+                    star.style.setProperty('--s', size);
+                    star.style.setProperty('--o', opacity);
+                    star.style.setProperty('--d', `${duration}s`);
+                    star.style.animationDelay = `${delay}s`;
+                    if (Math.random() > 0.7) star.style.filter = `blur(${Math.random() * 3}px) drop-shadow(0 0 10px white)`;
+                    container.appendChild(star);
                 }
-            },
+
+            } catch (e) {
+                console.error("Gacha Render Error:", e); // ช่วยพ่น error ใน console เพื่อให้ง่ายต่อการตรวจสอบ
+                gachaView.innerHTML = `<div class="p-10 text-center text-red-500">โหลดข้อมูล Gacha ไม่สำเร็จ</div>`;
+            }
+        },
             openGachaBanner(bId) {
                 appState.activeGachaBanner = bId;
                 const banner = appState.gachaBanners[bId];
@@ -3189,6 +3227,9 @@
                         pityBox.innerHTML = `<span class="bg-green-500/90 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-green-400 animate-pulse">🌟 การันตีออกในการสุ่มครั้งนี้!</span>`;
                     }
                 }
+                const catLevelForLuck = appState.user.catData?.level || 1;
+                const catLuckBox = document.getElementById('gacha-cat-luck');
+          
                 // ------------------------------------------
 
                 document.getElementById('gacha-main-menu').classList.add('hidden');
@@ -5953,26 +5994,65 @@
                 get(ref(db, `gacha_banners/${bId}/items`)).then(snap => {
                     if(!snap.exists()) return Toast.fire({icon:'error', title:'ตู้ยังว่างเปล่า'});
                     const items = Object.values(snap.val());
-                    const totalWeight = items.reduce((sum, item) => sum + (RARITY_WEIGHTS[item.rarity] || 0), 0);
+                    const catLevel = appState?.user?.catData?.level || 1;
                     
-                    let html = '<div class="max-h-[60vh] overflow-y-auto space-y-2 text-left font-sans">';
-                    // เรียงตาม Rarity (จาก SSS+ ลงไป A)
+                    // คำนวณน้ำหนักรวมแบบปกติ (Base)
+                    const baseTotalWeight = items.reduce((sum, item) => sum + (RARITY_WEIGHTS[item.rarity] || 0), 0);
+                    // คำนวณน้ำหนักรวมแบบบวกโชคแมว (Adjusted)
+                    const adjustedTotalWeight = items.reduce((sum, item) => sum + getAdjustedRarityWeight(item.rarity, catLevel), 0);
+                    
+                    let html = '<div class="max-h-[60vh] overflow-y-auto space-y-2 text-left font-sans mt-2">';
+                    
+                    // เรียงตาม Rarity
                     items.sort((a,b) => (RARITY_WEIGHTS[a.rarity]||0) - (RARITY_WEIGHTS[b.rarity]||0)).forEach(it => {
-                        const chance = ((RARITY_WEIGHTS[it.rarity] / totalWeight) * 100).toFixed(2);
+                        const baseWeight = RARITY_WEIGHTS[it.rarity] || 0;
+                        const adjustedWeight = getAdjustedRarityWeight(it.rarity, catLevel);
+                        
+                        const baseChance = ((baseWeight / baseTotalWeight) * 100).toFixed(2);
+                        const newChance = ((adjustedWeight / adjustedTotalWeight) * 100).toFixed(2);
+                        
+                        // สร้างแท็กตัวเลขเปรียบเทียบ
+                        let chanceHtml = '';
+                        if (parseFloat(newChance) > parseFloat(baseChance)) {
+                            // ได้บัฟเพิ่ม (ของแรร์) สีเขียวชี้ขึ้น
+                            chanceHtml = `
+                                <div class="text-[13px] text-gray-400 line-through leading-none mb-0.5">${baseChance}%</div>
+                                <div class="font-extrabold text-sm text-green-500 leading-none">${newChance}% <i class="fa-solid fa-arrow-up text-[10px]"></i></div>
+                            `;
+                        } else if (parseFloat(newChance) < parseFloat(baseChance)) {
+                            // โดนเบียดเรทลง (ของเกลือ) สีเทาชี้ลง
+                            chanceHtml = `
+                                <div class="text-[13px] text-gray-400 line-through leading-none mb-0.5">${baseChance}%</div>
+                                <div class="font-extrabold text-sm text-gray-500 leading-none">${newChance}% <i class="fa-solid fa-arrow-down text-[10px]"></i></div>
+                            `;
+                        } else {
+                            // เรทไม่เปลี่ยนเลย
+                            chanceHtml = `<div class="font-extrabold text-sm text-indigo-600">${baseChance}%</div>`;
+                        }
+                        
                         let img = it.driveId.length > 10 ? `https://drive.google.com/thumbnail?id=${it.driveId}&sz=s800` : (ITEM_IMAGES[it.driveId] || CAT_ASSETS[it.driveId] || ITEM_IMAGES.sc);
+                        
                         html += `
-                            <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                            <div class="flex items-center gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-200">
                                 <img src="${img}" class="w-10 h-10 object-contain drop-shadow-sm">
                                 <div class="flex-1 min-w-0">
                                     <div class="font-bold text-sm text-dark truncate">${it.name} ${it.amount ? 'x'+it.amount : ''}</div>
-                                    <div class="text-[10px] text-gray-500 font-bold">Rarity: <span class="text-indigo-500">${it.rarity}</span> ${it.isGuarantee ? '<span class="bg-pink-100 text-pink-500 px-1 rounded ml-1">การันตี</span>':''}</div>
+                                    <div class="text-[10px] text-gray-500 font-bold mt-0.5">Rarity: <span class="text-indigo-500">${it.rarity}</span> ${it.isGuarantee ? '<span class="bg-pink-100 text-pink-500 px-1 rounded ml-1">การันตี</span>':''}</div>
                                 </div>
-                                <div class="font-extrabold text-sm text-indigo-600">${chance}%</div>
+                                <div class="text-right shrink-0">
+                                    ${chanceHtml}
+                                </div>
                             </div>
                         `;
                     });
                     html += '</div>';
-                    Swal.fire({title: 'รายละเอียดและอัตราดรอป', html: html, showConfirmButton:false, showCloseButton:true, customClass:{popup:'rounded-3xl w-[95%] max-w-sm'}});
+                    Swal.fire({
+                        title: '<span class="font-bold text-lg">อัตราการได้รับ (โชคแมว)</span>', 
+                        html: html, 
+                        showConfirmButton:false, 
+                        showCloseButton:true, 
+                        customClass:{popup:'rounded-3xl w-[95%] max-w-sm'}
+                    });
                 });
             },
 
@@ -6066,11 +6146,12 @@
 
                 // สุ่มปกติตาม Rarity Weight
                 if (!selectedItem) {
-                    const totalWeight = itemsList.reduce((sum, i) => sum + (RARITY_WEIGHTS[i.rarity] || 0), 0);
+                    const catLevel = u.catData?.level || 1;
+                    const totalWeight = itemsList.reduce((sum, i) => sum + getAdjustedRarityWeight(i.rarity, catLevel), 0);
                     let rand = Math.random() * totalWeight;
                     let sum = 0;
                     for (let i of itemsList) {
-                        sum += (RARITY_WEIGHTS[i.rarity] || 0);
+                        sum += getAdjustedRarityWeight(i.rarity, catLevel);
                         if (rand <= sum) { selectedItem = i; break; }
                     }
                 }
