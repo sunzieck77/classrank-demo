@@ -1085,12 +1085,13 @@
 
                         <!-- Leaderboard / Ranking Section -->
                         <div class="shrink-0 mt-6 sm:mt-8 px-4 sm:px-5">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                 <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
                                     <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s800" class="w-9 h-9 object-contain" alt="Leaderboard">
                                     ทำเนียบอันดับนักเรียน
                                 </h3>
-                                <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold self-start sm:self-auto shadow-inner">
+                                
+                                <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold shadow-inner self-end sm:self-auto">
                                     <button onclick="app.changeRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${appState.rankingCriteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
                                         <img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain"> ClassStar
                                     </button>
@@ -1098,6 +1099,16 @@
                                         <img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain"> Crystal
                                     </button>
                                 </div>
+                            </div>
+                            
+                            <div class="flex bg-gray-200/80 p-1 rounded-xl text-xs font-semibold shadow-inner w-full mb-4">
+                                <button onclick="app.changeRankingScope('class')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${(!appState.rankingScope || appState.rankingScope === 'class') ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                    <i class="fa-solid fa-chalkboard-user"></i> ระดับห้องเรียน
+                                </button>
+                                
+                                <button onclick="app.changeRankingScope('school')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${appState.rankingScope === 'school' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                    <i class="fa-solid fa-school"></i> ระดับโรงเรียน
+                                </button>
                             </div>
 
                             <div id="leaderboard-list" class="space-y-2 sm:space-y-2.5">
@@ -1332,6 +1343,7 @@
                 if (!listContainer || !pagContainer) return;
 
                 const criteria = appState.rankingCriteria || 'cs';
+                const scope = appState.rankingScope || 'class'; // เพิ่มตัวแปรเช็ค scope
                 const page = appState.rankingPage || 1;
                 const limit = 10;
 
@@ -1345,19 +1357,52 @@
                         for (const uid in allUsers) {
                             const u = allUsers[uid];
                             if (u.role === 'student') {
-                                students.push({ uid, ...u });
+                                // ตรรกะคัดกรองห้องเรียน
+                                if (scope === 'class') {
+                                    if (u.class === appState.user.class && u.room === appState.user.room) {
+                                        students.push({ uid, ...u });
+                                    }
+                                } else {
+                                    // ระดับโรงเรียน (ดึงทุกคน)
+                                    students.push({ uid, ...u });
+                                }
                             }
                         }
                     }
 
+                    // เรียงคะแนนตามเกณฑ์
                     students.sort((a, b) => {
                         const scoreA = (a.items && a.items[criteria]) || 0;
                         const scoreB = (b.items && b.items[criteria]) || 0;
                         return scoreB - scoreA;
                     });
 
+                    // ------------------ ส่วนแสดงอันดับของฉัน ------------------
+                    let myRankHtml = '';
+                    if (appState.user && appState.user.role === 'student') {
+                        const myIndex = students.findIndex(s => s.uid === appState.user.uid);
+                        const myRank = myIndex !== -1 ? myIndex + 1 : '-';
+                        const myScore = (appState.user.items && appState.user.items[criteria]) || 0;
+                        const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-4 h-4 object-contain">` : `<img src="${ITEM_IMAGES.ct}" class="w-4 h-4 object-contain">`;
+                        const rankLabel = scope === 'class' ? `อันดับของฉัน (ในห้อง ${appState.user.class}/${appState.user.room})` : 'อันดับของฉัน (ระดับโรงเรียน)';
+                        
+                        myRankHtml = `
+                            <div class="-mt-3.5 mb-8 px-4 py-1 bg-gradient-to-r from-yellow-200/20 to-blue-500/20 border border-primary/20 rounded-lg flex justify-between items-center shadow-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary text-sm">${myRank}</div>
+                                    <span class="text-sm font-bold text-dark">${rankLabel}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 font-bold text-sm text-dark bg-white/60 px-2 py-1 rounded-lg">
+                                    <span>${myScore.toLocaleString()}</span>
+                                    ${scoreIcon}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    // -----------------------------------------------------------
+
                     if (students.length === 0) {
-                        listContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลนักเรียนในระบบ</div>`;
+                        listContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
                         pagContainer.innerHTML = '';
                         return;
                     }
@@ -1371,7 +1416,7 @@
                     const endIndex = Math.min(startIndex + limit, totalItems);
                     const pageData = students.slice(startIndex, endIndex);
 
-                    let listHtml = '';
+                    let listHtml = myRankHtml; // เอา UI กล่องอันดับของฉันมาใส่ไว้บนสุด
                     pageData.forEach((st, idx) => {
                         const absoluteRank = startIndex + idx + 1;
                         const score = (st.items && st.items[criteria]) || 0;
@@ -2028,7 +2073,7 @@
                                             return `
                                             <div class="w-full rounded-lg p-2 sm:p-2 flex items-center justify-start text-left shadow-sm border border-white/50 relative overflow-hidden gap-3 ${bgClass}" ${bgStyle}>
                                                 <div class="absolute inset-0 pointer-events-none ${overlayClass}"></div>
-                                                <img src="${badgeImg}" class="w-8 h-8 sm:w-8 sm:h-8 object-cover rounded-lg shrink-0 relative z-10" alt="Title Badge">
+                                                <img src="${badgeImg}" class="w-5 h-5 sm:w-5 sm:h-5 object-cover rounded-lg shrink-0 relative z-10" alt="Title Badge">
                                                 <div class="min-w-0 flex-1 relative z-10">
                                                     <span class="font-extrabold text-sm sm:text-base tracking-wide drop-shadow-sm truncate block">${titleInfo.name}</span>
                                                 </div>
@@ -4691,7 +4736,7 @@
                 const inv = catData.inventory || {cc:0, cd:0, ce:0};
 
                 subView.innerHTML = `
-                        <div class="w-full h-full flex flex-col overflow-hidden px-4 sm:px-5 pt-2 pb-6">
+                    <div class="w-full h-full flex flex-col overflow-hidden px-4 sm:px-5 pt-2 pb-6">
                         <h3 class="text-white font-bold text-lg drop-shadow-md mb-4 shrink-0">การจัดการ</h3>
                         
                         <div class="flex-1 overflow-y-auto no-scrollbar space-y-3">
@@ -4704,9 +4749,15 @@
                             </div>
 
                             <div class="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                                <h4 class="text-white font-bold text-xs mb-3 flex justify-between">กระเป๋าของแมว 
-                                    <button onclick="app.exchangeCatCurrency()" class="text-[10px] bg-primary/80 px-2 py-0.5 rounded text-white"><i class="ri-exchange-line"></i> นำแร่ไปแลก</button>
+                                <h4 class="text-white font-bold text-xs mb-3 flex justify-between items-center">
+                                    <span>กระเป๋าของแมว</span>
+                                    
+                                    <button onclick="app.exchangeCatCurrency()" class="text-[12px] bg-primary text-white px-3 py-0.2 rounded-lg font-extrabold flex items-center gap-1 shadow-md border border-white/10 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200">
+                                        <i class="ri-exchange-line text-lg"></i> 
+                                        <span>นำแร่ไปแลก</span>
+                                    </button>
                                 </h4>
+                                
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="bg-white/10 rounded-xl p-2 flex flex-col items-center justify-center">
                                         <img src="${CAT_ASSETS.cc}" class="w-8 h-8 object-contain mb-1 drop-shadow">
@@ -4727,10 +4778,10 @@
                                 <div class="text-center text-white/50 text-xs py-4">กำลังโหลดอาหาร...</div>
                             </div>
 
-                            <button onclick="app.showEquipModal('cat')" class="w-full bg-white/10 border border-white/20 text-white py-3 rounded-2xl font-bold text-sm hover:bg-white/20 transition active:scale-95">
+                            <button onclick="app.showEquipModal('cat')" class="w-full bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-white py-3 rounded-2xl font-bold text-sm hover:bg-white/20 transition active:scale-95">
                                 เปลี่ยนตัวแมว <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
                             </button>
-                            <button onclick="app.showEquipModal('bg')" class="w-full bg-white/10 border border-white/20 text-white py-3 rounded-2xl font-bold text-sm hover:bg-white/20 transition active:scale-95">
+                            <button onclick="app.showEquipModal('bg')" class="w-full bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-white py-3 rounded-2xl font-bold text-sm hover:bg-white/20 transition active:scale-95">
                                 เปลี่ยนพื้นหลัง <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
                             </button>
                         </div>
@@ -5296,30 +5347,116 @@
             },
 
             async exchangeCatCurrency() {
-                const inv = appState.user.catData.inventory;
+                // ดึงข้อมูลจำนวนเงินจริงที่ผู้ใช้มีอยู่
+                const inv = appState.user.catData.inventory || {};
+                
+                const userCC = inv.cc || 0;
+                const userCD = inv.cd || 0;
+                const userCE = inv.ce || 0;
+
+                // คำนวณจำนวนที่จะได้รับตามเรทจริง
+                const receiveCS = Math.floor(userCC / 100);
+                const receiveCT = Math.floor(userCD / 100);
+                const receiveTicket = Math.floor(userCE / 500);
+
+                // [เพิ่มใหม่] ตรวจสอบเงื่อนไขขั้นต่ำการแลก (10 CS, 10 CT, 1 Ticket)
+                const canExchangeCC = receiveCS >= 10;
+                const canExchangeCD = receiveCT >= 10;
+                const canExchangeCE = receiveTicket >= 1;
+
                 let html = `
-                    <div class="text-left space-y-4">
-                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
-                            <div class="flex items-center gap-2"><img src="${CAT_ASSETS.cc}" class="w-6"> <span class="text-xs font-bold text-gray-600">1000 CC</span></div>
-                            <i class="fa-solid fa-arrow-right text-gray-400"></i>
-                            <div class="flex items-center gap-2"><img src="${ITEM_IMAGES.cs}" class="w-6"> <span class="text-xs font-bold text-yellow-600">10 CS</span></div>
-                            <button onclick="app.processCatExchange('cc')" class="bg-primary text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95">แลกเลย</button>
+                    <div class="text-left space-y-3">
+                        
+                        <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2 font-extrabold text-gray-800">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${CAT_ASSETS.cc}" class="w-5"> 
+                                        <span class="text-sm">${userCC.toLocaleString()} CC</span>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-gray-400 text-xs mx-1"></i>
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${ITEM_IMAGES.cs}" class="w-5"> 
+                                        <span class="text-sm ${canExchangeCC ? 'text-yellow-600' : 'text-gray-400'}">${receiveCS.toLocaleString()} CS</span>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 font-medium flex flex-col gap-0.5">
+                                    <span>อัตราแลกเปลี่ยน: 100 CC = 1 CS</span>
+                                    <span class="${canExchangeCC ? 'text-green-600 font-semibold' : 'text-red-400 font-bold'}">
+                                        <i class="fa-solid ${canExchangeCC ? 'fa-circle-check' : 'fa-circle-exclamation'} mr-0.5"></i> 
+                                        ขั้นต่ำ: 10 CS
+                                    </span>
+                                </div>
+                            </div>
+                            ${canExchangeCC 
+                                ? `<button onclick="app.processCatExchange('cc')" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 shrink-0 transition-all">แลกเลย</button>`
+                                : `<button disabled class="bg-gray-200 text-gray-400 text-xs px-3 py-2 rounded-lg font-bold shrink-0 cursor-not-allowed shadow-inner border border-gray-300/30">ยอดไม่ถึง</button>`
+                            }
                         </div>
-                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
-                            <div class="flex items-center gap-2"><img src="${CAT_ASSETS.cd}" class="w-6"> <span class="text-xs font-bold text-gray-600">1000 CD</span></div>
-                            <i class="fa-solid fa-arrow-right text-gray-400"></i>
-                            <div class="flex items-center gap-2"><img src="${ITEM_IMAGES.ct}" class="w-6"> <span class="text-xs font-bold text-cyan-600">10 CT</span></div>
-                            <button onclick="app.processCatExchange('cd')" class="bg-primary text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95">แลกเลย</button>
+
+                        <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2 font-extrabold text-gray-800">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${CAT_ASSETS.cd}" class="w-5"> 
+                                        <span class="text-sm">${userCD.toLocaleString()} CD</span>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-gray-400 text-xs mx-1"></i>
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${ITEM_IMAGES.ct}" class="w-5"> 
+                                        <span class="text-sm ${canExchangeCD ? 'text-cyan-600' : 'text-gray-400'}">${receiveCT.toLocaleString()} CT</span>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 font-medium flex flex-col gap-0.5">
+                                    <span>อัตราแลกเปลี่ยน: 100 CD = 1 CT</span>
+                                    <span class="${canExchangeCD ? 'text-green-600 font-semibold' : 'text-red-400 font-bold'}">
+                                        <i class="fa-solid ${canExchangeCD ? 'fa-circle-check' : 'fa-circle-exclamation'} mr-0.5"></i> 
+                                        ขั้นต่ำ: 10 CT
+                                    </span>
+                                </div>
+                            </div>
+                            ${canExchangeCD 
+                                ? `<button onclick="app.processCatExchange('cd')" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 shrink-0 transition-all">แลกเลย</button>`
+                                : `<button disabled class="bg-gray-200 text-gray-400 text-xs px-3 py-2 rounded-lg font-bold shrink-0 cursor-not-allowed shadow-inner border border-gray-300/30">ยอดไม่ถึง</button>`
+                            }
                         </div>
-                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
-                            <div class="flex items-center gap-2"><img src="${CAT_ASSETS.ce}" class="w-6"> <span class="text-xs font-bold text-gray-600">500 CE</span></div>
-                            <i class="fa-solid fa-arrow-right text-gray-400"></i>
-                            <div class="flex items-center gap-2"><img src="${ITEM_IMAGES.ticket}" class="w-6"> <span class="text-xs font-bold text-pink-600">1 Ticket</span></div>
-                            <button onclick="app.processCatExchange('ce')" class="bg-primary text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95">แลกเลย</button>
+
+                        <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2 font-extrabold text-gray-800">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${CAT_ASSETS.ce}" class="w-5"> 
+                                        <span class="text-sm">${userCE.toLocaleString()} CE</span>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-gray-400 text-xs mx-1"></i>
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${ITEM_IMAGES.ticket}" class="w-5"> 
+                                        <span class="text-sm ${canExchangeCE ? 'text-pink-600' : 'text-gray-400'}">${receiveTicket.toLocaleString()} Ticket</span>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 font-medium flex flex-col gap-0.5">
+                                    <span>อัตราแลกเปลี่ยน: 500 CE = 1 Ticket</span>
+                                    <span class="${canExchangeCE ? 'text-green-600 font-semibold' : 'text-red-400 font-bold'}">
+                                        <i class="fa-solid ${canExchangeCE ? 'fa-circle-check' : 'fa-circle-exclamation'} mr-0.5"></i> 
+                                        ขั้นต่ำ: 1 Ticket 
+                                    </span>
+                                </div>
+                            </div>
+                            ${canExchangeCE 
+                                ? `<button onclick="app.processCatExchange('ce')" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 shrink-0 transition-all">แลกเลย</button>`
+                                : `<button disabled class="bg-gray-200 text-gray-400 text-xs px-3 py-2 rounded-lg font-bold shrink-0 cursor-not-allowed shadow-inner border border-gray-300/30">ยอดไม่ถึง</button>`
+                            }
                         </div>
+
                     </div>
                 `;
-                Swal.fire({ title: '<span class="font-bold text-lg">อัตราการแลกเปลี่ยน</span>', html: html, showConfirmButton: false, showCloseButton: true, customClass: { popup: 'rounded-3xl' } });
+                Swal.fire({ 
+                    title: '<span class="font-bold text-lg">อัตราการแลกเปลี่ยน</span>', 
+                    html: html, 
+                    showConfirmButton: false, 
+                    showCloseButton: true, 
+                    customClass: { popup: 'rounded-3xl' } 
+                });
             },
 
             async processCatExchange(type) {
@@ -7268,6 +7405,7 @@
             addOrEditTitleModal: (id) => Views.addOrEditTitleModal(id),
             deleteTitle: (id) => Views.deleteTitle(id),
             checkTaskBadge: () => Views.checkTaskBadge(),
+            changeRankingCriteria: (c) => { appState.rankingCriteria = c; appState.rankingPage = 1; Views.renderHome(); },
 
 
 
@@ -7406,6 +7544,7 @@
             showStudentProfileDetail: (uid) => Views.showStudentProfileDetail(uid),
             showRankCriteria: () => Views.showRankCriteria(),
             changeRankingCriteria: (c) => { appState.rankingCriteria = c; appState.rankingPage = 1; Views.renderHome(); },
+            changeRankingScope: (scope) => { appState.rankingScope = scope; appState.rankingPage = 1; Views.renderHome(); },
             changeRankingPage: (dir) => { appState.rankingPage = (appState.rankingPage || 1) + dir; Views.renderLeaderboard(); },
             toggleTeacherProfile: () => Views.toggleTeacherProfile(), editHomeConfig: () => Views.editHomeConfig(),
             
