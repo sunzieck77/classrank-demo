@@ -298,14 +298,21 @@
 
         <!-- Main Layout -->
 
-        <div id="maintenance-view" class="hidden absolute inset-0 z-[9999] flex-col items-center justify-center p-6 text-center" style="background-color: #FFF0F5;">
+        <div id="maintenance-view" class="hidden absolute inset-0 z-[9999] flex-col items-center justify-center p-6 text-center" style="background-background-color: #FFF0F5;">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center max-w-sm w-full relative overflow-hidden border border-pink-100">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
-                <div class="w-32 h-32 mb-6 animate-bounce-slow relative z-10">
+                <div class="w-32 h-32 mb-4 animate-bounce-slow relative z-10">
                     <img src="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800" class="w-full h-full object-contain filter drop-shadow-md" alt="Cat Sleep">
                 </div>
                 <h2 class="text-2xl font-extrabold text-pink-500 mb-2 relative z-10">กำลังปรับปรุงระบบ</h2>
-                <p class="text-gray-500 text-sm font-medium mb-8 relative z-10">ขออภัยในความไม่สะดวก น้องแมวกำลังทำความสะอาดและอัปเดตฟีเจอร์ใหม่ กรุณากลับมาใช้งานอีกครั้งในภายหลัง 🛠️✨</p>
+                <p class="text-gray-500 text-sm font-medium mb-4 relative z-10">ขออภัยในความไม่สะดวก น้องแมวกำลังทำความสะอาดและอัปเดตฟีเจอร์ใหม่ กรุณากลับมาใช้งานอีกครั้งในภายหลัง 🛠️✨</p>
+                
+                <div id="maintenance-rewards-box" class="hidden w-full mb-6 bg-pink-50/50 p-4 rounded-2xl border border-pink-100 relative z-10">
+                    <p class="text-xs font-extrabold text-pink-500 mb-3"><i class="fa-solid fa-gift mr-1"></i> ของรางวัลชดเชยหลังอัปเดตเสร็จสิ้น:</p>
+                    <div id="maintenance-rewards-list" class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                        </div>
+                </div>
+
                 <button onclick="document.getElementById('maintenance-view').classList.add('hidden'); document.getElementById('maintenance-view').classList.remove('flex'); document.getElementById('login-view').classList.remove('hidden'); app.logout();" class="w-full bg-dark text-white font-bold py-3.5 rounded-2xl shadow-lg active:scale-95 transition hover:bg-gray-800 relative z-10">
                     ออกจากระบบ
                 </button>
@@ -832,9 +839,8 @@
             async initMainApp() {
                 document.getElementById('login-view').classList.add('hidden');
                 
-                // === [เพิ่มใหม่] ตรวจสอบ Maintenance Mode ===
                 Loader.show();
-                let maintenanceConfig = { isActive: false, whitelist: [] };
+                let maintenanceConfig = { isActive: false, whitelist: [], rewards: [] };
                 try {
                     const snap = await get(ref(db, 'system/maintenance'));
                     if (snap.exists()) maintenanceConfig = snap.val();
@@ -848,11 +854,42 @@
                 // ถ้าเปิดโหมดปรับปรุง และ ไม่ใช่แอดมิน และ ไม่มีชื่อใน Whitelist
                 if (maintenanceConfig.isActive && !isTeacher && !isWhitelisted) {
                     document.getElementById('main-layout').classList.add('hidden');
-                    document.getElementById('maintenance-view').classList.remove('hidden');
-                    document.getElementById('maintenance-view').classList.add('flex');
+                    const maintView = document.getElementById('maintenance-view');
+                    maintView.classList.remove('hidden');
+                    maintView.classList.add('flex');
+
+                    // --- ระบบ Render ไอเทมชดเชย ---
+                    const rewardsBox = document.getElementById('maintenance-rewards-box');
+                    const rewardsList = document.getElementById('maintenance-rewards-list');
+                    
+                    if (maintenanceConfig.rewards && maintenanceConfig.rewards.length > 0) {
+                        let html = '';
+                        maintenanceConfig.rewards.forEach(r => {
+                            let imgStr = '';
+                            // กำหนดรูปภาพตามประเภท
+                            if(['cs','ct','ticket','sc'].includes(r.id)) imgStr = ITEM_IMAGES[r.id];
+                            else if(['cc','cd','ce'].includes(r.id)) imgStr = CAT_ASSETS[r.id];
+                            else imgStr = `https://drive.google.com/thumbnail?id=${r.id}&sz=s400`;
+
+                            // ถ้าเป็นไอเทมที่นับจำนวนได้ (amount > 0 และไม่ถูกล็อคเป็น 0 จากระบบ) ให้แสดง Badge
+                            let amtBadge = (r.amount && r.amount > 0) 
+                                ? `<span class="absolute -top-2 -right-2 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-md font-extrabold shadow-sm border border-white">x${r.amount}</span>` 
+                                : '';
+
+                            html += `
+                                <div class="relative bg-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-pink-100 shrink-0" title="${r.name}">
+                                    <img src="${imgStr}" class="w-9 h-9 object-contain drop-shadow-sm">
+                                    ${amtBadge}
+                                </div>
+                            `;
+                        });
+                        rewardsList.innerHTML = html;
+                        rewardsBox.classList.remove('hidden');
+                    } else {
+                        rewardsBox.classList.add('hidden');
+                    }
                     return; // หยุดการทำงาน ไม่ให้โหลดหน้า Home
                 }
-                // ===========================================
 
                 document.getElementById('maintenance-view').classList.add('hidden');
                 document.getElementById('maintenance-view').classList.remove('flex');
@@ -9065,17 +9102,55 @@
             },
             async manageMaintenanceMode() {
                 Loader.show();
-                const snap = await get(ref(db, 'system/maintenance'));
+                // ดึงข้อมูลการตั้งค่า Maintenance, ร้านค้ากรอบโปรไฟล์ และ ร้านค้าแมว พร้อมกัน
+                const [snap, framesSnap, catShopSnap] = await Promise.all([
+                    get(ref(db, 'system/maintenance')),
+                    get(ref(db, 'shop_frames')),
+                    get(ref(db, 'cat_shop'))
+                ]);
                 Loader.hide();
                 
-                const config = snap.exists() ? snap.val() : { isActive: false, whitelist: [] };
-                // Firebase อาจจะเก็บ Array ไม่ได้ถ้าว่างเปล่า เลยต้องเช็ค || []
+                const config = snap.exists() ? snap.val() : { isActive: false, whitelist: [], rewards: [] };
                 const whitelistStr = (config.whitelist || []).join(', ');
+                const currentRewards = config.rewards || [];
+
+                // สร้าง HTML สำหรับ Options ของ Dropdown
+                let itemOptions = `
+                    <option value="">-- เลือกไอเทมชดเชย --</option>
+                    <optgroup label="สกุลเงินหลัก">
+                        <option value="currency|cs|ClassStar (CS)">ClassStar (CS)</option>
+                        <option value="currency|ct|Crystal (CT)">Crystal (CT)</option>
+                        <option value="currency|ticket|Ticket">Ticket</option>
+                        <option value="currency|sc|S-Card (SC)">S-Card (SC)</option>
+                    </optgroup>
+                    <optgroup label="เหรียญแมว">
+                        <option value="cat_currency|cc|CatCoin (CC)">CatCoin (CC)</option>
+                        <option value="cat_currency|cd|CatDiamond (CD)">CatDiamond (CD)</option>
+                        <option value="cat_currency|ce|CatEmerald (CE)">CatEmerald (CE)</option>
+                    </optgroup>
+                    <optgroup label="กรอบโปรไฟล์ (ร้านค้า)">
+                `;
+                if (framesSnap.exists()) {
+                    Object.entries(framesSnap.val()).forEach(([k, v]) => {
+                        itemOptions += `<option value="frame|${v.driveId}|${v.name}">กรอบ: ${v.name}</option>`;
+                    });
+                }
+                itemOptions += `</optgroup><optgroup label="ร้านค้าแมว">`;
+                if (catShopSnap.exists()) {
+                    Object.entries(catShopSnap.val()).forEach(([k, v]) => {
+                        if(v.type === 'cat_frame') {
+                            itemOptions += `<option value="cat_frame|${v.driveId}|${v.name}">กรอบแมว: ${v.name}</option>`;
+                        } else if (v.type === 'food' || v.type === 'cat' || v.type === 'bg') {
+                            itemOptions += `<option value="${v.type}|${v.driveId || k}|${v.name}">${v.type.toUpperCase()}: ${v.name}</option>`;
+                        }
+                    });
+                }
+                itemOptions += `</optgroup>`;
 
                 const { value: formValues } = await Swal.fire({
                     title: '<span style="font-family: \'Kanit\';">ตั้งค่าโหมดปรับปรุงระบบ</span>',
                     html: `
-                        <div class="text-left font-sans text-sm mt-4 space-y-4">
+                        <div class="text-left font-sans text-sm mt-4 space-y-4 max-h-[65vh] overflow-y-auto no-scrollbar p-1">
                             <div class="flex items-center justify-between bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm">
                                 <div>
                                     <span class="font-bold text-red-600 block">เปิดใช้งาน Maintenance</span>
@@ -9083,10 +9158,20 @@
                                 </div>
                                 <input type="checkbox" id="maint-active" class="w-6 h-6 accent-red-500 cursor-pointer" ${config.isActive ? 'checked' : ''}>
                             </div>
+                            
                             <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
                                 <label class="font-bold text-gray-700 mb-2 block text-xs">ข้อยกเว้น (Whitelist รหัสนักเรียน)</label>
-                                <textarea id="maint-whitelist" class="w-full p-3 border border-gray-200 rounded-lg focus:outline-primary bg-white text-xs shadow-inner" rows="3" placeholder="เช่น 64001, 64002 (คั่นด้วยลูกน้ำ หรือ เว้นวรรค)">${whitelistStr}</textarea>
-                                <p class="text-[10px] text-gray-500 mt-2"><i class="fa-solid fa-circle-info text-primary"></i> แอดมิน (Teacher) เข้าได้เสมอ ไม่ต้องกรอกที่นี่</p>
+                                <textarea id="maint-whitelist" class="w-full p-3 border border-gray-200 rounded-lg focus:outline-primary bg-white text-xs shadow-inner" rows="2" placeholder="เช่น 64001, 64002 (คั่นด้วยลูกน้ำ)">${whitelistStr}</textarea>
+                            </div>
+
+                            <div class="bg-pink-50 p-3 rounded-xl border border-pink-200">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="font-bold text-pink-700 block text-xs"><i class="fa-solid fa-gift"></i> ของรางวัลแจกชดเชย (สูงสุด 5 อย่าง)</label>
+                                    <button id="add-reward-row-btn" class="bg-pink-500 text-white px-2 py-1 rounded text-[10px] font-bold shadow-sm active:scale-95 transition"><i class="fa-solid fa-plus"></i> เพิ่ม</button>
+                                </div>
+                                <div id="maint-rewards-container" class="space-y-2">
+                                    </div>
+                                <p class="text-[10px] text-pink-500 mt-2">*กรอบโปรไฟล์, แมว และพื้นหลัง ไม่ต้องระบุจำนวน</p>
                             </div>
                         </div>
                     `,
@@ -9094,13 +9179,108 @@
                     confirmButtonText: 'บันทึกการตั้งค่า',
                     cancelButtonText: 'ยกเลิก',
                     confirmButtonColor: '#EF4444',
-                    customClass: { popup: 'rounded-[2rem]' },
+                    customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl font-bold py-2.5 px-6', cancelButton: 'rounded-xl font-bold py-2.5 px-6' },
+                    didOpen: () => {
+                        const container = document.getElementById('maint-rewards-container');
+                        const addBtn = document.getElementById('add-reward-row-btn');
+                        
+                        let rowCount = 0;
+
+                        // ฟังก์ชันซ่อน/แสดงช่องใส่จำนวน
+                        const handleTypeChange = (selectEl, amtInput) => {
+                            const val = selectEl.value;
+                            if (!val) { amtInput.style.display = 'block'; return; }
+                            const type = val.split('|')[0];
+                            
+                            // กรอบ, แมว, พื้นหลัง ไม่ต้องระบุจำนวน
+                            if (['frame', 'cat_frame', 'cat', 'bg'].includes(type)) {
+                                amtInput.style.display = 'none';
+                                amtInput.value = 0; // Set to 0 to indicate non-stackable
+                            } else {
+                                amtInput.style.display = 'block';
+                                if (amtInput.value === '0') amtInput.value = 1;
+                            }
+                        };
+
+                        // ฟังก์ชันสร้างแถว UI
+                        const addRow = (initialData = null) => {
+                            if (rowCount >= 5) {
+                                Toast.fire({ icon: 'warning', title: 'เพิ่มของรางวัลได้สูงสุด 5 อย่างเท่านั้น' });
+                                return;
+                            }
+                            rowCount++;
+
+                            const rowDiv = document.createElement('div');
+                            rowDiv.className = 'flex gap-2 items-start maint-reward-row';
+                            
+                            const selectId = `m-sel-${rowCount}`;
+                            const amtId = `m-amt-${rowCount}`;
+
+                            rowDiv.innerHTML = `
+                                <select id="${selectId}" class="flex-1 p-2 border border-pink-200 rounded-lg text-xs bg-white focus:outline-pink-400 font-medium">
+                                    ${itemOptions}
+                                </select>
+                                <input type="number" id="${amtId}" placeholder="จำนวน" min="1" class="w-16 p-2 border border-pink-200 rounded-lg text-xs text-center focus:outline-pink-400" value="${initialData ? initialData.amount : 1}">
+                                <button class="bg-red-100 text-red-500 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-red-200 hover:bg-red-500 hover:text-white transition remove-row-btn"><i class="fa-solid fa-xmark"></i></button>
+                            `;
+
+                            container.appendChild(rowDiv);
+
+                            const selectEl = rowDiv.querySelector(`#${selectId}`);
+                            const amtInput = rowDiv.querySelector(`#${amtId}`);
+                            
+                            // ตั้งค่าเริ่มต้นถ้ามีข้อมูล
+                            if (initialData) {
+                                selectEl.value = `${initialData.type}|${initialData.id}|${initialData.name}`;
+                                handleTypeChange(selectEl, amtInput);
+                            }
+
+                            // แนบ Event Listener
+                            selectEl.addEventListener('change', () => handleTypeChange(selectEl, amtInput));
+                            rowDiv.querySelector('.remove-row-btn').addEventListener('click', () => {
+                                rowDiv.remove();
+                                rowCount--;
+                            });
+                        };
+
+                        // Render ข้อมูลเดิมที่เคยเซฟไว้
+                        if (currentRewards.length > 0) {
+                            currentRewards.forEach(r => addRow(r));
+                        } else {
+                            addRow(); // แสดง 1 แถวเปล่าๆ เป็นค่าเริ่มต้น
+                        }
+
+                        addBtn.addEventListener('click', () => addRow());
+                    },
                     preConfirm: () => {
                         const isActive = document.getElementById('maint-active').checked;
                         const rawWhitelist = document.getElementById('maint-whitelist').value;
-                        // แยกด้วยลูกน้ำ หรือการเว้นบรรทัด แล้วกรองค่าว่างออก
                         const whitelist = rawWhitelist.split(/[\n,]+/).map(id => id.trim()).filter(id => id !== '');
-                        return { isActive, whitelist };
+                        
+                        let rewards = [];
+                        const rows = document.querySelectorAll('.maint-reward-row');
+                        
+                        for (let row of rows) {
+                            const select = row.querySelector('select');
+                            const amtInput = row.querySelector('input[type="number"]');
+                            
+                            if (select.value) {
+                                const [type, id, name] = select.value.split('|');
+                                let amount = parseInt(amtInput.value);
+                                
+                                // ป้องกันคนใส่จำนวนแปลกๆ ในไอเทมที่ถูกล็อค
+                                if (['frame', 'cat_frame', 'cat', 'bg'].includes(type)) {
+                                    amount = 0; 
+                                } else if (isNaN(amount) || amount < 1) {
+                                    Swal.showValidationMessage('กรุณาระบุจำนวนไอเทมให้ถูกต้อง (ขั้นต่ำ 1)');
+                                    return false;
+                                }
+
+                                rewards.push({ type, id, name, amount });
+                            }
+                        }
+
+                        return { isActive, whitelist, rewards };
                     }
                 });
 
