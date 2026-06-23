@@ -103,6 +103,32 @@
             animation-name: shimmer;
             animation-timing-function: linear;
         }
+        @keyframes shining-loop {
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(200%) skewX(-15deg); }
+        }
+
+        .animate-shining {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animate-shining::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-15deg);
+            animation: shining-loop 2s infinite ease-in-out;
+        }
 
         .fade-enter { opacity: 0; transform: translateY(10px); }
         .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms, transform 300ms; }
@@ -320,14 +346,14 @@
         </div>
 
         <div id="main-layout" class="hidden flex-col h-full w-full overflow-hidden relative">
-            <header id="main-header" class="shrink-0 bg-white px-5 py-2 flex items-center justify-between z-20">
+            <!-- <header id="main-header" class="shrink-0 bg-white px-5 py-2 flex items-center justify-between z-20 hidden">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-white overflow-hidden border border-gray-100">
                         <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1781162895/logo_uatqpc.png" class="w-[90%] h-[90%] object-contain" alt="Cat Room Logo">
                     </div>
                     <h2 id="header-title" class="text-lg font-bold text-dark">หน้าหลัก</h2>
                 </div>
-            </header>
+            </header> -->
 
             <main id="content-area" class="flex-1 flex flex-col min-h-0 bg-gray-50 relative z-10 overflow-hidden">
                 <!-- Views inject their internal scrollable sections here -->
@@ -585,7 +611,8 @@
             item_6: { id: 'item_6', name: 'Frame Discount', desc: 'ร้านค้า (กรอบโปรไฟล์แมว): ลดราคา 25%', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781935566/FIRSTMEET_7_k6vart.png' },
             item_7: { id: 'item_7', name: 'Food Discount', desc: 'ร้านค้า (อาหารแมว): ลดราคา 25%', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781935566/FIRSTMEET_5_nsrrqi.png' },
             item_8: { id: 'item_8', name: 'Extra Hunger', desc: 'เพิ่มค่าความอิ่มให้อาหารแมวทุกชนิด 10%', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781935566/FIRSTMEET_4_keupzg.png' },
-            item_9: { id: 'item_9', name: 'Extra Happiness', desc: 'เพิ่มค่าความสุขให้อาหารแมวทุกชนิด 8%', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781935568/FIRSTMEET_6_cdfubs.png' }
+            item_9: { id: 'item_9', name: 'Extra Happiness', desc: 'เพิ่มค่าความสุขให้อาหารแมวทุกชนิด 8%', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781935568/FIRSTMEET_6_cdfubs.png' },
+            item_10: { id: 'item_10', name: 'Ticket Sell', desc: 'ตู้ gacha: ใช้ 25,000 SC แลก 1 Ticket', type: 'special', img: 'https://res.cloudinary.com/du7bh92n6/image/upload/v1782199825/FIRSTMEET_4_oykesc.png' }
         };
 
             
@@ -936,8 +963,11 @@
                     activeBtn.classList.add('text-primary');
                 }
             },
-            setHeader(title) {
-                document.getElementById('header-title').innerText = title;
+          setHeader(title) {
+                const headerTitle = document.getElementById('header-title');
+                if (headerTitle) {
+                    headerTitle.innerText = title;
+                }
             },
             renderSkeleton(type) {
                 if (type === 'home' || type === 'profile') {
@@ -1106,7 +1136,6 @@
                 
                 if (viewId === 'gacha' || viewId === 'catroom') {
                     contentArea.classList.add('hidden');
-                    header.classList.add('hidden');
                     nav.classList.add('hidden');
                     UI.toggleFloatingPet(false);
                     
@@ -1120,7 +1149,6 @@
                     return;
                 } else {
                     contentArea.classList.remove('hidden');
-                    header.classList.remove('hidden');
                     nav.classList.remove('hidden');
                     UI.updateNavActiveState(viewId);
                     
@@ -6107,6 +6135,26 @@
                                 <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
                                 <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
                             </div>
+                            ${Object.values(equippedItems).includes('item_10') ? `
+                                <button onclick="app.exchangeTicketWithSC()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-white font-bold py-3 px-4 rounded-2xl shadow-md flex items-center justify-center gap-3 border border-white/40 transition-all transform active:scale-95 animate-shining relative overflow-hidden">
+                                    <!-- ฝั่ง S-Card (ต้นทาง) -->
+                                    <div class="flex items-center gap-1.5 bg-black/15 px-3 py-1 rounded-xl">
+                                        <img src="${ITEM_IMAGES.sc}" class="w-5 h-5 object-contain drop-shadow" alt="SC">
+                                        <span class="text-yellow-100 font-mono text-sm tracking-wide">25,000</span>
+                                    </div>
+                                    
+                                    <!-- ตัวเชื่อม (ลูกศร) -->
+                                    <div class="flex items-center justify-center w-6 h-6 rounded-full bg-white/20 shadow-inner">
+                                        <i class="fa-solid fa-arrow-right text-white text-xs"></i>
+                                    </div>
+                                    
+                                    <!-- ฝั่ง Ticket (ปลายทาง) -->
+                                    <div class="flex items-center gap-1.5 bg-black/15 px-3 py-1 rounded-xl">
+                                        <img src="${ITEM_IMAGES.ticket}" class="w-5 h-5 object-contain drop-shadow" alt="Ticket">
+                                        <span class="font-extrabold text-white text-sm">1 Ticket</span>
+                                    </div>
+                                </button>
+                            ` : ''}
                             
                             <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-full flex items-center justify-center gap-2">
                                 สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
@@ -6171,6 +6219,7 @@
                 gachaView.innerHTML = `<div class="p-10 text-center text-red-500">โหลดข้อมูล Gacha ไม่สำเร็จ</div>`;
             }
         },
+    
         switchGachaTab(tabId) {
             appState.gachaActiveTab = tabId;
             this.renderGacha();
@@ -11047,6 +11096,68 @@
                 appState.marketFilterGrade = 'all';
                 Views.renderShop();
             },
+            exchangeTicketWithSC: async () => {
+                const cost = 25000;
+                const u = appState.user;
+                const currentSCard = u.items?.sc || 0; 
+                
+                if (currentSCard < cost) {
+                    Swal.fire({ 
+                        icon: 'error', 
+                        title: 'S-Card ไม่เพียงพอ', 
+                        text: `คุณต้องมีอย่างน้อย ${cost.toLocaleString()} S-Card เพื่อแลกตั๋ว` 
+                    });
+                    return;
+                }
+
+                const result = await Swal.fire({
+                    title: 'ยืนยันการแลกตั๋ว?',
+                    text: `ใช้ ${cost.toLocaleString()} S-Card เพื่อแลก 1 Ticket`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4f46e5',
+                    cancelButtonColor: '#aaa',
+                    confirmButtonText: 'ตกลงแลก',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const newSCard = currentSCard - cost;
+                        const newTickets = (u.items?.ticket || 0) + 1;
+
+                        // 1. อัปเดตข้อมูลไปยัง Firebase
+                        await update(ref(db, `users/${u.uid}`), {
+                            'items/sc': newSCard,
+                            'items/ticket': newTickets
+                        });
+
+                        // 2. อัปเดตข้อมูลใน State ของระบบ
+                        if (!u.items) u.items = {};
+                        u.items.sc = newSCard;
+                        u.items.ticket = newTickets;
+
+                        // 3. 🌟 อัปเดตแสดงผลตั๋วสุ่มรวมด้านบนสุดของตู้ Gacha เท่านั้น
+                        const ticketDisplay = document.getElementById('gacha-main-ticket');
+                        if (ticketDisplay) ticketDisplay.innerText = newTickets.toLocaleString();
+                        
+                        // ❌ (ลบบรรทัด gacha-view-card-count ออกไปแล้ว เพื่อไม่ให้ทับข้อมูลเฉพาะตู้)
+
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: 'แลกสำเร็จ!', 
+                            text: 'ได้รับ 1 Ticket เรียบร้อยแล้ว 🎟️', 
+                            timer: 1500, 
+                            showConfirmButton: false 
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถทำรายการได้ในขณะนี้' });
+                    }
+                }
+            },
+
+
 
 
 
