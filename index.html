@@ -4055,93 +4055,149 @@
                 }
             },
 
-            async showStudentProfileDetail(studentUid) {
-                Loader.show();
-                try {
-                    // เปลี่ยนตรงนี้ให้ดึง Titles มาด้วยพร้อมกัน
-                    const [snap, titlesSnap] = await Promise.all([
-                        get(ref(db, `users/${studentUid}`)),
-                        get(ref(db, 'player_titles'))
-                    ]);
-                    window.renderStore.playerTitles = titlesSnap.exists() ? titlesSnap.val() : {};
-                    
-                    Loader.hide();
-                    if (!snap.exists()) return;;
-                    
-                    const u = snap.val();
-                    const avatar = u.profileImage || DEFAULT_AVATAR;
-                    const banner = u.bannerImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80';
-                    const items = u.items || { cs: 0, ct: 0, ticket: 0, sc: 0 };
-                    const currentFrame = getProfileFrame(u);
-                    
-                    const ctVal = items.ct || 0;
-                    const rankBadge = getRankBadge(ctVal);
-                    const displayN = u.displayName || u.fullName;
-                    
-                    // Cat Room Info for ranking detail modal
-                    const catData = u.catData || {};
-                    const catBg = catData.equippedBg || CAT_ASSETS.starterBg;
-                    const catImg = catData.equippedCat || CAT_ASSETS.starterCat;
-                    const catRank = getCatRank(catData.level);
-                    const catName = catData.name || 'MewMew';
-                    const catLevel = catData.level || 1;
-                    const hunger = Math.max(0, Math.min(100, catData.hunger || 0));
-                    const happy = Math.max(0, Math.min(100, catData.happiness || 0));
-                    
-                    Swal.fire({
-                        html: `
-                            <div class="text-left font-sans -mx-4 sm:-mx-6 -mt-6 sm:-mt-8 overflow-hidden rounded-t-[2rem] max-h-[80vh] flex flex-col">
-                                <div class="shrink-0 h-28 sm:h-32 sm:mx-1 mt-4 sm:mt-6 rounded-2xl bg-cover bg-center shadow-sm" style="background-image: url('${banner}')"></div>
-                                
-                                <div class="shrink-0 px-4 sm:px-6 -mt-8 sm:-mt-10 relative z-10 pb-3 sm:pb-4 flex items-end justify-between w-full">
-                                    <div class="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center select-none z-10 shrink-0">
-                                        <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'">
-                                        <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]">
-                                    </div>
-                                    <div onclick="app.showRankCriteria()" class="flex flex-col items-center justify-center bg-transparent p-1 w-32 h-16 sm:w-44 sm:h-20 mr-0 z-10 shrink-0 cursor-pointer hover:scale-105 transition-transform" title="คลิกเพื่อดูเกณฑ์แรงค์">
-                                        <img src="${rankBadge.image}" class="h-28 sm:h-40 w-auto object-contain drop-shadow-lg" alt="${rankBadge.name}">
-                                        <span class="text-[8px] sm:text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mt-1 bg-white/80 px-2.5 py-0.5 rounded-full shadow-sm border border-gray-100 backdrop-blur-sm">${rankBadge.name} <i class="fa-solid fa-circle-info ml-0.5 text-primary"></i></span>
-                                    </div>
-                                </div>
-                                <div class="shrink-0 px-4 sm:px-6 pb-2 min-w-0">
-                                    <h3 class="text-lg sm:text-xl font-bold text-dark leading-tight truncate">${displayN}</h3>
-                                    <p class="text-[11px] sm:text-xs text-gray-500 mt-1 truncate"><i class="fa-solid fa-graduation-cap mr-1"></i> ชั้น ม.${u.class}/${u.room} • เลขที่ ${u.number}</p>
-                                    <p class="text-[9px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">รหัสประจำตัว: ${u.studentId}</p>
-                                </div>
+        async showStudentProfileDetail(studentUid) {
+            Loader.show();
+            try {
+                // ดึงข้อมูลผู้ใช้ และ รายชื่อฉายาทั้งหมด
+                const [snap, titlesSnap] = await Promise.all([
+                    get(ref(db, `users/${studentUid}`)),
+                    get(ref(db, 'player_titles'))
+                ]);
+                window.renderStore.playerTitles = titlesSnap.exists() ? titlesSnap.val() : {};
+                
+                Loader.hide();
+                if (!snap.exists()) return;
+                
+                const u = snap.val();
+                const avatar = u.profileImage || DEFAULT_AVATAR;
+                const banner = u.bannerImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80';
+                const items = u.items || { cs: 0, ct: 0, ticket: 0, sc: 0 };
+                const currentFrame = getProfileFrame(u);
+                
+                const ctVal = items.ct || 0;
+                const rankBadge = getRankBadge(ctVal);
+                const displayN = u.displayName || u.fullName;
+                
+                const catData = u.catData || {};
+                const catBg = catData.equippedBg || CAT_ASSETS.starterBg;
+                const catImg = catData.equippedCat || CAT_ASSETS.starterCat;
+                const catRank = getCatRank(catData.level);
+                const catName = catData.name || 'MewMew';
+                const catLevel = catData.level || 1;
+                const hunger = Math.max(0, Math.min(100, catData.hunger || 0));
+                const happy = Math.max(0, Math.min(100, catData.happiness || 0));
 
-                                <div class="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 pb-5">
+                // ดึงข้อมูลสวมใส่พิเศษจาก equippedSpecialItems
+                const targetEquipped = u.equippedSpecialItems || { slot1: null, slot2: null };
+                let equippedCardsHTML = '';
+
+                // ตรวจสอบสลอตการสวมใส่ว่ามีไอเทมติดตั้งอยู่จริงๆ หรือไม่
+                if (!targetEquipped.slot1 && !targetEquipped.slot2) {
+                    equippedCardsHTML = `
+                        <div class="flex flex-col items-center justify-center py-10 text-gray-400 gap-2">
+                            <i class="fa-regular fa-folder-open text-3xl"></i>
+                            <span class="text-xs font-semibold">ไม่ได้สวมใส่การ์ดไอเทมพิเศษ</span>
+                        </div>`;
+                } else {
+                    // 🌟 ปรับโครงสร้างตรงนี้: แสดงเป็นการ์ดเรียงข้างกัน (2 คอลัมน์) และชื่ออยู่ด้านล่าง
+                    equippedCardsHTML = `<div class="grid grid-cols-2 gap-3 justify-center">`;
+                    
+                    Object.entries(targetEquipped).forEach(([slot, itemId]) => {
+                        if (!itemId) return; // หากช่องนั้นว่างให้ข้ามไป
+                        
+                        const itemInfo = SPECIAL_ABILITIES[itemId];
+                        if (itemInfo) {
+                            const itemImageUrl = itemInfo.img || itemInfo.image || '';
+                            const displaySlotName = slot === 'slot1' ? 'Slot 1' : 'Slot 2';
+                            
+                            equippedCardsHTML += `
+                                <div class="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+                                    <div class="absolute top-1.5 left-1.5 text-[8px] text-purple-600 font-extrabold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 uppercase tracking-wider">
+                                        ${displaySlotName}
+                                    </div>
+                                    
+                                    <div class="w-20 h-28 bg-gray-50 rounded-xl flex items-center justify-center p-1.5 border border-gray-100 overflow-hidden mt-4 shadow-inner shrink-0">
+                                        <img src="${itemImageUrl}" class="w-full h-full object-contain rounded-lg drop-shadow" onerror="this.src='https://placehold.co/150x200?text=Item'">
+                                    </div>
+                                    
+                                    <div class="mt-2.5 w-full min-w-0">
+                                        <div class="text-xs font-extrabold text-dark truncate px-0.5" title="${itemInfo.name}">${itemInfo.name}</div>
+                                        <p class="text-[9px] text-gray-400 mt-0.5 truncate px-0.5" title="${itemInfo.desc || ''}">${itemInfo.desc || ''}</p>
+                                    </div>
+                                </div>`;
+                        }
+                    });
+                    
+                    equippedCardsHTML += `</div>`;
+                }
+                
+                Swal.fire({
+                    html: `
+                        <div class="text-left font-sans -mx-4 sm:-mx-6 -mt-6 sm:-mt-8 overflow-hidden rounded-t-[2rem] max-h-[85vh] flex flex-col">
+                            <div class="shrink-0 h-28 sm:h-32 sm:mx-1 mt-4 sm:mt-6 rounded-2xl bg-cover bg-center shadow-sm" style="background-image: url('${banner}')"></div>
+                            
+                            <div class="shrink-0 px-4 sm:px-6 -mt-8 sm:-mt-10 relative z-10 pb-2 flex items-end justify-between w-full">
+                                <div class="relative w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center select-none z-10 shrink-0">
+                                    <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'">
+                                    <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]">
+                                </div>
+                                <div class="flex flex-col items-center justify-center bg-transparent p-1 w-32 h-16 sm:w-44 sm:h-20 mr-0 z-10 shrink-0 cursor-pointer hover:scale-105 transition-transform" title="คลิกเพื่อดูเกณฑ์แรงค์">
+                                    <img src="${rankBadge.image}" class="h-28 sm:h-40 w-auto object-contain drop-shadow-lg" alt="${rankBadge.name}">
+                                    <span class="text-[8px] sm:text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mt-1 bg-white/80 px-2.5 py-0.5 rounded-full shadow-sm border border-gray-100 backdrop-blur-sm">${rankBadge.name}</span>
+                                </div>
+                            </div>
+
+                            <div class="shrink-0 px-4 sm:px-6 pb-2 min-w-0">
+                                <h3 class="text-lg sm:text-xl font-bold text-dark leading-tight truncate">${displayN}</h3>
+                                <p class="text-[11px] sm:text-xs text-gray-500 mt-1 truncate"><i class="fa-solid fa-graduation-cap mr-1"></i> ชั้น ม.${u.class}/${u.room} • เลขที่ ${u.number}</p>
+                                <p class="text-[9px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">รหัสประจำตัว: ${u.studentId}</p>
+                            </div>
+
+                            <div class="shrink-0 flex border-b border-gray-100 mt-2 px-4 sm:px-6 gap-6">
+                                <button onclick="document.getElementById('tab-profile-content').style.display='block'; document.getElementById('tab-cards-content').style.display='none'; this.classList.add('border-primary', 'text-primary'); this.nextElementSibling.classList.remove('border-primary', 'text-primary'); this.nextElementSibling.classList.add('border-transparent', 'text-gray-400'); document.getElementById('profile-blocks-wrapper').className='flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 pb-5 bg-gray-50/50';" class="pb-2.5 text-xs font-bold border-b-2 border-primary text-primary transition-all focus:outline-none relative">
+                                    ข้อมูลทั่วไป
+                                </button>
+                                <button onclick="document.getElementById('tab-profile-content').style.display='none'; document.getElementById('tab-cards-content').style.display='block'; this.classList.add('border-primary', 'text-primary'); this.previousElementSibling.classList.remove('border-primary', 'text-primary'); this.previousElementSibling.classList.add('border-transparent', 'text-gray-400'); document.getElementById('profile-blocks-wrapper').className='flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 pb-5 bg-purple-50/30';" class="pb-2.5 text-xs font-bold border-b-2 border-transparent text-gray-400 transition-all focus:outline-none">
+                                    การ์ดพิเศษที่ใส่
+                                </button>
+                            </div>
+
+                            <div id="profile-blocks-wrapper" class="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 pb-5 bg-gray-50/50 pt-4 transition-colors duration-200">
+                                
+                                <div id="tab-profile-content" class="space-y-4">
                                     ${(() => {
                                         if (catLevel >= 60) {
                                             const titleId = u.selectedTitle || Object.keys(window.renderStore.playerTitles)[0];
                                             const titleInfo = getTitleData(titleId);
+                                            if (!titleInfo) return '';
                                             const badgeImg = titleInfo.img.startsWith('http') ? titleInfo.img : `https://drive.google.com/thumbnail?id=${titleInfo.img}&sz=s800`;
                                             const bgStyle = titleInfo.bgImg ? `style="background-image: url('${titleInfo.bgImg.startsWith('http') ? titleInfo.bgImg : 'https://drive.google.com/thumbnail?id=' + titleInfo.bgImg + '&sz=s800'}'); background-size: cover; background-position: center;"` : '';
                                             const bgClass = titleInfo.bgImg ? 'text-white border-transparent' : titleInfo.bg;
                                             const overlayClass = titleInfo.bgImg ? 'bg-black/10' : 'bg-white/20';
 
                                             return `
-                                            <div class="w-full rounded-lg p-2 sm:p-2 flex items-center justify-start text-left shadow-sm border border-white/50 relative overflow-hidden gap-3 ${bgClass}" ${bgStyle}>
+                                            <div class="w-full rounded-lg p-2 flex items-center justify-start text-left shadow-sm border border-white/50 relative overflow-hidden gap-3 ${bgClass}" ${bgStyle}>
                                                 <div class="absolute inset-0 pointer-events-none ${overlayClass}"></div>
-                                                <img src="${badgeImg}" class="w-5 h-5 sm:w-5 sm:h-5 object-cover rounded-lg shrink-0 relative z-10" alt="Title Badge">
+                                                <img src="${badgeImg}" class="w-5 h-5 object-cover rounded-lg shrink-0 relative z-10" alt="Title Badge">
                                                 <div class="min-w-0 flex-1 relative z-10">
-                                                    <span class="font-extrabold text-sm sm:text-base tracking-wide drop-shadow-sm truncate block">${titleInfo.name}</span>
+                                                    <span class="font-extrabold text-sm tracking-wide drop-shadow-sm truncate block">${titleInfo.name}</span>
                                                 </div>
                                             </div>`;
                                         }
                                         return '';
                                     })()}
-                                    <!-- Cat Room Info Panel -->
-                                    <div class="mt-2 mb-5">
-                                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sm:mb-2.5">ห้องแมวส่วนตัว</h4>
-                                        <div class="relative w-full h-32 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                                    
+                                    <div>
+                                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ห้องแมวส่วนตัว</h4>
+                                        <div class="relative w-full h-32 rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white">
                                             <div class="absolute inset-0 bg-cover bg-center filter brightness-90" style="background-image: url('https://drive.google.com/thumbnail?id=${catBg}&sz=s800')"></div>
                                             <div class="absolute inset-0 bg-black/30"></div>
                                             <div class="relative z-10 p-3 h-full flex items-center gap-3">
                                                 <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s800" class="w-20 h-20 sm:w-24 sm:h-24 object-contain animate-bounce-slow drop-shadow-lg">
                                                 <div class="flex-1 min-w-0 flex flex-col justify-center">
                                                     <div class="flex items-center gap-1.5 mb-0.5">
-                                                        <img src="${catRank.image}" class="h-8 sm:h-8 object-contain">
-                                                        <h4 class="font-extrabold text-white text-sm sm:text-base drop-shadow-md truncate">${catName}</h4>
+                                                        <img src="${catRank.image}" class="h-8 object-contain">
+                                                        <h4 class="font-extrabold text-white text-sm drop-shadow-md truncate">${catName}</h4>
                                                     </div>
                                                     <span class="text-[9px] sm:text-[10px] font-bold text-white/90 uppercase tracking-widest drop-shadow mb-2">Lv. ${catLevel} • ${catRank.name}</span>
                                                     
@@ -4164,52 +4220,62 @@
                                         </div>
                                     </div>
 
-                                    <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sm:mb-2.5">คลังไอเทมสะสม</h4>
-                                    <div class="grid grid-cols-2 gap-2.5">
-                                        <div class="bg-gradient-to-br from-yellow-50 to-orange-50/50 p-2.5 rounded-2xl border border-yellow-100 flex items-center gap-2">
-                                            <img src="${ITEM_IMAGES.cs}" class="w-8 h-8 object-contain">
-                                            <div>
-                                                <div class="text-sm font-bold text-dark">${(items.cs || 0).toLocaleString()}</div>
-                                                <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tight">ClassStar</div>
+                                    <div>
+                                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">คลังไอเทมสะสม</h4>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <div class="bg-white p-2.5 rounded-2xl border border-gray-100 flex items-center gap-2 shadow-sm">
+                                                <img src="${ITEM_IMAGES.cs}" class="w-8 h-8 object-contain">
+                                                <div>
+                                                    <div class="text-sm font-bold text-dark">${(items.cs || 0).toLocaleString()}</div>
+                                                    <div class="text-[9px] text-gray-400 uppercase font-bold tracking-tight">ClassStar</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="bg-gradient-to-br from-cyan-50 to-blue-50/50 p-2.5 rounded-2xl border border-cyan-100 flex items-center gap-2">
-                                            <img src="${ITEM_IMAGES.ct}" class="w-8 h-8 object-contain">
-                                            <div>
-                                                <div class="text-sm font-bold text-dark">${(items.ct || 0).toLocaleString()}</div>
-                                                <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tight">Crystal</div>
+                                            <div class="bg-white p-2.5 rounded-2xl border border-gray-100 flex items-center gap-2 shadow-sm">
+                                                <img src="${ITEM_IMAGES.ct}" class="w-8 h-8 object-contain">
+                                                <div>
+                                                    <div class="text-sm font-bold text-dark">${(items.ct || 0).toLocaleString()}</div>
+                                                    <div class="text-[9px] text-gray-400 uppercase font-bold tracking-tight">Crystal</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="bg-gradient-to-br from-rose-50 to-pink-50/50 p-2.5 rounded-2xl border border-rose-100 flex items-center gap-2">
-                                            <img src="${ITEM_IMAGES.ticket}" class="w-8 h-8 object-contain">
-                                            <div>
-                                                <div class="text-sm font-bold text-dark">${(items.ticket || 0).toLocaleString()}</div>
-                                                <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tight">Ticket</div>
+                                            <div class="bg-white p-2.5 rounded-2xl border border-gray-100 flex items-center gap-2 shadow-sm">
+                                                <img src="${ITEM_IMAGES.ticket}" class="w-8 h-8 object-contain">
+                                                <div>
+                                                    <div class="text-sm font-bold text-dark">${(items.ticket || 0).toLocaleString()}</div>
+                                                    <div class="text-[9px] text-gray-400 uppercase font-bold tracking-tight">Ticket</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="bg-gradient-to-br from-purple-50 to-fuchsia-50/50 p-2.5 rounded-2xl border border-purple-100 flex items-center gap-2">
-                                            <img src="${ITEM_IMAGES.sc}" class="w-8 h-8 object-contain">
-                                            <div>
-                                                <div class="text-sm font-bold text-dark">${(items.sc || 0).toLocaleString()}</div>
-                                                <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tight">S-Card</div>
+                                            <div class="bg-white p-2.5 rounded-2xl border border-gray-100 flex items-center gap-2 shadow-sm">
+                                                <img src="${ITEM_IMAGES.sc}" class="w-8 h-8 object-contain">
+                                                <div>
+                                                    <div class="text-sm font-bold text-dark">${(items.sc || 0).toLocaleString()}</div>
+                                                    <div class="text-[9px] text-gray-400 uppercase font-bold tracking-tight">S-Card</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div id="tab-cards-content" class="hidden">
+                                    <h4 class="text-[10px] sm:text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">การ์ดไอเทมที่กำลังสวมใส่</h4>
+                                    ${equippedCardsHTML}
+                                </div>
+
                             </div>
-                        `,
-                        confirmButtonText: 'ปิดหน้าต่าง',
-                        confirmButtonColor: '#27D6F5',
-                        customClass: {
-                            popup: 'rounded-[2rem] p-0 overflow-hidden w-[95%] max-w-sm',
-                            confirmButton: 'rounded-xl font-bold py-2.5 px-6 mb-5'
-                        }
-                    });
-                } catch (err) {
-                    Loader.hide();
-                    Toast.fire({ icon: 'error', title: 'ไม่สามารถโหลดข้อมูลโปรไฟล์ได้' });
-                }
-            },
+                        </div>
+                    `,
+                    confirmButtonText: 'ปิดหน้าต่าง',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: {
+                        popup: 'rounded-[2rem] p-0 overflow-hidden w-[95%] max-w-sm',
+                        confirmButton: 'rounded-xl font-bold py-2.5 px-6 mb-5'
+                    }
+                });
+            } catch (err) {
+                Loader.hide();
+                console.error(err);
+                Toast.fire({ icon: 'error', title: 'ไม่สามารถโหลดข้อมูลโปรไฟล์ได้' });
+            }
+        },
 
             _createItemCard(name, amount, imgUrl, bgClass) {
                 return `
@@ -4982,61 +5048,118 @@
                             </div>`;
                     }
                 } else if (tab === 'manage') {
-                        // --- 2. จัดการร้านค้า (ดึงการ์ดกลับ) ---
-                        const myListings = Object.entries(marketData).filter(([_, data]) => data.sellerId === u.uid);
-                        let myItemsHtml = '';
-                        if (myListings.length === 0) {
-                            myItemsHtml = `<div class="text-center py-6 text-gray-400 text-xs bg-gray-50 rounded-xl">คุณยังไม่ได้ลงขายการ์ด</div>`;
-                        } else {
-                            myListings.forEach(([listingId, data]) => {
-                                myItemsHtml += `
-                                    <div class="flex items-center justify-between bg-white border border-gray-100 p-2.5 rounded-xl mb-2 shadow-sm">
-                                        <div class="flex items-center gap-3 min-w-0">
-                                            <div class="w-10 h-12 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm overflow-hidden p-0.5 shrink-0">
-                                                <img src="${data.cardImage}" class="w-full h-full object-contain">
-                                            </div>
-                                            <div class="min-w-0 pr-2">
-                                                <div class="text-xs font-bold text-dark mb-0.5 truncate">${data.cardName} (x${data.quantity})</div>
-                                                <div class="text-[10px] text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded inline-block border border-orange-100">
-                                                    ${data.price * data.quantity} SC ${data.code ? '<i class="fa-solid fa-lock text-red-400 ml-1"></i>' : ''}
-                                                </div>
-                                            </div>
+                    // --- 2. จัดการร้านค้า (ดึงการ์ดกลับ) ---
+                    const myListings = Object.entries(marketData).filter(([_, data]) => data.sellerId === u.uid);
+                    let myItemsHtml = '';
+                    if (myListings.length === 0) {
+                        myItemsHtml = `<div class="text-center py-8 text-gray-400 text-xs bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">คุณยังไม่ได้ลงขายการ์ดในขณะนี้</div>`;
+                    } else {
+                        myListings.forEach(([listingId, data]) => {
+                            myItemsHtml += `
+                                <div class="flex items-center justify-between bg-white border border-gray-100 p-2.5 rounded-xl mb-2 shadow-sm">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-12 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm overflow-hidden p-0.5 shrink-0">
+                                            <img src="${data.cardImage}" class="w-full h-full object-contain">
                                         </div>
-                                        <div class="flex flex-col gap-1 shrink-0 ml-2">
-                                            <button onclick="app.editMarketCardPrice('${listingId}')" class="px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded-lg transition active:scale-95 flex items-center justify-center gap-1 shadow-sm">
-                                                <i class="fa-solid fa-pen-to-square text-[9px]"></i> แก้ไข
-                                            </button>
-                                            
-                                            <button onclick="app.cancelMarketCard('${listingId}')" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition active:scale-95 flex items-center justify-center gap-1 shadow-sm">
-                                                <i class="fa-solid fa-arrow-rotate-left text-[9px]"></i> ดึงกลับ
-                                            </button>
+                                        <div class="min-w-0 pr-2">
+                                            <div class="text-xs font-bold text-dark mb-0.5 truncate">${data.cardName} (x${data.quantity})</div>
+                                            <div class="text-[10px] text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded inline-block border border-orange-100">
+                                                ${data.price * data.quantity} SC ${data.code ? '<i class="fa-solid fa-lock text-red-400 ml-1"></i>' : ''}
+                                            </div>
                                         </div>
                                     </div>
-                                `;
-                            });
-                        }
+                                    <div class="flex flex-col gap-1 shrink-0 ml-2">
+                                        <button onclick="app.editMarketCardPrice('${listingId}')" class="px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded-lg transition active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                            <i class="fa-solid fa-pen-to-square text-[9px]"></i> แก้ไข
+                                        </button>
+                                        <button onclick="app.cancelMarketCard('${listingId}')" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                            <i class="fa-solid fa-arrow-rotate-left text-[9px]"></i> ดึงกลับ
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
 
-                        contentHtml = `
-                            <div class="px-4 pb-24 mt-4">
-                                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-3xl border border-indigo-100 shadow-sm mb-5 relative overflow-hidden">
-                                    <div class="absolute -right-4 -top-4 text-indigo-100 text-6xl opacity-50"><i class="fa-solid fa-box-open"></i></div>
-                                    <h4 class="font-extrabold text-indigo-900 text-sm mb-2 relative z-10">การลงขายการ์ด</h4>
-                                    <p class="text-[10px] text-indigo-700 relative z-10 mb-4">ระบบได้ย้ายการลงขายการ์ดไปรวมไว้ที่คลังการ์ด เพื่อให้คุณจัดการไอเทมได้สะดวกขึ้นแล้ว</p>
-                                    <button onclick="app.navigate('card_inventory')" class="w-full relative z-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition mt-2">
-                                        ไปที่คลังการ์ดเพื่อลงขาย
-                                    </button>
+                    // ดึงข้อมูลและสร้าง HTML สำหรับประวัติการขาย (จำกัด 10 แถว เรียงใหม่ไปเก่า)
+                    let salesHistoryHtml = '';
+                    const salesHistory = u.sales_history ? Object.values(u.sales_history) : [];
+                    
+                    // เรียงจากเวลาล่าสุดไปเก่าสุด (Timestamp มากไปน้อย)
+                    salesHistory.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                    if (salesHistory.length === 0) {
+                        salesHistoryHtml = `<div class="text-center py-8 text-gray-400 text-xs bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">ยังไม่มีประวัติการขายของคุณในระบบ</div>`;
+                    } else {
+                        salesHistory.forEach(history => {
+                            const buyerAvatar = history.buyerImage || 'https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800'; 
+                            salesHistoryHtml += `
+                                <div class="flex items-center justify-between bg-white border border-emerald-100 p-2.5 rounded-xl mb-2 shadow-sm">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-9 h-11 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center overflow-hidden p-0.5 shrink-0">
+                                            <img src="${history.cardImage}" class="w-full h-full object-contain">
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-xs font-bold text-dark truncate">${history.cardName} (x${history.quantity})</div>
+                                            <div class="text-[10px] font-extrabold text-emerald-600 mt-0.5">
+                                                +${(history.totalPrice || 0).toLocaleString()} SC
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2 bg-gray-50 border border-gray-100 py-1 px-2 rounded-xl max-w-[120px] shrink-0">
+                                        <img src="${buyerAvatar}" class="w-5 h-5 rounded-full object-cover border border-gray-200" onerror="this.src='https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800'">
+                                        <div class="text-[10px] font-medium text-gray-600 truncate" title="${history.buyerName}">${history.buyerName}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    contentHtml = `
+                        <div class="px-4 pb-24 mt-4">
+                            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-3xl border border-indigo-100 shadow-sm mb-4 relative overflow-hidden">
+                                <div class="absolute -right-4 -top-4 text-indigo-100 text-6xl opacity-50"><i class="fa-solid fa-box-open"></i></div>
+                                <h4 class="font-extrabold text-indigo-900 text-sm mb-2 relative z-10">การลงขายการ์ด</h4>
+                                <p class="text-[10px] text-indigo-700 relative z-10 mb-3">ระบบได้ย้ายการลงขายการ์ดไปรวมไว้ที่คลังการ์ด เพื่อให้คุณจัดการไอเทมได้สะดวกขึ้นแล้ว</p>
+                                <button onclick="app.navigate('card_inventory')" class="w-full relative z-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-md active:scale-95 transition">
+                                    ไปที่คลังการ์ดเพื่อลงขาย
+                                </button>
+                            </div>
+
+                            <div class="flex border-b border-gray-100 mb-4 bg-white p-1 rounded-xl shadow-sm border">
+                                <button onclick="document.getElementById('subtab-current-sales').style.display='block'; document.getElementById('subtab-sales-history').style.display='none'; this.classList.add('bg-indigo-50', 'text-indigo-600'); this.nextElementSibling.classList.remove('bg-indigo-50', 'text-indigo-600'); this.nextElementSibling.classList.add('text-gray-400');" class="flex-1 py-2 text-xs font-extrabold rounded-lg bg-indigo-50 text-indigo-600 transition-all focus:outline-none flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-store text-[11px]"></i> ขายปัจจุบัน (${myListings.length})
+                                </button>
+                                <button onclick="document.getElementById('subtab-current-sales').style.display='none'; document.getElementById('subtab-sales-history').style.display='block'; this.classList.add('bg-indigo-50', 'text-indigo-600'); this.previousElementSibling.classList.remove('bg-indigo-50', 'text-indigo-600'); this.previousElementSibling.classList.add('text-gray-400');" class="flex-1 py-2 text-xs font-extrabold rounded-lg text-gray-400 transition-all focus:outline-none flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> ประวัติการขาย
+                                </button>
+                            </div>
+
+                            <div>
+                                <div id="subtab-current-sales" class="block animate-fadeIn">
+                                    <div class="bg-transparent">
+                                        ${myItemsHtml}
+                                    </div>
                                 </div>
 
-                                <div class="mb-2 flex items-center justify-between px-1">
-                                    <h4 class="font-extrabold text-dark text-sm">การขายปัจจุบันของคุณ</h4>
-                                    <span class="text-[10px] text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full font-bold">${myListings.length} รายการ</span>
-                                </div>
-                                <div class="bg-transparent">
-                                    ${myItemsHtml}
+                                <div id="subtab-sales-history" class="hidden animate-fadeIn">
+                                    <div class="flex items-center justify-between mb-2.5 px-1">
+                                        <span class="text-[10px] text-gray-400 font-bold">บันทึกอัตโนมัติสูงสุด 10 รายการ</span>
+                                        ${salesHistory.length > 0 ? `
+                                            <button onclick="window.app.clearSalesHistory()" class="text-[10px] text-red-500 hover:text-red-600 font-extrabold flex items-center gap-1 bg-red-50 hover:bg-red-100/70 px-2 py-1 rounded-lg border border-red-100 transition active:scale-95">
+                                                <i class="fa-solid fa-trash-can"></i> ล้างประวัติทั้งหมด
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    <div class="bg-transparent">
+                                        ${salesHistoryHtml}
+                                    </div>
                                 </div>
                             </div>
-                        `;
-                    } else if (tab === 'frames') {
+                        </div>
+                    `;
+                } else if (tab === 'frames') {
                         // --- 3. ร้านขายกรอบโปรไฟล์ ---
                         const currentSC = (u.items && u.items.sc) || 0;
                         const unlocked = u.unlocked_frames || {};
@@ -5404,11 +5527,10 @@
                         if(!u.items) u.items = {};
                         u.items.sc = currentSC - totalPrice;
 
-                        // 🌟 [จุดแก้ไขสำคัญ] แยกแยะคลังเก็บการ์ดและไอเทมพิเศษให้ตรงประเภท
+                        // แยกแยะคลังเก็บการ์ดและไอเทมพิเศษให้ตรงประเภท
                         let cardPath = 'my_cards';
                         let targetKey = data.cardKey || btoa(data.cardImage).replace(/=/g, '_');
 
-                        // ถ้าเป็นไอเทมพิเศษ (ไอดีขึ้นต้นด้วย item_) ให้สลับพาธไป 'special_items' และใช้ไอดีตรงๆ ไม่ต้องแปลง Safe Key จากรูป
                         if (targetKey.startsWith('item_')) {
                             cardPath = 'special_items';
                         }
@@ -5417,10 +5539,10 @@
                         const myCurrentInventory = u[cardPath] || {};
                         const myCurrentCardAmt = myCurrentInventory[targetKey] || 0;
                         
-                        // 2. เพิ่มการ์ดเข้าคลังผู้ซื้อใน Firebase (ชี้ตาม cardPath ที่คำนวณได้)
+                        // 2. เพิ่มการ์ดเข้าคลังผู้ซื้อใน Firebase
                         updates[`users/${u.uid}/${cardPath}/${targetKey}`] = myCurrentCardAmt + totalQty;
                         
-                        // อัปเดตข้อมูลใน Local State เพื่อให้หน้าเว็บเปลี่ยนเลขทันที
+                        // อัปเดตข้อมูลใน Local State
                         if(!u[cardPath]) u[cardPath] = {};
                         u[cardPath][targetKey] = myCurrentCardAmt + totalQty;
 
@@ -5430,6 +5552,40 @@
                         // 4. ลบสินค้านี้ออกจากตลาดกลาง
                         updates[`market/listings/${listingId}`] = null;
 
+                        // 🌟 5. ดึงประวัติเก่าของผู้ขายมาจัดการเพื่อควบคุมขนาดให้ไม่เกิน 10 แถว
+                        const historySnap = await get(ref(db, `users/${data.sellerId}/sales_history`));
+                        let currentHistory = historySnap.exists() ? Object.entries(historySnap.val()) : [];
+                        
+                        // ข้อมูลประวัติใบใหม่
+                        const newHistoryKey = push(ref(db, `users/${data.sellerId}/sales_history`)).key;
+                        const newHistoryData = {
+                            cardName: data.cardName,
+                            cardImage: data.cardImage,
+                            quantity: totalQty,
+                            totalPrice: totalPrice,
+                            buyerName: u.displayName || u.fullName || 'ผู้เล่นนิรนาม',
+                            buyerImage: u.profileImage || '',
+                            timestamp: Date.now()
+                        };
+
+                        // ใส่ข้อมูลใบใหม่เข้าไปในอาร์เรย์ประวัติก่อนคำนวณตัดแถว
+                        currentHistory.push([newHistoryKey, newHistoryData]);
+
+                        // เรียงลำดับจากเก่าไปใหม่ตามเวลา (Timestamp น้อยไปมาก) เพื่อเตรียมปัดแถวที่เก่าเกินออก
+                        currentHistory.sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+
+                        // หากมีความยาวตั้งแต่แถวที่ 11 ขึ้นไป ให้กำหนดให้ตัวเก่าสุดเป็น null (เป็นการลบทิ้งในระบบ Firebase update)
+                        if (currentHistory.length > 10) {
+                            const itemsToDelete = currentHistory.slice(0, currentHistory.length - 10);
+                            itemsToDelete.forEach(([oldKey, _]) => {
+                                updates[`users/${data.sellerId}/sales_history/${oldKey}`] = null;
+                            });
+                        }
+
+                        // เพิ่มประวัติแถวใหม่ล่าสุดเข้าไปในคำสั่ง updates
+                        updates[`users/${data.sellerId}/sales_history/${newHistoryKey}`] = newHistoryData;
+
+                        // ส่งข้อมูลทั้งหมดไปเซฟใน Firebase ทีเดียวแบบปลอดภัย (Atomic Update)
                         await update(ref(db), updates);
                         Loader.hide();
 
@@ -5441,7 +5597,7 @@
                             customClass: { popup: 'rounded-3xl' }
                         });
                         
-                        // เรียก Render หน้าจอใหม่ทั้งหมดเพื่อความแม่นยำ
+                        // เรียก Render หน้าจอใหม่ทั้งหมดเพื่อให้ข้อมูลอัปเดตทันที
                         if (typeof Views !== 'undefined' && typeof Views.renderShop === 'function') {
                             Views.renderShop();
                         } else {
@@ -8248,40 +8404,152 @@
                     this.renderCatRoomMain(); 
                 } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'เกิดข้อผิดพลาด'}); }
             },
-            async feedCat(foodId, hPlus, hpPlus) {
-                const u = appState.user;
-                if (!u || !u.catData) return;
-                let curFood = u.catData.inventory[foodId] || 0;
-                if (curFood <= 0) return;
 
-                Loader.show();
-                try {
-                    let curHunger = u.catData.hunger || 0;
-                    let curHappy = u.catData.happiness || 0;
-                    let curLevel = u.catData.level || 1;
+        async feedCat(foodId, hPlus, hpPlus) {
+            const u = appState.user;
+            if (!u || !u.catData) return;
+            let curFood = u.catData.inventory[foodId] || 0;
+            if (curFood <= 0) return;
+
+            let curHunger = u.catData.hunger || 0;
+            let curHappy = u.catData.happiness || 0;
+            let curLevel = u.catData.level || 1;
+            let overfeedCount = u.catData.overfeedCount || 0;
+
+            // 🌟 ดึงข้อมูลรายละเอียดอาหาร (ชื่อ และ รูปภาพ) จาก Store มาแสดงผลบน Modal
+            const foodItem = window.renderStore && window.renderStore.catShop && window.renderStore.catShop[foodId];
+            const foodName = foodItem ? foodItem.name : 'อาหารแมว';
+            // สร้างลิงก์รูปภาพจาก driveId ของอาหาร (ถ้าไม่มีจะใช้ภาพ Default แทน)
+            const foodImage = foodItem && foodItem.driveId 
+                ? `https://drive.google.com/thumbnail?id=${foodItem.driveId}&sz=s800` 
+                : 'https://cdn-icons-png.flaticon.com/512/3043/3043834.png'; 
+
+            // 1. เช็คเพดานการกินสูงสุดที่เหลืออยู่ (Overfeed Limit)
+            if (curHunger >= 100 && curHappy >= 100 && overfeedCount >= 5) {
+                return Swal.fire({
+                    icon: 'info',
+                    title: 'อิ่มแล้ว เมี๊ยว!',
+                    text: 'น้องแมวอิ่มมากจนทานเพิ่มไม่ไหวแล้วน้า~',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: { popup: 'rounded-3xl' }
+                });
+            }
+
+            // 2. คำนวณหาจำนวนสูงสุดที่สามารถป้อนได้ในครั้งนี้
+            let maxFeedQty = curFood; 
+
+            // หากปัจจุบันแมวอิ่มเต็ม 100 ทั้งคู่แล้ว จำกัดเพดานตามสิทธิ์ Overfeed ที่เหลืออยู่ (ไม่เกิน 5)
+            if (curHunger >= 100 && curHappy >= 100) {
+                maxFeedQty = Math.min(maxFeedQty, 5 - overfeedCount);
+            }
+
+            let feedQty = 1; // จำนวนเริ่มต้นในสไลเดอร์
+
+            // 3. เปิด Modal ให้เลือกจำนวนอาหารที่ต้องการป้อน พร้อมแสดงรูปและชื่ออาหาร
+            const res = await Swal.fire({
+                title: 'ป้อนอาหารน้องแมว',
+                html: `
+                    <div class="p-1 animate-fadeIn">
+                        <!-- 🌟 ส่วนแสดงรูปภาพและชื่อของอาหารแมวที่ถูกกดเลือก -->
+                        <div class="flex flex-col items-center justify-center bg-gradient-to-b from-indigo-50/50 to-transparent p-4 rounded-3xl border border-indigo-50/80 mb-4">
+                            <div class="w-20 h-20 bg-white border-2 border-indigo-100 rounded-2xl flex items-center justify-center overflow-hidden p-1.5 shadow-sm mb-2">
+                                <img src="${foodImage}" class="w-full h-full object-contain" alt="${foodName}">
+                            </div>
+                            <div class="text-sm font-extrabold text-indigo-950">${foodName}</div>
+                            <p class="text-[10px] text-gray-400 mt-0.5">คุณมีไอเทมนี้ทั้งหมด: <span class="text-indigo-600 font-bold">${curFood} ชิ้น</span></p>
+                        </div>
+                        
+                        <!-- Volume Bar / Slider เลือกจำนวน -->
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-2">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-gray-600">จำนวนที่จะให้:</span>
+                                <span id="swal-feed-qty" class="text-xl font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-100">1</span>
+                            </div>
+                            <input type="range" id="swal-feed-slider" min="1" max="${maxFeedQty}" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-1">
+                                <span>1 ชิ้น</span>
+                                <span>ให้ได้สูงสุด ${maxFeedQty} ชิ้น</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'ป้อนเลย เมี๊ยว!',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#27D6F5',
+                customClass: { popup: 'rounded-3xl' },
+                didOpen: () => {
+                    const slider = document.getElementById('swal-feed-slider');
+                    const qtyDisplay = document.getElementById('swal-feed-qty');
+
+                    slider.addEventListener('input', (e) => {
+                        feedQty = parseInt(e.target.value) || 1;
+                        qtyDisplay.textContent = feedQty.toLocaleString();
+                    });
+                }
+            });
+
+            if (!res.isConfirmed) return; // ผู้เล่นกดยกเลิก
+
+            Loader.show();
+            try {
+                // 4. ลูปคำนวณสถานะทีละชิ้นตามจำนวนที่เลือกป้อนจริง
+                for (let i = 0; i < feedQty; i++) {
+                    if (curHunger >= 100 && curHappy >= 100) {
+                        overfeedCount += 1;
+                    } else {
+                        overfeedCount = 0;
+                    }
 
                     curHunger = Math.min(100, curHunger + hPlus);
                     curHappy = Math.min(100, curHappy + hpPlus);
-                    if (Math.random() > 0.8) curLevel += 1;
+                    
+                    if (Math.random() > 0.8) {
+                        curLevel = Math.min(120, curLevel + 1);
+                    }
+                }
 
-                    let updates = {};
-                    updates[`users/${u.uid}/catData/inventory/${foodId}`] = curFood - 1;
-                    updates[`users/${u.uid}/catData/hunger`] = curHunger;
-                    updates[`users/${u.uid}/catData/happiness`] = curHappy;
-                    updates[`users/${u.uid}/catData/level`] = curLevel;
+                // 5. บันทึกผลลัพธ์ลง Firebase ครั้งเดียว
+                let updates = {};
+                updates[`users/${u.uid}/catData/inventory/${foodId}`] = curFood - feedQty;
+                updates[`users/${u.uid}/catData/hunger`] = curHunger;
+                updates[`users/${u.uid}/catData/happiness`] = curHappy;
+                updates[`users/${u.uid}/catData/level`] = curLevel;
+                updates[`users/${u.uid}/catData/overfeedCount`] = overfeedCount;
 
-                    await update(ref(db), updates);
-                    appState.user.catData.inventory[foodId] = curFood - 1;
-                    appState.user.catData.hunger = curHunger;
-                    appState.user.catData.happiness = curHappy;
-                    appState.user.catData.level = curLevel;
+                await update(ref(db), updates);
+                
+                // อัปเดต Local State
+                appState.user.catData.inventory[foodId] = curFood - feedQty;
+                appState.user.catData.hunger = curHunger;
+                appState.user.catData.happiness = curHappy;
+                appState.user.catData.level = curLevel;
+                appState.user.catData.overfeedCount = overfeedCount;
 
-                    Loader.hide();
-                    Toast.fire({ icon: 'success', title: 'อร่อยจังง้าวว~' });
-                    this.renderCatProfile();
-                } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'Error'}); }
-            },
-
+                Loader.hide();
+                
+                // แสดงข้อความตามสถานะการกิน
+                if (curHunger >= 100 && curHappy >= 100 && overfeedCount >= 5) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'อิ่มแล้ว เมี๊ยว!',
+                        text: 'น้องแมวอิ่มจนพุงกางทานเพิ่มไม่ไหวแล้วน้า~',
+                        confirmButtonColor: '#27D6F5',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                } else if (overfeedCount > 0) {
+                    Toast.fire({ icon: 'success', title: `ง่ำๆ.. อิ่มจังง้าวว~ (ป้อนไป ${feedQty} ชิ้น)` });
+                } else {
+                    Toast.fire({ icon: 'success', title: `อร่อยจังง้าวว~ (ป้อนไป ${feedQty} ชิ้น)` });
+                }
+                
+                this.renderCatProfile();
+            } catch(e) { 
+                Loader.hide(); 
+                console.error(e);
+                Toast.fire({icon:'error', title:'เกิดข้อผิดพลาดในการให้อาหาร'}); 
+            }
+        },
             async buyCatShopItem(key) {
                 const u = appState.user; 
                 const item = window.renderStore.catShop[key];
@@ -8292,72 +8560,150 @@
                     return Swal.fire({ icon: 'warning', title: 'ยังไม่เปิดขาย', text: 'ไอเทมชิ้นนี้เป็นไอเทม Limited ยังไม่เปิดให้แลกในขณะนี้', customClass:{popup:'rounded-3xl'} });
                 }
 
-                // --- 🌟 จุดแก้ไขสำคัญ: เชื่อมโยงกับระบบ equippedSpecialItems ของเกมหลัก ---
-                const originalPrice = item.price || 0; 
-                let finalPrice = originalPrice;
+                // --- คำนวณราคาต่อชิ้นตามเงื่อนไขส่วนลดเดิม ---
+                const originalUnitPrice = item.price || 0; 
+                let finalUnitPrice = originalUnitPrice;
 
-                // ดึงข้อมูลไอเทมพิเศษที่ติดตั้งจาก Slot 1 และ Slot 2 ในเกมจริง
                 const equipped = u.equippedSpecialItems || {};
                 const hasFrameDiscount = equipped.slot1 === 'item_6' || equipped.slot2 === 'item_6';
                 const hasFoodDiscount = equipped.slot1 === 'item_7' || equipped.slot2 === 'item_7';
 
                 if (item.type === 'cat_frame' && hasFrameDiscount) {
-                    finalPrice = Math.floor(originalPrice * 0.75); // ลดราคา 25%
+                    finalUnitPrice = Math.floor(originalUnitPrice * 0.75); // ลดราคา 25%
                 } else if (item.type === 'food' && hasFoodDiscount) {
-                    finalPrice = Math.floor(originalPrice * 0.75); // ลดราคา 25%
+                    finalUnitPrice = Math.floor(originalUnitPrice * 0.75); // ลดราคา 25%
                 }
-                // --- สิ้นสุดการคำนวณส่วนลด ---
 
                 const sc = (u.items && u.items.sc) || 0;
+                let purchaseQty = 1; // จำนวนเริ่มต้นในการซื้อ
 
-                if (sc < finalPrice) return Swal.fire({ icon: 'error', title: 'SC ไม่พอ', text: 'คุณต้องแลก S-Card เพิ่ม', customClass:{popup:'rounded-3xl'} });
+                // --- 🌟 เริ่มต้นส่วนของ Modal เลือกจำนวนสำหรับอาหารแมว 🌟 ---
+                if (item.type === 'food') {
+                    // หาจำนวนสูงสุดที่เงิน SC ของผู้เล่นจะพอซื้อได้ (แต่ไม่เกิน 99 ชิ้น)
+                    const maxAffordable = Math.min(99, Math.floor(sc / finalUnitPrice));
+                    
+                    if (maxAffordable <= 0) {
+                        return Swal.fire({ icon: 'error', title: 'SC ไม่พอ', text: `คุณมี SC ไม่เพียงพอสำหรับซื้ออาหารชิ้นนี้ (ราคาชิ้นละ ${finalUnitPrice.toLocaleString()} SC)`, customClass:{popup:'rounded-3xl'} });
+                    }
 
-                const res = await Swal.fire({ 
-                    title: `ซื้อ ${item.name}?`, 
-                    text: `ใช้ ${finalPrice.toLocaleString()} SC ${finalPrice !== originalPrice ? `(ลดราคาจาก ${originalPrice.toLocaleString()} SC)` : ''}`, 
-                    showCancelButton: true, 
-                    confirmButtonText: 'ซื้อเลย', 
-                    cancelButtonText: 'ยกเลิก', 
-                    customClass: { popup: 'rounded-3xl' }, 
-                    confirmButtonColor: '#27D6F5' 
-                });
+                    const res = await Swal.fire({
+                        title: `ซื้ออาหารแมว: ${item.name}`,
+                        html: `
+                            <div class="p-1">
+                                <p class="text-xs text-gray-500 mb-4">ราคาชิ้นละ: <span class="text-indigo-600 font-bold">${finalUnitPrice.toLocaleString()} SC</span></p>
+                                
+                                <!-- Volume Bar / Slider -->
+                                <div class="bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-xs font-bold text-gray-600">เลือกจำนวน:</span>
+                                        <span id="swal-qty-display" class="text-xl font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-100">1</span>
+                                    </div>
+                                    <input type="range" id="swal-qty-slider" min="1" max="${maxAffordable}" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-1">
+                                        <span>1 ใบ</span>
+                                        <span>สูงสุด ${maxAffordable} ใบ</span>
+                                    </div>
+                                </div>
 
-                if (res.isConfirmed) {
-                    Loader.show();
-                    try {
-                        let updates = {}; updates[`users/${u.uid}/items/sc`] = sc - finalPrice;
-                        
-                        if (item.type === 'food') {
-                            const cur = u.catData.inventory[key] || 0;
-                            updates[`users/${u.uid}/catData/inventory/${key}`] = cur + 1;
-                            appState.user.catData.inventory[key] = cur + 1;
-                        } else if (item.type === 'cat' || item.type === 'bg') {
-                            const curUnlocked = u.catData.unlocked || {};
-                            updates[`users/${u.uid}/catData/unlocked/${item.driveId}`] = true;
-                            appState.user.catData.unlocked = { ...curUnlocked, [item.driveId]: true };
-                        } else if (item.type === 'cat_frame') {
-                            const curFrames = appState.user.unlocked_frames || {};
-                            updates[`users/${u.uid}/unlocked_frames/${item.driveId}`] = true;
-                            appState.user.unlocked_frames = {
-                                ...curFrames,
-                                [item.driveId]: true
-                            };
+                                <!-- สรุปผลคำนวณราคารวมสดๆ -->
+                                <div class="flex justify-between items-center bg-orange-50 border border-orange-100 p-3.5 rounded-2xl text-left">
+                                    <div>
+                                        <div class="text-[10px] font-bold text-orange-700">ยอดที่ต้องจ่ายทั้งหมด</div>
+                                        <div class="text-xs text-gray-400">ยอดคงเหลือ: ${(sc).toLocaleString()} SC</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="swal-total-price" class="text-lg font-extrabold text-orange-600">${finalUnitPrice.toLocaleString()}</span> 
+                                        <span class="text-xs font-bold text-orange-600">SC</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'ยืนยันการซื้อ',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#27D6F5',
+                        customClass: { popup: 'rounded-3xl' },
+                        didOpen: () => {
+                            const slider = document.getElementById('swal-qty-slider');
+                            const qtyDisplay = document.getElementById('swal-qty-display');
+                            const totalDisplay = document.getElementById('swal-total-price');
+
+                            // ตรวจจับเหตุการณ์เลื่อนเพื่อคำนวณราคาแบบ Real-time
+                            slider.addEventListener('input', (e) => {
+                                const currentVal = parseInt(e.target.value) || 1;
+                                purchaseQty = currentVal;
+                                
+                                // อัปเดตตัวเลขจำนวนตัวอย่าง
+                                qtyDisplay.textContent = currentVal.toLocaleString();
+                                
+                                // อัปเดตยอดราคารวม
+                                const calculatedTotal = currentVal * finalUnitPrice;
+                                totalDisplay.textContent = calculatedTotal.toLocaleString();
+                            });
                         }
-                        
-                        await update(ref(db), updates); 
-                        appState.user.items.sc = sc - finalPrice;
-                        
-                        const scEl = document.getElementById('cat-sc-balance');
-                        if (scEl) {
-                            scEl.textContent = appState.user.items.sc.toLocaleString();
-                        }
-                        Loader.hide(); Toast.fire({icon:'success', title:'ซื้อไอเทมสำเร็จ'});
-                        this.renderCatShop();
+                    });
 
-                        if (appState.catRoomTab === 'profile') {
-                            this.renderCatProfile();
-                        }
-                    } catch(e) { Loader.hide(); Toast.fire({icon:'error', title:'Error'}); }
+                    if (!res.isConfirmed) return; // กดยกเลิก
+                } else {
+                    // สำหรับไอเทมประเภทอื่น (แมว, พื้นหลัง, กรอบ) ซื้อทีละ 1 ชิ้นตามปกติ
+                    if (sc < finalUnitPrice) return Swal.fire({ icon: 'error', title: 'SC ไม่พอ', text: 'คุณต้องแลก S-Card เพิ่ม', customClass:{popup:'rounded-3xl'} });
+                    
+                    const res = await Swal.fire({ 
+                        title: `ซื้อ ${item.name}?`, 
+                        text: `ใช้ ${finalUnitPrice.toLocaleString()} SC ${finalUnitPrice !== originalUnitPrice ? `(ลดราคาจาก ${originalUnitPrice.toLocaleString()} SC)` : ''}`, 
+                        showCancelButton: true, 
+                        confirmButtonText: 'ซื้อเลย', 
+                        cancelButtonText: 'ยกเลิก', 
+                        customClass: { popup: 'rounded-3xl' }, 
+                        confirmButtonColor: '#27D6F5' 
+                    });
+                    
+                    if (!res.isConfirmed) return;
+                }
+                // --- 🌟 สิ้นสุดส่วนตัดตัวเลือกจำนวน 🌟 ---
+
+                // คำนวณราคารวมสรุปสุดท้ายจริงๆ ที่ต้องใช้หักออก
+                const totalCost = finalUnitPrice * purchaseQty;
+
+                Loader.show();
+                try {
+                    let updates = {}; 
+                    updates[`users/${u.uid}/items/sc`] = sc - totalCost;
+                    
+                    if (item.type === 'food') {
+                        const cur = u.catData.inventory[key] || 0;
+                        updates[`users/${u.uid}/catData/inventory/${key}`] = cur + purchaseQty;
+                        appState.user.catData.inventory[key] = cur + purchaseQty;
+                    } else if (item.type === 'cat' || item.type === 'bg') {
+                        const curUnlocked = u.catData.unlocked || {};
+                        updates[`users/${u.uid}/catData/unlocked/${item.driveId}`] = true;
+                        appState.user.catData.unlocked = { ...curUnlocked, [item.driveId]: true };
+                    } else if (item.type === 'cat_frame') {
+                        const curFrames = appState.user.unlocked_frames || {};
+                        updates[`users/${u.uid}/unlocked_frames/${item.driveId}`] = true;
+                        appState.user.unlocked_frames = { ...curFrames, [item.driveId]: true };
+                    }
+                    
+                    await update(ref(db), updates); 
+                    appState.user.items.sc = sc - totalCost;
+                    
+                    const scEl = document.getElementById('cat-sc-balance');
+                    if (scEl) {
+                        scEl.textContent = appState.user.items.sc.toLocaleString();
+                    }
+                    
+                    Loader.hide(); 
+                    Toast.fire({icon:'success', title: item.type === 'food' ? `ซื้อสำเร็จจำนวน ${purchaseQty} ชิ้น!` : 'ซื้อไอเทมสำเร็จ'});
+                    
+                    this.renderCatShop();
+
+                    if (appState.catRoomTab === 'profile') {
+                        this.renderCatProfile();
+                    }
+                } catch(e) { 
+                    Loader.hide(); 
+                    console.error(e);
+                    Toast.fire({icon:'error', title:'เกิดข้อผิดพลาดในระบบ'}); 
                 }
             },
 
@@ -11156,6 +11502,48 @@
                     }
                 }
             },
+            async clearSalesHistory() {
+            const u = appState.user;
+            if (!u) return;
+
+            // แสดงหน้าต่างยืนยันเพื่อป้องกันผู้เล่นกดพลาด
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบประวัติ',
+                text: 'คุณต้องการลบประวัติการขายทั้งหมดใช่หรือไม่? (การกระทำนี้ไม่สามารถย้อนกลับได้)',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'ใช่, ลบทั้งหมด',
+                cancelButtonText: 'ยกเลิก',
+                customClass: { popup: 'rounded-3xl' }
+            });
+
+            if (confirm.isConfirmed) {
+                Loader.show();
+                try {
+                    // 1. ลบข้อมูลที่ Node ใน Firebase สำหรับผู้ใช้นี้
+                    await set(ref(db, `users/${u.uid}/sales_history`), null);
+                    
+                    // 2. ล้างข้อมูลใน Local State เพื่อให้หน้าจออัปเดตทันที
+                    u.sales_history = {};
+
+                    Loader.hide();
+                    Toast.fire({ icon: 'success', title: 'ล้างประวัติการขายเรียบร้อยแล้ว' });
+
+                    // 3. สั่งโหลดหน้าจัดการร้านค้าซ้ำเพื่ออัปเดต UI ทันที
+                    if (typeof Views !== 'undefined' && typeof Views.renderShop === 'function') {
+                        Views.renderShop();
+                    } else if (typeof this.renderShop === 'function') {
+                        this.renderShop();
+                    }
+                } catch (err) {
+                    Loader.hide();
+                    console.error("Clear sales history error:", err);
+                    Toast.fire({ icon: 'error', title: 'ระบบขัดข้อง ไม่สามารถลบประวัติได้' });
+                }
+            }
+        },
 
 
 
