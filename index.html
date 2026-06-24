@@ -1173,8 +1173,11 @@
                 }
             },
 
-            async renderHome() {
+           async renderHome() {
                 UI.setHeader('หน้าหลัก');
+                
+                // เคลียร์ Interval เก่าออกก่อนทุกครั้งป้องกันการสไลด์ทับซ้อนกัน
+                if (window.homeCarouselInterval) { clearInterval(window.homeCarouselInterval); }
                 
                 try {
                     const sysSnap = await get(ref(db, 'system/home_config'));
@@ -1183,20 +1186,26 @@
                     }
                 } catch(e) { console.error(e); }
 
-                const config = window.renderStore.homeConfig;
+                const config = window.renderStore.homeConfig || {};
                 const mainBanner = config.mainBanner || 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80';
                 const carouselImgs = config.carousel || [];
 
                 let carouselHtml = '';
                 if (carouselImgs.length > 0) {
                     carouselHtml = `
-                        <div class="relative w-full px-4 sm:px-5 mt-5 shrink-0 -top-20 -mb-20">
-                            <div id="home-carousel-container" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-3 pb-2 rounded-2xl" style="scroll-behavior: smooth;">
-                                ${carouselImgs.map((img, i) => `
-                                    <div class="w-full shrink-0 snap-center rounded-2xl overflow-hidden shadow-sm h-36 sm:h-44 relative">
-                                        <img src="${img}" class="w-full h-full object-cover absolute inset-0" onerror="this.src='https://placehold.co/600x300/e2e8f0/94a3b8?text=Image+${i+1}'">
+                        <div class="relative w-full px-4 sm:px-5 mt-5 shrink-0 -top-20 -mb-20 overflow-hidden">
+                            <div class="w-full rounded-2xl overflow-hidden relative">
+                                <div id="home-carousel-container" class="flex transition-transform duration-700 ease-in-out w-full" style="transform: translateX(0%);">
+                                    ${carouselImgs.map((img, i) => `
+                                        <div class="w-full shrink-0 h-36 sm:h-44 relative rounded-2xl overflow-hidden px-0.5">
+                                            <img src="${img}" class="w-full h-full object-cover rounded-2xl shadow-sm" onerror="this.src='https://placehold.co/600x300/e2e8f0/94a3b8?text=Image+${i+1}'">
+                                        </div>
+                                    `).join('')}
+                                    
+                                    <div class="w-full shrink-0 h-36 sm:h-44 relative rounded-2xl overflow-hidden px-0.5">
+                                        <img src="${carouselImgs[0]}" class="w-full h-full object-cover rounded-2xl shadow-sm">
                                     </div>
-                                `).join('')}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1204,15 +1213,11 @@
 
                 const html = `
                     <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 flex flex-col">
-                        <!-- Main Admin Banner -->
                         <div class="shrink-0 h-[15rem] bg-cover bg-center relative z-0" style="background-image: url('${mainBanner}')"></div>
                         
-                        <!-- Slide Show Carousel -->
                         ${carouselHtml}
 
-                        <!-- Action Bar (Teacher Profile, Exchange & Gacha) -->
                         <div class="shrink-0 px-4 sm:px-5 mt-5 flex gap-3 items-stretch">
-                            <!-- Teacher Button -->
                             <button onclick="app.toggleTeacherProfile()" class="flex-1 bg-white border border-gray-200 shadow-sm rounded-2xl p-3 flex items-center justify-between transition active:scale-[0.98] hover:border-primary/50 text-dark">
                                 <div class="flex items-center gap-2">
                                     <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center"><i class="fa-solid fa-chalkboard-user text-lg"></i></div>
@@ -1221,25 +1226,21 @@
                                 <i id="teacher-chevron" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
                             </button>
                             
-                            <!-- Card Exchange Shortcut -->
                             <button onclick="app.navigate('card_exchange')" class="w-[68px] sm:w-[76px] shrink-0 bg-gradient-to-br from-purple-50 to-indigo-50 border border-indigo-100 shadow-sm rounded-2xl flex flex-col items-center justify-center transition-transform active:scale-95 hover:scale-105 p-1 drop-shadow-lg text-orange-500">
                                 <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1781957209/FIRSTMEET_38_ruxyur.png" class="w-full h-full object-contain drop-shadow" alt="Gacha">
                             </button>
 
-                            <!-- Gacha Shortcut -->
                             <button onclick="app.navigate('gacha')" class="w-[68px] sm:w-[76px] shrink-0 bg-gradient-to-br from-purple-50 to-indigo-50 border border-indigo-100 shadow-sm rounded-2xl flex items-center justify-center transition-transform active:scale-95 hover:scale-105 p-1 drop-shadow-lg">
                                 <img src="https://drive.google.com/thumbnail?id=1hMyBANMkz-xBQWyIZCIyj9JVtpLCjzBR&sz=s800" class="w-full h-full object-contain drop-shadow" alt="Gacha">
                             </button>
                         </div>
 
-                        <!-- Teacher Dropdown Container -->
                         <div id="teacher-profile-dropdown" class="hidden shrink-0 px-4 sm:px-5 mt-2 transition-all">
                             <div id="teacher-dropdown-content" class="w-full flex items-center justify-center py-4 bg-white border border-gray-200 rounded-2xl shadow-sm">
                                 <div class="w-6 h-6 border-2 border-primary border-t-accent rounded-full animate-spin"></div>
                             </div>
                         </div>
 
-                        <!-- Leaderboard / Ranking Section -->
                         <div class="shrink-0 mt-6 sm:mt-8 px-4 sm:px-5">
                             <div class="flex flex-row sm:items-center justify-between gap-3 mb-3">
                                 <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
@@ -1279,14 +1280,35 @@
                 `;
                 document.getElementById('content-area').innerHTML = html;
                 
+                // --- 🌟 เริ่มต้นชุดคำสั่งควบคุม Infinite Slider 🌟 ---
                 if (carouselImgs.length > 1) {
                     let currentIndex = 0;
+                    
                     window.homeCarouselInterval = setInterval(() => {
                         const container = document.getElementById('home-carousel-container');
                         if (!container) { clearInterval(window.homeCarouselInterval); return; }
-                        currentIndex = (currentIndex + 1) % carouselImgs.length;
-                        const scrollAmount = container.clientWidth * currentIndex;
-                        container.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+                        
+                        currentIndex++;
+                        
+                        // เปิดแอนิเมชันให้เลื่อนไปข้างหน้าปกติ
+                        container.style.transition = "transform 700ms ease-in-out";
+                        container.style.transform = `translateX(-${currentIndex * 100}%)`;
+                        
+                        // เมื่อเลื่อนมาจนถึงรูปสุดท้าย (ซึ่งก็คือรูปที่ 1 ตัวจำลองที่เราแปะท้ายไว้)
+                        if (currentIndex === carouselImgs.length) {
+                            // รอให้แอนิเมชันการเลื่อนรูปจบลงก่อน (700ms) จากนั้นสับสแนปสไลด์กลับมาหน้าแรกแบบเงียบๆ
+                            setTimeout(() => {
+                                const innerContainer = document.getElementById('home-carousel-container');
+                                if (innerContainer) {
+                                    // 1. ปิดเอฟเฟกต์การเลื่อน (เพื่อไม่ให้คนดูเห็นว่ามันเด้งย้อนกลับมารูปแรก)
+                                    innerContainer.style.transition = "none";
+                                    // 2. รีเซ็ตอินเด็กซ์กลับมาเริ่มต้น
+                                    currentIndex = 0;
+                                    // 3. ย้ายตำแหน่งมาที่รูปที่ 1 ตัวจริง
+                                    innerContainer.style.transform = `translateX(0%)`;
+                                }
+                            }, 700); // ดีเลย์เท่าเวลา duration ของ transition คับ
+                        }
                     }, 4000);
                 }
 
