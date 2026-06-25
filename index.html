@@ -749,9 +749,27 @@
                 }
             },
             async login(username, password) {
+                // 🛡️ เพิ่มตัวดักจับ: ป้องกันกรณีที่ JavaScript ส่ง Event Object มาแทนที่จะเป็นข้อความ
+                if (typeof username === 'object') {
+                    username = document.getElementById('login-username').value.trim();
+                    password = document.getElementById('login-password').value.trim();
+                } else {
+                    // ตัดช่องว่างซ้าย-ขวา ป้องกันการเผลอเคาะวรรค
+                    username = username?.trim();
+                    password = password?.trim();
+                }
+
                 Loader.show();
+
+                console.log("=== 🔍 เริ่มตรวจสอบกระบวนการ Login ===");
+                console.log("1. ชื่อผู้ใช้ (ที่กรอก):", `"${username}"`);
+                console.log("2. รหัสผ่าน (Original):", `"${password}"`);
+                console.log("3. รหัสผ่าน (Base64 ปกติ):", `"${btoa(password)}"`);
+
                 try {
                     const hashedPwd = hashStr(password);
+                    console.log("4. รหัสผ่าน (หลังผ่าน hashStr นำไปใช้เทียบ):", `"${hashedPwd}"`);
+
                     const usersRef = ref(db, 'users');
                     const snapshot = await get(usersRef);
                     let foundUser = null;
@@ -759,15 +777,33 @@
 
                     if (snapshot.exists()) {
                         const users = snapshot.val();
+                        console.log("5. 📦 โหลดข้อมูล Users ทั้งหมดสำเร็จ ลองกดกางดูได้:", users);
+
                         for (const key in users) {
                             const u = users[key];
-                            if ((u.username === username || u.studentId === username) && u.password === hashedPwd) {
-                                foundUser = u; uid = key; break;
+                            
+                            // 🕵️‍♂️ สแกนหาคนที่มี Username หรือ StudentId ตรงกัน เพื่อดูว่ารหัสผ่านใน DB คืออะไร
+                            if (u.username === username || u.studentId === username) {
+                                console.log(`\n🎯 เจอชื่อผู้ใช้ที่ตรงกันแล้ว! (UID: ${key})`);
+                                console.log(`   - Username ใน DB: "${u.username}"`);
+                                console.log(`   - StudentID ใน DB: "${u.studentId}"`);
+                                console.log(`   - 🔑 รหัสผ่านที่บันทึกใน DB: "${u.password}"`);
+                                console.log(`   - 🔐 รหัสผ่านที่กำลังเทียบ: "${hashedPwd}"`);
+                                console.log(`   - ผลการเทียบรหัสผ่าน: ${u.password === hashedPwd ? '✅ ตรงกัน' : '❌ ไม่ตรงกัน'}`);
+                            }
+
+                           if ((u.username === username || u.studentId === username) && u.password === btoa(password)) {
+                                foundUser = u; 
+                                uid = key; 
+                                break;
                             }
                         }
+                    } else {
+                        console.log("❌ ไม่พบ Path 'users' ใน Database");
                     }
 
                     if (foundUser) {
+                        console.log("🎉 ล็อกอินผ่านฉลุย!");
                         foundUser.uid = uid;
                         
                         // Initialize Cat Data if new
@@ -793,10 +829,11 @@
                         UI.initMainApp();
                         Toast.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ' });
                     } else {
+                        console.log("🚫 ล็อกอินถูกปฏิเสธ (ชื่อผู้ใช้ไม่เจอ หรือ รหัสผ่านไม่ตรง)");
                         Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', confirmButtonColor: '#27D6F5' });
                     }
                 } catch (error) {
-                    console.error("Login error:", error);
+                    console.error("🔥 Login error:", error);
                     Toast.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' });
                 } finally {
                     Loader.hide();
@@ -7407,6 +7444,7 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-1.5 sm:gap-2 shrink-0">
+                                    <button onclick="app.adminChangeStudentPassword('${st.uid}', '${st.fullName}')" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-50 text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 flex items-center justify-center transition active:scale-90" title="เปลี่ยนรหัสผ่าน"><i class="fa-solid fa-key text-[10px] sm:text-xs"></i></button>
                                     <button onclick="app.openStudentModal(true, '${st.uid}', '${c}', '${r}')" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-50 text-gray-500 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center transition active:scale-90"><i class="fa-solid fa-pen text-[10px] sm:text-xs"></i></button>
                                     <button onclick="app.deleteStudent('${st.uid}', '${c}', '${r}')" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-50 text-gray-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition active:scale-90"><i class="fa-solid fa-trash-can text-[10px] sm:text-xs"></i></button>
                                 </div>
@@ -7418,6 +7456,45 @@
                 html += `</div>`;
 
                 document.getElementById('content-area').innerHTML = html;
+            },
+            async adminChangeStudentPassword(uid, studentName) {
+                const { value: newPassword } = await Swal.fire({
+                    title: `<span style="font-family: 'Kanit';">รีเซ็ตรหัสผ่าน</span>`,
+                    html: `<p class="text-sm text-gray-600 mb-2">ตั้งรหัสผ่านใหม่ให้นักเรียน:<br><b class="text-primary">${studentName}</b></p>`,
+                    input: 'text',
+                    inputPlaceholder: 'พิมพ์รหัสผ่านใหม่ที่นี่...',
+                    showCancelButton: true,
+                    confirmButtonText: 'บันทึกรหัสผ่าน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#27D6F5',
+                    customClass: { popup: 'rounded-3xl' },
+                    inputValidator: (value) => {
+                        if (!value || value.length < 4) {
+                            return 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร';
+                        }
+                    }
+                });
+
+                if (newPassword) {
+                    Loader.show();
+                    try {
+                        // อัปเดตรหัสผ่านใหม่ โดยใช้ฟังก์ชัน hashStr ของระบบคุณ
+                        await update(ref(db, `users/${uid}`), {
+                            password: hashStr(newPassword)
+                        });
+                        Loader.hide();
+                        Toast.fire({ icon: 'success', title: 'เปลี่ยนรหัสผ่านสำเร็จ' });
+                    } catch (e) {
+                        Loader.hide();
+                        console.error("Error changing password:", e);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถเปลี่ยนรหัสผ่านได้ในขณะนี้',
+                            customClass: { popup: 'rounded-3xl' }
+                        });
+                    }
+                }
             },
 
             async openStudentModal(isEdit = false, uid = null, c, r) {
@@ -11335,6 +11412,7 @@
         window.app = {
             login: (e) => { e.preventDefault(); Auth.login(document.getElementById('login-username').value, document.getElementById('login-password').value); },
             logout: Auth.logout, navigate: (id) => Views.navigate(id),
+            adminChangeStudentPassword: (uid, name) => Views.adminChangeStudentPassword(uid, name),
             
             toggleStudentTaskView: (m) => { appState.studentTaskSubView = m; Views.navigate('tasks'); },
             changeSelectedTaskForView: (id) => { appState.selectedTaskForView = id; Views.renderStudentAllTasksList(id); },
