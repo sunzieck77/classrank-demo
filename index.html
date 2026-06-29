@@ -6480,10 +6480,15 @@
 
                         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[320px] z-[60] flex flex-col items-center gap-4">
                             <div id="gacha-pity-counter" class="w-full text-center mb-[-5px]"></div>
-                            <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
-                                <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
-                                <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
-                                <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
+                                    <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
+                                    <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
+                                    <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                                </div>
+                                <div id="gacha-quota-badge" class="hidden bg-indigo-500/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm">
+                                    <span class="text-xs font-bold text-white">เหลือ: <span id="gacha-quota-count">5</span>/5 ครั้ง</span>
+                                </div>
                             </div>
                             ${Object.values(equippedItems).includes('item_10') ? `
                                 
@@ -7129,6 +7134,17 @@
                 
                 // 1. ดึงตู้หลักมาก่อน
                 let banner = appState.gachaBanners[bId];
+                const quotaBadge = document.getElementById('gacha-quota-badge');
+                
+                if (banner.category === 'special') {
+                    quotaBadge.classList.remove('hidden');
+                    const today = new Date().toDateString();
+                    const daily = appState.user.gacha_daily_limits?.[bId] || { date: '', count: 0 };
+                    const used = daily.date === today ? daily.count : 0;
+                    document.getElementById('gacha-quota-count').innerText = 5 - used;
+                } else {
+                    quotaBadge.classList.add('hidden');
+                }
                 
                 // 2. เช็กว่าผู้เล่นคนนี้มี "ตู้ส่วนตัว" ที่ผ่านการเขย่าแล้วหรือไม่
                 const u = appState.user;
@@ -10693,17 +10709,46 @@
                 if (u.role === 'teacher' && !isTest) return Toast.fire({icon:'info', title:'โปรดใช้ปุ่ม "ทดสอบสุ่ม" ด้านล่าง'});
 
                 Loader.show();
-                // ดึงข้อมูลตู้หลัก ข้อมูลการ์ดของผู้ใช้ ข้อมูล Pity และเช็กรายการไอเทมในตู้ส่วนตัวของผู้ใช้ (ถ้ามี)
-                const [bSnap, uCardSnap, uPitySnap, personalItemsSnap] = await Promise.all([
+                // ดึงข้อมูลตู้หลัก ข้อมูลการ์ดของผู้ใช้ ข้อมูล Pity ข้อมูลตู้ส่วนตัว และ ข้อมูลจำกัดการสุ่มรายวัน
+                const [bSnap, uCardSnap, uPitySnap, personalItemsSnap, limitSnap] = await Promise.all([
                     get(ref(db, `gacha_banners/${bId}`)),
                     get(ref(db, `users/${u.uid}/gacha_cards/${bId}`)),
                     get(ref(db, `users/${u.uid}/gacha_pity/${bId}`)),
-                    get(ref(db, `users/${u.uid}/gacha_personal_banners/${bId}/items`))
+                    get(ref(db, `users/${u.uid}/gacha_personal_banners/${bId}/items`)),
+                    get(ref(db, `users/${u.uid}/gacha_daily_limits/${bId}`))
                 ]);
-                Loader.hide();
+                
 
                 const banner = bSnap.val();
-                if (!banner) return Toast.fire({icon:'error', title:'ไม่พบข้อมูลตู้สุ่มนี้'});
+                if (!banner) {
+                    Loader.hide();
+                    return Toast.fire({icon:'error', title:'ไม่พบข้อมูลตู้สุ่มนี้'});
+                }
+
+                // 🌟 [เพิ่มใหม่] ระบบจำกัดการสุ่ม 5 ครั้งต่อวันสำหรับตู้หมวด special
+                const today = new Date().toDateString();
+                let dailyLimit = limitSnap.exists() ? limitSnap.val() : { date: '', count: 0 };
+                
+                if (banner.category === 'special' && !isTest) {
+                    // ถ้าระบบบันทึกเป็นของเมื่อวาน ให้รีเซ็ตใหม่
+                    if (dailyLimit.date !== today) {
+                        dailyLimit = { date: today, count: 0 };
+                    }
+                    
+                    // เช็คโควตา
+                    if (dailyLimit.count >= 5) {
+                        Loader.hide();
+                        return Swal.fire({
+                            icon: 'warning',
+                            title: 'สิทธิ์การสุ่มเต็มแล้ว',
+                            text: 'คุณใช้สิทธิ์สุ่มตู้คะแนนพิเศษครบ 5 ครั้งของวันนี้แล้ว กรุณากลับมาใหม่พรุ่งนี้นะครับ',
+                            confirmButtonColor: '#F5275B',
+                            customClass: { popup: 'rounded-[2rem]' }
+                        });
+                    }
+                }
+
+                Loader.hide();
 
                 // เลือกว่าจะสุ่มจากตู้ส่วนตัว (ที่ถูกเขย่ามา) หรือตู้ส่วนกลางปกติ
                 let itemsObj = personalItemsSnap.exists() ? personalItemsSnap.val() : banner.items;
@@ -10714,6 +10759,13 @@
                 
                 // ถ้านักเรียนสุ่มปกติ ต้องเช็คยอดการ์ด
                 if (!isTest) {
+                    if (banner.category === 'special') {
+                        const newQuotaCount = (dailyLimit.count + 1);
+                        const displayElement = document.getElementById('gacha-quota-count');
+                        if (displayElement) {
+                            displayElement.innerText = (5 - newQuotaCount);
+                        }
+                    }
                     if (cards < 1) {
                         const tickets = u.items?.ticket || 0;
                         if (tickets < 1) return Swal.fire({icon:'warning', title:'ไม่มีการ์ดและตั๋ว', text:`คุณต้องใช้ ${banner.cardName} 1 ใบในการสุ่ม หรือตั๋ว 1 ใบเพื่อแลก`, customClass:{popup:'rounded-3xl'}});
@@ -10819,6 +10871,15 @@
                         [`gacha_cards/${bId}`]: cards - 1,
                         [`gacha_pity/${bId}`]: newPity
                     };
+
+                    // 🌟 [เพิ่มใหม่] อัปเดตจำนวนครั้งที่สุ่มไปแล้วของวันนี้ลง Firebase
+                    if (banner.category === 'special') {
+                        updates[`gacha_daily_limits/${bId}`] = {
+                            date: today,
+                            count: dailyLimit.count + 1
+                        };
+                    }
+
                     await update(ref(db, `users/${u.uid}`), updates);
                     
                     // ** ต้องอัปเดตสถานะในแอพด้วย (สำคัญมากเพื่อให้รอบต่อไปคำนวณถูก) **
@@ -10826,6 +10887,15 @@
                     appState.user.gacha_cards[bId] = cards - 1;
                     appState.user.gacha_pity = appState.user.gacha_pity || {};
                     appState.user.gacha_pity[bId] = newPity;
+
+                    // 🌟 [เพิ่มใหม่] อัปเดต State จำกัดการสุ่มรายวัน
+                    if (banner.category === 'special') {
+                        appState.user.gacha_daily_limits = appState.user.gacha_daily_limits || {};
+                        appState.user.gacha_daily_limits[bId] = {
+                            date: today,
+                            count: dailyLimit.count + 1
+                        };
+                    }
                     
                     document.getElementById('gacha-view-card-count').innerText = cards - 1;
                 } else {
