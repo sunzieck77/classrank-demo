@@ -15,7 +15,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <link rel="icon" type="image/x-icon" href="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800">
+    <link rel="icon" type="image/x-icon" href="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;6   00;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -186,8 +186,7 @@
         .gacha-rays {
             background: conic-gradient(from 0deg, rgba(255,251,214,0) 0deg, rgba(255,251,214,0.8) 20deg, rgba(255,251,214,0) 40deg, rgba(152,122,255,0) 60deg, rgba(152,122,255,0.8) 80deg, rgba(152,122,255,0) 100deg, rgba(27,145,255,0) 120deg, rgba(27,145,255,0.8) 140deg, rgba(27,145,255,0) 160deg, rgba(255,251,214,0.8) 180deg, rgba(255,251,214,0) 200deg, rgba(152,122,255,0.8) 220deg, rgba(152,122,255,0) 240deg, rgba(27,145,255,0.8) 260deg, rgba(27,145,255,0) 280deg, rgba(255,251,214,0.8) 300deg, rgba(255,251,214,0) 320deg, rgba(152,122,255,0.8) 340deg, rgba(152,122,255,0) 360deg);
             border-radius: 50%;
-            filter: blur(8px);
-            mix-blend-mode: screen;
+            opacity: 0.6;
             animation: spinRays 8s linear infinite;
         }
         @keyframes spinRays { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -328,7 +327,7 @@
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center max-w-sm w-full relative overflow-hidden border border-pink-100">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
                 <div class="w-32 h-32 mb-4 animate-bounce-slow relative z-10">
-                    <img src="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800" class="w-full h-full object-contain filter drop-shadow-md" alt="Cat Sleep">
+                    <img src="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400" class="w-full h-full object-contain filter drop-shadow-md" alt="Cat Sleep">
                 </div>
                 <h2 class="text-2xl font-extrabold text-pink-500 mb-2 relative z-10">กำลังปรับปรุงระบบ</h2>
                 <p class="text-gray-500 text-sm font-medium mb-4 relative z-10">ขออภัยในความไม่สะดวก น้องแมวกำลังทำความสะอาดและอัปเดตฟีเจอร์ใหม่ กรุณากลับมาใช้งานอีกครั้งในภายหลัง 🛠️✨</p>
@@ -493,7 +492,7 @@
         const getCatRank = (level) => {
             const lvl = parseInt(level) || 1;
             const rank = CAT_RANKS.find(r => lvl >= r.min) || CAT_RANKS[CAT_RANKS.length - 1];
-            return { name: rank.name, image: `https://drive.google.com/thumbnail?id=${rank.img}&sz=s800` };
+            return { name: rank.name, image: `https://drive.google.com/thumbnail?id=${rank.img}&sz=s400` };
         }
         
         // --- Gacha System Constants ---
@@ -1017,7 +1016,7 @@
                 
                 if (!appState.user || !appState.user.catData) return;
                 
-                img.src = `https://drive.google.com/thumbnail?id=${appState.user.catData.equippedCat}&sz=s800`;
+                img.src = `https://drive.google.com/thumbnail?id=${appState.user.catData.equippedCat}&sz=s400`;
                 widget.style.bottom = '80px';
                 widget.style.right = '20px';
                 widget.classList.remove('hidden');
@@ -1134,7 +1133,7 @@
             toggleFloatingPet(show) {
                 const widget = document.getElementById('floating-pet-widget');
                 if(show && appState.user && appState.user.catData) {
-                    document.getElementById('floating-pet-img').src = `https://drive.google.com/thumbnail?id=${appState.user.catData.equippedCat}&sz=s800`;
+                    document.getElementById('floating-pet-img').src = `https://drive.google.com/thumbnail?id=${appState.user.catData.equippedCat}&sz=s400`;
                     widget.classList.remove('hidden');
                 } else {
                     widget.classList.add('hidden');
@@ -1181,7 +1180,7 @@
                         this.renderGacha();
                     } else if (viewId === 'catroom') {
                         catroomView.classList.remove('hidden');
-                        this.renderCatRoom();
+                        this.renderCatRoomWithLoading();
                     }
                     return;
                 } else {
@@ -1210,8 +1209,7 @@
                     case 'ban_manager': await this.renderBanManager(); break;
                 }
             },
-
-           async renderHome() {
+            async renderHome() {
                 UI.setHeader('หน้าหลัก');
                 
                 // เคลียร์ Interval เก่าออกก่อนทุกครั้งป้องกันการสไลด์ทับซ้อนกัน
@@ -1269,7 +1267,7 @@
                             </button>
 
                             <button onclick="app.navigate('gacha')" class="w-[68px] sm:w-[76px] shrink-0 bg-gradient-to-br from-purple-50 to-indigo-50 border border-indigo-100 shadow-sm rounded-2xl flex items-center justify-center transition-transform active:scale-95 hover:scale-105 p-1 drop-shadow-lg">
-                                <img src="https://drive.google.com/thumbnail?id=1hMyBANMkz-xBQWyIZCIyj9JVtpLCjzBR&sz=s800" class="w-full h-full object-contain drop-shadow" alt="Gacha">
+                                <img src="https://drive.google.com/thumbnail?id=1hMyBANMkz-xBQWyIZCIyj9JVtpLCjzBR&sz=s400" class="w-full h-full object-contain drop-shadow" alt="Gacha">
                             </button>
                         </div>
 
@@ -1282,7 +1280,7 @@
                         <div class="shrink-0 mt-6 sm:mt-8 px-4 sm:px-5">
                             <div class="flex flex-row sm:items-center justify-between gap-3 mb-3">
                                 <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
-                                    <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s800" class="w-9 h-9 object-contain" alt="Leaderboard">
+                                    <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s400" class="w-9 h-9 object-contain" alt="Leaderboard">
                                     <p class="hidden min-[475px]:flex"> ทำเนียบอันดับนักเรียน</p>
                                     <p class="hidden max-[475px]:flex"> R A N K</p>
                                 </h3>
@@ -1353,6 +1351,224 @@
                 await this.renderLeaderboard();
             },
 
+           async renderLeaderboard() {
+                // 1. ตั้งชื่อหัวด้านบน
+                if (typeof UI !== 'undefined' && UI.setHeader) {
+                    UI.setHeader('ทำเนียบอันดับ');
+                }
+
+                const contentArea = document.getElementById('content-area');
+                if (!contentArea) return;
+
+                const criteria = appState.rankingCriteria || 'cs';
+                const scope = appState.rankingScope || 'class'; 
+                const page = appState.rankingPage || 1;
+                const limit = 10;
+
+                // 2. สร้างโครงสร้าง HTML พื้นฐานของหน้านี้ แล้วยัดลง contentArea ก่อนเลย
+                contentArea.innerHTML = `
+                    <div class="flex-1 overflow-y-auto no-scrollbar w-full p-4 sm:p-5 pb-24 flex flex-col">
+                        <div class="flex flex-row sm:items-center justify-between gap-3 mb-3">
+                            <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
+                                <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s400" class="w-9 h-9 object-contain" alt="Leaderboard">
+                                <p class="hidden min-[475px]:flex"> ทำเนียบอันดับนักเรียน</p>
+                                <p class="hidden max-[475px]:flex"> R A N K</p>
+                            </h3>
+                            
+                            <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold shadow-inner self-end sm:self-auto">
+                                <button onclick="app.changeRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${criteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.cs : ''}" class="w-5 h-5 object-contain"> <p class="hidden min-[320px]:flex"> ClassStar </p>
+                                </button>
+                                <button onclick="app.changeRankingCriteria('ct')" id="rank-tab-ct" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${criteria === 'ct' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.ct : ''}" class="w-5 h-5 object-contain"><p class="hidden min-[320px]:flex"> Crystal </p>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex bg-gray-200/80 p-1 rounded-xl text-xs font-semibold shadow-inner w-full mb-4">
+                            <button onclick="app.changeRankingScope('class')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${(!scope || scope === 'class') ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                <i class="fa-solid fa-chalkboard-user"></i> ระดับห้องเรียน
+                            </button>
+                            
+                            <button onclick="app.changeRankingScope('school')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${scope === 'school' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                <i class="fa-solid fa-school"></i> ระดับโรงเรียน
+                            </button>
+                        </div>
+
+                        <div id="leaderboard-list" class="space-y-2 sm:space-y-2.5">
+                            <div class="p-5 flex justify-center"><div class="w-8 h-8 border-4 border-primary border-t-accent rounded-full animate-spin"></div></div>
+                        </div>
+
+                        <div id="leaderboard-pagination" class="flex justify-between items-center mt-4 sm:mt-5 bg-white p-2.5 sm:p-3 rounded-2xl border border-gray-100 shadow-sm">
+                        </div>
+                    </div>
+                `;
+
+                // 3. ตอนนี้ในหน้าจอมี div พวกนี้แล้ว เราก็จับมันมาเตรียมใส่ข้อมูลได้เลย
+                const listContainer = document.getElementById('leaderboard-list');
+                const pagContainer = document.getElementById('leaderboard-pagination');
+                if (!listContainer || !pagContainer) return;
+
+                try {
+                    // --- 🚀 OPTIMIZATION 1: Caching System ---
+                    if (!appState.leaderboardCache) {
+                        appState.leaderboardCache = { students: [], lastFetch: 0 };
+                    }
+
+                    const CACHE_DURATION = 60000;
+                    const now = Date.now();
+
+                    if (appState.leaderboardCache.students.length === 0 || now - appState.leaderboardCache.lastFetch > CACHE_DURATION) {
+                        const usersRef = ref(db, 'users');
+                        const snap = await get(usersRef);
+                        
+                        let allStudents = [];
+                        if (snap.exists()) {
+                            const allUsers = snap.val();
+                            for (const uid in allUsers) {
+                                const u = allUsers[uid];
+                                if (u.role === 'student') {
+                                    allStudents.push({ uid, ...u });
+                                }
+                            }
+                        }
+                        appState.leaderboardCache.students = allStudents;
+                        appState.leaderboardCache.lastFetch = now;
+                    }
+
+                    // --- 🚀 OPTIMIZATION 2: กรองข้อมูลจาก Cache ---
+                    let students = [];
+                    const cachedStudents = appState.leaderboardCache.students;
+                    
+                    if (scope === 'class' && appState.user) {
+                        students = cachedStudents.filter(u => u.class === appState.user.class && u.room === appState.user.room);
+                    } else {
+                        students = [...cachedStudents]; 
+                    }
+
+                    students.sort((a, b) => {
+                        const scoreA = (a.items && a.items[criteria]) || 0;
+                        const scoreB = (b.items && b.items[criteria]) || 0;
+                        return scoreB - scoreA;
+                    });
+
+                    // ------------------ ส่วนแสดงอันดับของฉัน ------------------
+                    let myRankHtml = '';
+                    if (appState.user && appState.user.role === 'student') {
+                        const myIndex = students.findIndex(s => s.uid === appState.user.uid);
+                        const myRank = myIndex !== -1 ? myIndex + 1 : '-';
+                        const myScore = (appState.user.items && appState.user.items[criteria]) || 0;
+                        const scoreIcon = criteria === 'cs' ? `<img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.cs : ''}" class="w-4 h-4 object-contain">` : `<img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.ct : ''}" class="w-4 h-4 object-contain">`;
+                        const rankLabel = scope === 'class' ? `อันดับของฉัน (ในห้อง ${appState.user.class}/${appState.user.room})` : 'อันดับของฉัน (ระดับโรงเรียน)';
+                        
+                        myRankHtml = `
+                            <div class="-mt-3.5 mb-8 px-4 py-1 bg-gradient-to-r from-yellow-200/20 to-blue-500/20 border border-primary/20 rounded-lg flex justify-between items-center shadow-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary text-sm">${myRank}</div>
+                                    <span class="text-sm font-bold text-dark">${rankLabel}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 font-bold text-sm text-dark bg-white/60 px-2 py-1 rounded-lg">
+                                    <span>${myScore.toLocaleString()}</span>
+                                    ${scoreIcon}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (students.length === 0) {
+                        listContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
+                        pagContainer.innerHTML = '';
+                        return;
+                    }
+
+                    const totalItems = students.length;
+                    const totalPages = Math.ceil(totalItems / limit);
+                    const currentPage = Math.min(Math.max(page, 1), totalPages);
+                    appState.rankingPage = currentPage; 
+
+                    const startIndex = (currentPage - 1) * limit;
+                    const endIndex = Math.min(startIndex + limit, totalItems);
+                    
+                    // --- 🚀 OPTIMIZATION 3: หั่น Array ---
+                    const pageData = students.slice(startIndex, endIndex);
+
+                    let listHtml = myRankHtml; 
+                    pageData.forEach((st, idx) => {
+                        const absoluteRank = startIndex + idx + 1;
+                        const score = (st.items && st.items[criteria]) || 0;
+                        const avatar = st.profileImage || (typeof DEFAULT_AVATAR !== 'undefined' ? DEFAULT_AVATAR : '');
+                        const currentFrame = (typeof getProfileFrame !== 'undefined') ? getProfileFrame(st) : '';
+                        const displayN = st.displayName || st.fullName;
+                        const catImg = st.catData?.equippedCat || (typeof CAT_ASSETS !== 'undefined' ? CAT_ASSETS.starterCat : '');
+                        
+                        let rankBadge = '';
+                        let rankBg = 'bg-white hover:border-gray-200';
+                        if (absoluteRank === 1) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1Ma4EE_XRUQyv2Z2s5jY8I5KjwvfGTzF9&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-yellow-50 to-orange-50/30 border-yellow-200';
+                        } else if (absoluteRank === 2) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1C1TaXHTM8JfhXobvxrGVuSMQEgvzhm11&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-gray-50 to-slate-50/30 border-slate-200';
+                        } else if (absoluteRank === 3) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1-V4fPN8C3Tbm1DWzjMZ5dFEORBN-58hJ&sz=s400" class="w-8 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-amber-50 to-amber-50/10 border-amber-200';
+                        } else {
+                            rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
+                        }
+
+                        const scoreIcon = criteria === 'cs' ? `<img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.cs : ''}" class="w-5 h-5 object-contain" loading="lazy">` : `<img src="${typeof ITEM_IMAGES !== 'undefined' ? ITEM_IMAGES.ct : ''}" class="w-5 h-5 object-contain" loading="lazy">`;
+
+                        listHtml += `
+                            <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-2 sm:p-3.5 rounded-2xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-primary/50 active:scale-[0.98]">
+                                <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
+                                    <div class="w-6 sm:w-8 flex justify-center items-center shrink-0">
+                                        ${rankBadge}
+                                    </div>
+                                    <div class="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 select-none">
+                                        <img src="${avatar}" 
+                                            class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner"
+                                            onerror="this.onerror=null; this.src='${typeof DEFAULT_AVATAR !== 'undefined' ? DEFAULT_AVATAR : ''}'"
+                                            alt="${st.fullName}" loading="lazy">
+                                        <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame" loading="lazy">
+                                        <div class="absolute -right-2 -bottom-1 w-6 h-6 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
+                                            <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s400" class="w-full h-full object-contain" loading="lazy">
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pl-1">
+                                        <div class="font-bold text-xs sm:text-sm text-dark truncate">${displayN}</div>
+                                        <div class="text-[9px] sm:text-[10px] text-gray-400 font-medium truncate">ม.${st.class}/${st.room} • เลขที่ ${st.number}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 sm:gap-1.5 font-bold text-xs sm:text-sm text-dark bg-gray-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-gray-100 shadow-inner shrink-0">
+                                    <span>${score.toLocaleString()}</span>
+                                    ${scoreIcon}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listContainer.innerHTML = listHtml;
+
+                    pagContainer.innerHTML = `
+                        <button onclick="app.changeRankingPage(-1)" 
+                                ${currentPage === 1 ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-primary active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                            <i class="fa-solid fa-chevron-left"></i> ก่อนหน้า
+                        </button>
+                        <span class="text-xs font-bold text-gray-500">
+                            หน้า ${currentPage} / ${totalPages}
+                        </span>
+                        <button onclick="app.changeRankingPage(1)" 
+                                ${currentPage === totalPages ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-primary active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                            ถัดไป <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    `;
+
+                } catch (error) {
+                    console.error("Error loading ranking data:", error);
+                    listContainer.innerHTML = `<div class="text-center py-6 text-red-500 text-xs">เกิดข้อผิดพลาดในการดึงข้อมูลอันดับ</div>`;
+                    pagContainer.innerHTML = '';
+                }
+            },
+
             async toggleTeacherProfile() {
                 const el = document.getElementById('teacher-profile-dropdown');
                 const chevron = document.getElementById('teacher-chevron');
@@ -1394,14 +1610,14 @@
                                             <div class="relative z-10 flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
                                                 <!-- Profile Frame & Avatar -->
                                                 <div class="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0 select-none">
-                                                    <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner">
-                                                    <img src="${frame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]">
+                                                    <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner" loading="lazy">
+                                                    <img src="${frame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" loading="lazy">
                                                 </div>
                                                 
                                                 <!-- Details -->
                                                 <div class="min-w-0 flex-1">
                                                     <div class="flex items-center gap-1.5 mb-0.5">
-                                                        <img src="${rank.image}" class="h-5 sm:h-6 w-auto object-contain drop-shadow">
+                                                        <img src="${rank.image}" class="h-5 sm:h-6 w-auto object-contain drop-shadow" loading="lazy">
                                                         <span class="text-[9px] sm:text-[10px] font-extrabold text-yellow-400 uppercase tracking-widest bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">${rank.name}</span>
                                                     </div>
                                                     <div class="font-bold text-sm sm:text-base text-white truncate drop-shadow-md">${tName}</div>
@@ -1466,11 +1682,11 @@
                             <div class="flex justify-between items-end">
                                 <div class="relative w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center select-none z-10 shrink-0">
                                     <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'" alt="Profile">
-                                    <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame">
+                                    <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame" loading="lazy">
                                 </div>
                                 
                                 <div onclick="app.showRankCriteria()" class="flex flex-col items-center justify-center bg-transparent p-1 w-32 h-16 sm:w-44 sm:h-20 mr-0 sm:mr-2 -mt-6 sm:-mt-8 z-10 animate-bounce-slow shrink-0 cursor-pointer hover:scale-105 transition-transform" title="คลิกเพื่อดูเกณฑ์แรงค์">
-                                    <img src="${rankBadge.image}" class="h-28 sm:h-40 w-auto object-contain drop-shadow-lg" alt="${rankBadge.name}">
+                                    <img src="${rankBadge.image}" class="h-28 sm:h-40 w-auto object-contain drop-shadow-lg" alt="${rankBadge.name}" loading="lazy">
                                     <span class="text-[8px] sm:text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mt-1 bg-white/80 px-2.5 py-0.5 rounded-full shadow-sm border border-gray-100 backdrop-blur-sm">${rankBadge.name} <i class="fa-solid fa-circle-info ml-0.5 text-primary"></i></span>
                                 </div>
                             </div>
@@ -1519,8 +1735,8 @@
                             const currentTitleId = u.selectedTitle || Object.keys(window.renderStore.playerTitles)[0];
                             const currentTitle = getTitleData(currentTitleId);
                             
-                            const badgeImg = currentTitle.img.startsWith('http') ? currentTitle.img : `https://drive.google.com/thumbnail?id=${currentTitle.img}&sz=s800`;
-                            const bgStyle = currentTitle.bgImg ? `style="background-image: url('${currentTitle.bgImg.startsWith('http') ? currentTitle.bgImg : 'https://drive.google.com/thumbnail?id=' + currentTitle.bgImg + '&sz=s800'}'); background-size: cover; background-position: center;"` : '';
+                            const badgeImg = currentTitle.img.startsWith('http') ? currentTitle.img : `https://drive.google.com/thumbnail?id=${currentTitle.img}&sz=s400`;
+                            const bgStyle = currentTitle.bgImg ? `style="background-image: url('${currentTitle.bgImg.startsWith('http') ? currentTitle.bgImg : 'https://drive.google.com/thumbnail?id=' + currentTitle.bgImg + '&sz=s400'}'); background-size: cover; background-position: center;"` : '';
                             const bgClass = currentTitle.bgImg ? 'text-white border-transparent' : currentTitle.bg;
                             const overlayClass = currentTitle.bgImg ? 'bg-black/10' : 'bg-white/20';
 
@@ -1554,7 +1770,7 @@
                             <button onclick="app.navigate('catroom')" class="w-full relative rounded-3xl overflow-hidden shadow-lg border border-pink-100 transition-transform active:scale-[0.98] hover:shadow-xl group flex flex-col items-center justify-center p-6 bg-gradient-to-br from-pink-50 via-white to-purple-50">
                                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 pointer-events-none"></div>
                                 <div class="w-20 h-20 mb-3 animate-bounce-slow">
-                                    <img src="https://drive.google.com/thumbnail?id=${u.catData?.equippedCat || CAT_ASSETS.starterCat}&sz=s800" class="w-full h-full object-contain drop-shadow-md">
+                                    <img src="https://drive.google.com/thumbnail?id=${u.catData?.equippedCat || CAT_ASSETS.starterCat}&sz=s400" class="w-full h-full object-contain drop-shadow-md">
                                 </div>
                                 <h3 class="text-xl font-extrabold text-pink-500 tracking-wider flex items-center gap-2">
                                     <i class="fa-solid fa-cat"></i> ห้องแมวของฉัน <i class="fa-solid fa-heart text-red-400"></i>
@@ -1565,6 +1781,113 @@
                     </div>
                 `;
                 document.getElementById('content-area').innerHTML = html;
+            },
+            async renderCatRoomWithLoading() {
+                const catroomView = document.getElementById('catroom-view');
+                const u = appState.user || {};
+                const catData = u.catData || {};
+                
+                const catImgUrl = `https://drive.google.com/thumbnail?id=${catData.equippedCat || CAT_ASSETS.starterCat}&sz=s400`;
+                const bgImgUrl = `https://drive.google.com/thumbnail?id=${catData.equippedBg || CAT_ASSETS.starterBg}&sz=s400`;
+
+                // 1. สร้าง UI หน้าจอ Loading ของห้องแมว
+                catroomView.innerHTML = `
+                    <div class="absolute inset-0 bg-catbg z-[100] flex flex-col items-center justify-center p-6">
+                        <div class="w-32 h-32 mb-6 animate-bounce-slow relative">
+                            <img src="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400" class="w-full h-full object-contain filter drop-shadow-md">
+                        </div>
+                        
+                        <h2 class="text-xl font-extrabold text-pink-500 mb-6 tracking-wider drop-shadow-sm">กำลังเตรียมห้องแมว...</h2>
+
+                        <div class="w-full max-w-[280px] bg-pink-100 rounded-full h-5 mb-2 overflow-hidden border border-pink-200 p-1 shadow-inner relative">
+                            <div id="cat-progress-bar" class="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 h-full rounded-full transition-all duration-300 ease-out w-0 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-white/20" style="background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem; animation: progress-stripes 1s linear infinite;"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between w-full max-w-[280px] text-[11px] font-extrabold text-gray-500 px-1">
+                            <span id="cat-progress-text">กำลังเริ่มระบบ...</span>
+                            <span id="cat-progress-percent" class="text-pink-600">0%</span>
+                        </div>
+                        
+                        <style>
+                            @keyframes progress-stripes { from { background-position: 1rem 0; } to { background-position: 0 0; } }
+                            .fade-out-scene { opacity: 0; transition: opacity 0.5s ease-out; }
+                        </style>
+                    </div>
+                `;
+
+                const progressBar = document.getElementById('cat-progress-bar');
+                const progressText = document.getElementById('cat-progress-text');
+                const progressPercent = document.getElementById('cat-progress-percent');
+
+                const updateProgress = async (percent, text, delayMs = 0) => {
+                    progressBar.style.width = `${percent}%`;
+                    progressPercent.innerText = `${percent}%`;
+                    progressText.innerText = text;
+                    if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
+                };
+
+                try {
+                    // ขั้นที่ 1: เตรียมข้อมูลโปรไฟล์ผู้เล่น (สำหรับ renderCatProfile)
+                    await updateProgress(20, 'กำลังเตรียมโปรไฟล์น้องแมว...', 200);
+                    if (typeof this.renderCatProfile === 'function') {
+                        // ดึงข้อมูลหรือคำนวณค่าต่างๆ ของ Profile รอไว้ล่วงหน้า
+                        window.renderStore = window.renderStore || {};
+                        window.renderStore.profileReady = true; 
+                    }
+
+                    // ขั้นที่ 2: โหลดรูปภาพน้องแมวและพื้นหลังหลัก (Preload Room Assets)
+                    await updateProgress(45, 'กำลังปลุกน้องแมวและจัดห้อง...', 100);
+                    const roomImages = [catImgUrl, bgImgUrl];
+                    await Promise.all(roomImages.map(url => new Promise(resolve => {
+                        const img = new Image();
+                        img.src = url;
+                        img.onload = resolve;
+                        img.onerror = resolve; // ข้ามหากมีข้อผิดพลาดเพื่อไม่ให้ค้าง
+                    })));
+
+                    // ขั้นที่ 3: ดึงข้อมูลร้านค้า และ Preload รูปสินค้าใน Shop ล่วงหน้าทั้งหมด
+                    await updateProgress(75, 'กำลังเปิดประตูร้านค้าแมว...', 100);
+                    try {
+                        const shopRef = ref(db, 'cat_shop');
+                        const snap = await get(shopRef);
+                        const allItems = snap.exists() ? snap.val() : {};
+                        
+                        // เก็บลง global store เพื่อให้ renderCatShop เรียกใช้ได้ทันทีโดยไม่ต้อง fetch ใหม่
+                        window.renderStore = window.renderStore || {};
+                        window.renderStore.catShop = allItems;
+
+                        // สั่ง Preload รูปภาพสินค้าในร้านค้าทั้งหมดแบบขนาน (Parallel)
+                        const shopImagePromises = Object.values(allItems).map(item => new Promise(resolve => {
+                            if (!item.driveId) return resolve();
+                            const img = new Image();
+                            img.src = `https://drive.google.com/thumbnail?id=${item.driveId}&sz=s400`;
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                        }));
+                        await Promise.all(shopImagePromises);
+                    } catch (shopError) {
+                        console.error("Shop Preload Failed:", shopError);
+                        // โหลดร้านค้าไม่สำเร็จไม่ส่งผลให้ระบบหลักค้าง ทำงานต่อได้
+                    }
+
+                    // ขั้นที่ 4: ตรวจสอบไอเทมสวมใส่และการคำนวณบัฟพิเศษ
+                    await updateProgress(90, 'กำลังตรวจสอบบัฟและไอเทม...', 200);
+
+                    // ขั้นที่ 5: เสร็จสิ้น
+                    await updateProgress(100, 'พร้อมแล้ว เมี๊ยว!', 300);
+
+                    // เฟดหน้าจอโหลดออกแล้วเรียกเรนเดอร์ห้องแมวปกติ
+                    catroomView.children[0].classList.add('fade-out-scene');
+                    await new Promise(r => setTimeout(r, 400));
+                    
+                    this.renderCatRoom();
+
+                } catch (error) {
+                    console.error("CatRoom Loading Error:", error);
+                    this.renderCatRoom();
+                }
             },
 
             async renderCardInventory() {
@@ -1633,7 +1956,7 @@
                                 console.error("Error decoding card ID:", e);
                             }
                             if (originalCardUrl && !originalCardUrl.startsWith('http')) {
-                                originalCardUrl = `https://drive.google.com/thumbnail?id=${originalCardUrl}&sz=s800`;
+                                originalCardUrl = `https://drive.google.com/thumbnail?id=${originalCardUrl}&sz=s400`;
                             }
 
                             let cardName = "การ์ดสะสม"; 
@@ -1888,7 +2211,7 @@
                             <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
                                 ${item.code ? `<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full"><i class="ri-lock-line"></i> มีรหัสล็อก</div>` : ''}
                                 
-                                <img src="${item.cardImage}" class="w-24 h-24 object-contain mb-2 rounded" alt="${item.cardName}">
+                                <img src="${item.cardImage}" class="w-24 h-24 object-contain mb-2 rounded" alt="${item.cardName}" loading="lazy">
                                 <h4 class="font-bold text-sm text-gray-800">${item.cardName}</h4>
                                 <p class="text-xs text-gray-500">จำนวน: <span class="font-semibold text-gray-700">${item.quantity} ใบ</span></p>
                                 <p class="text-xs text-gray-400 mb-2">โดย: ${item.sellerName}</p>
@@ -3458,31 +3781,50 @@
                 if (!listContainer || !pagContainer) return;
 
                 const criteria = appState.rankingCriteria || 'cs';
-                const scope = appState.rankingScope || 'class'; // เพิ่มตัวแปรเช็ค scope
+                const scope = appState.rankingScope || 'class'; 
                 const page = appState.rankingPage || 1;
                 const limit = 10;
 
                 try {
-                    const usersRef = ref(db, 'users');
-                    const snap = await get(usersRef);
-                    
-                    let students = [];
-                    if (snap.exists()) {
-                        const allUsers = snap.val();
-                        for (const uid in allUsers) {
-                            const u = allUsers[uid];
-                            if (u.role === 'student') {
-                                // ตรรกะคัดกรองห้องเรียน
-                                if (scope === 'class') {
-                                    if (u.class === appState.user.class && u.room === appState.user.room) {
-                                        students.push({ uid, ...u });
-                                    }
-                                } else {
-                                    // ระดับโรงเรียน (ดึงทุกคน)
-                                    students.push({ uid, ...u });
+                    // 🚀 OPTIMIZATION 1: Caching System
+                    // สร้าง Cache ไว้ใน appState ถ้ายังไม่มี
+                    if (!appState.leaderboardCache) {
+                        appState.leaderboardCache = { students: [], lastFetch: 0 };
+                    }
+
+                    const CACHE_DURATION = 60000; // แคชข้อมูลไว้ 60 วินาที (เปลี่ยนได้ตามต้องการ)
+                    const now = Date.now();
+
+                    // ดึงข้อมูลจาก Firebase เฉพาะตอนที่ยังไม่มีแคช หรือ แคชหมดอายุ
+                    if (appState.leaderboardCache.students.length === 0 || now - appState.leaderboardCache.lastFetch > CACHE_DURATION) {
+                        const usersRef = ref(db, 'users');
+                        const snap = await get(usersRef);
+                        
+                        let allStudents = [];
+                        if (snap.exists()) {
+                            const allUsers = snap.val();
+                            for (const uid in allUsers) {
+                                const u = allUsers[uid];
+                                if (u.role === 'student') {
+                                    allStudents.push({ uid, ...u });
                                 }
                             }
                         }
+                        // เซฟลง Cache
+                        appState.leaderboardCache.students = allStudents;
+                        appState.leaderboardCache.lastFetch = now;
+                    }
+
+                    // 🚀 OPTIMIZATION 2: กรองข้อมูลจาก Cache แทนการลูปหาใหม่ทุกครั้ง
+                    let students = [];
+                    const cachedStudents = appState.leaderboardCache.students;
+                    
+                    if (scope === 'class' && appState.user) {
+                        // ระดับห้องเรียน
+                        students = cachedStudents.filter(u => u.class === appState.user.class && u.room === appState.user.room);
+                    } else {
+                        // ระดับโรงเรียน
+                        students = [...cachedStudents]; 
                     }
 
                     // เรียงคะแนนตามเกณฑ์
@@ -3495,6 +3837,7 @@
                     // ------------------ ส่วนแสดงอันดับของฉัน ------------------
                     let myRankHtml = '';
                     if (appState.user && appState.user.role === 'student') {
+                        // หา Index จาก Array ที่เรียงแล้วได้เลย
                         const myIndex = students.findIndex(s => s.uid === appState.user.uid);
                         const myRank = myIndex !== -1 ? myIndex + 1 : '-';
                         const myScore = (appState.user.items && appState.user.items[criteria]) || 0;
@@ -3529,9 +3872,11 @@
 
                     const startIndex = (currentPage - 1) * limit;
                     const endIndex = Math.min(startIndex + limit, totalItems);
+                    
+                    // 🚀 OPTIMIZATION 3: หั่น Array ออกมาก่อนเอาไปวนลูปสร้าง HTML
                     const pageData = students.slice(startIndex, endIndex);
 
-                    let listHtml = myRankHtml; // เอา UI กล่องอันดับของฉันมาใส่ไว้บนสุด
+                    let listHtml = myRankHtml; 
                     pageData.forEach((st, idx) => {
                         const absoluteRank = startIndex + idx + 1;
                         const score = (st.items && st.items[criteria]) || 0;
@@ -3543,19 +3888,19 @@
                         let rankBadge = '';
                         let rankBg = 'bg-white hover:border-gray-200';
                         if (absoluteRank === 1) {
-                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1Ma4EE_XRUQyv2Z2s5jY8I5KjwvfGTzF9&sz=s800" class="w-10 h-8 object-contain"></span>`;
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1Ma4EE_XRUQyv2Z2s5jY8I5KjwvfGTzF9&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
                             rankBg = 'bg-gradient-to-r from-yellow-50 to-orange-50/30 border-yellow-200';
                         } else if (absoluteRank === 2) {
-                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1C1TaXHTM8JfhXobvxrGVuSMQEgvzhm11&sz=s800" class="w-10 h-8 object-contain"></span>`;
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1C1TaXHTM8JfhXobvxrGVuSMQEgvzhm11&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
                             rankBg = 'bg-gradient-to-r from-gray-50 to-slate-50/30 border-slate-200';
                         } else if (absoluteRank === 3) {
-                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1-V4fPN8C3Tbm1DWzjMZ5dFEORBN-58hJ&sz=s800" class="w-8 h-8 object-contain"></span>`;
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1-V4fPN8C3Tbm1DWzjMZ5dFEORBN-58hJ&sz=s400" class="w-8 h-8 object-contain" loading="lazy"></span>`;
                             rankBg = 'bg-gradient-to-r from-amber-50 to-amber-50/10 border-amber-200';
                         } else {
                             rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
                         }
 
-                        const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain">` : `<img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain">`;
+                        const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain" loading="lazy">` : `<img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain" loading="lazy">`;
 
                         listHtml += `
                             <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-2 sm:p-3.5 rounded-2xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-primary/50 active:scale-[0.98]">
@@ -3567,11 +3912,10 @@
                                         <img src="${avatar}" 
                                              class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner"
                                              onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'"
-                                             alt="${st.fullName}">
-                                        <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame">
-                                        <!-- Cat Mini Icon overlay -->
+                                             alt="${st.fullName}" loading="lazy">
+                                        <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame" loading="lazy">
                                         <div class="absolute -right-2 -bottom-1 w-6 h-6 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
-                                            <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s800" class="w-full h-full object-contain">
+                                            <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s400" class="w-full h-full object-contain" loading="lazy">
                                         </div>
                                     </div>
                                     <div class="min-w-0 flex-1 pl-1">
@@ -3722,7 +4066,7 @@
                     `;
                     
                     frames.forEach(frame => {
-                        const frameUrl = `https://drive.google.com/thumbnail?id=${frame.driveId}&sz=s800`;
+                        const frameUrl = `https://drive.google.com/thumbnail?id=${frame.driveId}&sz=s400`;
                         const isEquipped = selectedFrame === frameUrl;
                         const borderClass = isEquipped 
                             ? 'border-primary bg-cyan-50/20 shadow-md shadow-cyan-100/50' 
@@ -3734,8 +4078,8 @@
                         gridHtml += `
                             <div class="frame-item flex flex-col items-center p-2 sm:p-3 rounded-2xl border ${borderClass} transition-all" data-name="${frame.name.toLowerCase()}" data-category="${frame.category}">
                                 <div class="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0 mb-2">
-                                    <img src="${u.profileImage || DEFAULT_AVATAR}" class="w-[90%] h-[90%] rounded-full object-cover shadow-inner bg-white">
-                                    <img src="${frameUrl}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]">
+                                    <img src="${u.profileImage || DEFAULT_AVATAR}" class="w-[90%] h-[90%] rounded-full object-cover shadow-inner bg-white" loading="lazy">
+                                    <img src="${frameUrl}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" loading="lazy">
                                 </div>
                                 <div class="text-center w-full mb-2 sm:mb-3 flex-1 min-w-0">
                                     <div class="font-bold text-[10px] sm:text-xs text-dark truncate w-full" title="${frame.name}">${frame.name}</div>
@@ -4236,8 +4580,8 @@
                                             const titleId = u.selectedTitle || Object.keys(window.renderStore.playerTitles)[0];
                                             const titleInfo = getTitleData(titleId);
                                             if (!titleInfo) return '';
-                                            const badgeImg = titleInfo.img.startsWith('http') ? titleInfo.img : `https://drive.google.com/thumbnail?id=${titleInfo.img}&sz=s800`;
-                                            const bgStyle = titleInfo.bgImg ? `style="background-image: url('${titleInfo.bgImg.startsWith('http') ? titleInfo.bgImg : 'https://drive.google.com/thumbnail?id=' + titleInfo.bgImg + '&sz=s800'}'); background-size: cover; background-position: center;"` : '';
+                                            const badgeImg = titleInfo.img.startsWith('http') ? titleInfo.img : `https://drive.google.com/thumbnail?id=${titleInfo.img}&sz=s400`;
+                                            const bgStyle = titleInfo.bgImg ? `style="background-image: url('${titleInfo.bgImg.startsWith('http') ? titleInfo.bgImg : 'https://drive.google.com/thumbnail?id=' + titleInfo.bgImg + '&sz=s400'}'); background-size: cover; background-position: center;"` : '';
                                             const bgClass = titleInfo.bgImg ? 'text-white border-transparent' : titleInfo.bg;
                                             const overlayClass = titleInfo.bgImg ? 'bg-black/10' : 'bg-white/20';
 
@@ -4256,10 +4600,10 @@
                                     <div>
                                         <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ห้องแมวส่วนตัว</h4>
                                         <div class="relative w-full h-32 rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white">
-                                            <div class="absolute inset-0 bg-cover bg-center filter brightness-90" style="background-image: url('https://drive.google.com/thumbnail?id=${catBg}&sz=s800')"></div>
+                                            <div class="absolute inset-0 bg-cover bg-center filter brightness-90" style="background-image: url('https://drive.google.com/thumbnail?id=${catBg}&sz=s400')"></div>
                                             <div class="absolute inset-0 bg-black/30"></div>
                                             <div class="relative z-10 p-3 h-full flex items-center gap-3">
-                                                <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s800" class="w-20 h-20 sm:w-24 sm:h-24 object-contain animate-bounce-slow drop-shadow-lg">
+                                                <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s400" class="w-20 h-20 sm:w-24 sm:h-24 object-contain animate-bounce-slow drop-shadow-lg">
                                                 <div class="flex-1 min-w-0 flex flex-col justify-center">
                                                     <div class="flex items-center gap-1.5 mb-0.5">
                                                         <img src="${catRank.image}" class="h-8 object-contain">
@@ -5158,7 +5502,7 @@
                         salesHistoryHtml = `<div class="text-center py-8 text-gray-400 text-xs bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">ยังไม่มีประวัติการขายของคุณในระบบ</div>`;
                     } else {
                         salesHistory.forEach(history => {
-                            const buyerAvatar = history.buyerImage || 'https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800'; 
+                            const buyerAvatar = history.buyerImage || 'https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400'; 
                             salesHistoryHtml += `
                                 <div class="flex items-center justify-between bg-white border border-emerald-100 p-2.5 rounded-xl mb-2 shadow-sm">
                                     <div class="flex items-center gap-2.5 min-w-0">
@@ -5174,7 +5518,7 @@
                                     </div>
                                     
                                     <div class="flex items-center gap-2 bg-gray-50 border border-gray-100 py-1 px-2 rounded-xl max-w-[120px] shrink-0">
-                                        <img src="${buyerAvatar}" class="w-5 h-5 rounded-full object-cover border border-gray-200" onerror="this.src='https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s800'">
+                                        <img src="${buyerAvatar}" class="w-5 h-5 rounded-full object-cover border border-gray-200" onerror="this.src='https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400'">
                                         <div class="text-[10px] font-medium text-gray-600 truncate" title="${history.buyerName}">${history.buyerName}</div>
                                     </div>
                                 </div>
@@ -5245,7 +5589,7 @@
                                 const isFree = val.category === 'free';
                                 const isBought = unlocked[driveId] === true;
                                 const isLimited = val.isLimited === true;
-                                const frameImgUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
+                                const frameImgUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
                                 
                                 let actionBtn = '';
                                 if (isFree) {
@@ -6274,7 +6618,7 @@
                     filteredBanners.forEach(([bId, b]) => {
                         const coverImg = (b.coverId && b.coverId.startsWith('http')) 
                             ? b.coverId 
-                            : `https://drive.google.com/thumbnail?id=${b.coverId}&sz=s800`;
+                            : `https://drive.google.com/thumbnail?id=${b.coverId}&sz=s400`;
                         
                         bannersHtml += `
                             <div onclick="app.openGachaBanner('${bId}')" class="w-full shrink-0 bg-white rounded-3xl overflow-hidden shadow-lg border border-indigo-100 flex flex-col relative group cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]">
@@ -6282,6 +6626,7 @@
                                     <div class="absolute top-3 right-3 z-20 flex gap-2">
                                         <button onclick="event.stopPropagation(); app.manageGachaBannerItems('${bId}')" class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-list"></i></button>
                                         <button onclick="event.stopPropagation(); app.editGachaBanner('${bId}')" class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="event.stopPropagation(); app.deleteGachaBanner('${bId}')" class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 ` : ''}
                                 
@@ -6352,10 +6697,15 @@
 
                         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[320px] z-[60] flex flex-col items-center gap-4">
                             <div id="gacha-pity-counter" class="w-full text-center mb-[-5px]"></div>
-                            <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
-                                <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
-                                <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
-                                <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm w-max">
+                                    <span class="text-xs text-indigo-900 font-bold">คุณมี</span>
+                                    <img id="gacha-view-card-img" src="" class="w-4 h-4 object-contain">
+                                    <span id="gacha-view-card-count" class="font-extrabold text-indigo-600">0</span>
+                                </div>
+                                <div id="gacha-quota-badge" class="hidden bg-indigo-500/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-white shadow-sm">
+                                    <span class="text-xs font-bold text-white">เหลือ: <span id="gacha-quota-count">5</span>/5 ครั้ง</span>
+                                </div>
                             </div>
                             ${Object.values(equippedItems).includes('item_10') ? `
                                 
@@ -6379,13 +6729,15 @@
                                 </button>
                             ` : ''}
                            
-                            <button id="gacha-btn-shake" onclick="app.shakeGachaBanner(appState.activeGachaBanner)" class="hidden w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-extrabold text-sm sm:text-base py-3 px-6 rounded-2xl shadow-lg hover:shadow-cyan-400/50 hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 items-center justify-center gap-2 mb-3">
-                                <i class="fa-solid fa-shuffle"></i> เขย่าตู้สุ่ม (80 CT)
-                            </button>
-                            
-                            <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-10 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 w-full flex items-center justify-center gap-2">
-                                สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
-                            </button>
+                            <div class="flex items-center gap-3 w-full mb-3">
+                                <button id="gacha-btn-shake" onclick="app.shakeGachaBanner(appState.activeGachaBanner)" class="hidden shrink-0 w-[60px] h-[60px] bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-2xl rounded-2xl shadow-lg hover:shadow-cyan-400/50 hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 flex items-center justify-center tooltip-trigger" title="เขย่าตู้สุ่ม (80 CT)">
+                                    <i class="fa-solid fa-dice"></i>
+                                </button>
+                                
+                                <button id="gacha-btn-open" onclick="app.triggerGachaPull(appState.activeGachaBanner)" class="flex-1 gacha-btn-gradient text-indigo-900 font-extrabold text-lg py-4 px-6 rounded-[2rem] shadow-[0_0_30px_rgba(255,184,220,0.6)] hover:shadow-[0_0_50px_rgba(255,245,128,0.8)] hover:brightness-110 transition-all duration-300 active:scale-95 border border-white/50 flex items-center justify-center gap-2">
+                                    สุ่ม 1 ครั้ง <img id="gacha-btn-card-img" src="" class="w-6 h-6 drop-shadow">
+                                </button>
+                            </div>
 
                             ${isTeacher ? `
                             <button onclick="app.triggerGachaPull(appState.activeGachaBanner, true)" class="bg-yellow-400 text-yellow-900 font-bold text-sm py-2.5 px-6 rounded-full shadow-lg hover:brightness-110 transition-all active:scale-95 border border-yellow-200 flex items-center gap-2">
@@ -6408,7 +6760,7 @@
                                 <div id="gacha-card-inner" class="gacha-card-wrapper w-full h-full relative">
                                     <div class="gacha-card-face gacha-card-back"></div>
                                     <div class="gacha-card-face flex flex-col items-center justify-center bg-transparent relative">
-                                        <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s800" class="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl">
+                                        <img id="gacha-card-bg" src="https://drive.google.com/thumbnail?id=1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj&sz=s400" class="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-2xl">
                                         <img id="gacha-reward-item" src="" class="scale-0 opacity-0 w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10 drop-shadow-xl transition-all duration-[1500ms] ease-out mt-4">
                                         <div id="gacha-reward-name" class="opacity-0 absolute bottom-12 text-indigo-900 text-xl font-extrabold tracking-widest drop-shadow-sm transition-opacity duration-1000 z-10 bg-white/90 px-6 py-2 rounded-xl text-center w-[85%] line-clamp-2 border border-indigo-100"></div>
                                     </div>
@@ -6482,7 +6834,7 @@
                     });
                 }
 
-                const cost = 80;
+                const cost = 120;
                 const currentCT = (u.items && u.items.ct) || 0;
 
                 if (currentCT < cost) {
@@ -6661,7 +7013,7 @@
 
                 if (!bSnap.exists()) return Toast.fire({icon: 'error', title: 'ไม่พบข้อมูลตู้สุ่ม'});
                 const banner = bSnap.val();
-                const cardImgUrl = banner.cardImage?.includes('http') ? banner.cardImage : `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s800`;
+                const cardImgUrl = banner.cardImage?.includes('http') ? banner.cardImage : `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s400`;
 
                 content.innerHTML = `
                     <div class="flex-1 flex flex-col w-full h-full min-h-0 bg-gray-50">
@@ -6818,7 +7170,7 @@
                             let finalImg = rawUrl;
                             if (rawUrl.includes('drive.google.com') || (rawUrl.length > 20 && !rawUrl.startsWith('http'))) {
                                 const driveId = rawUrl.includes('id=') ? rawUrl.split('id=')[1].split('&')[0] : rawUrl;
-                                finalImg = `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
+                                finalImg = `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
                             } else if (!rawUrl.startsWith('http')) {
                                 finalImg = ITEM_IMAGES[rawUrl] || CAT_ASSETS[rawUrl] || ITEM_IMAGES.sc;
                             }
@@ -6999,6 +7351,17 @@
                 
                 // 1. ดึงตู้หลักมาก่อน
                 let banner = appState.gachaBanners[bId];
+                const quotaBadge = document.getElementById('gacha-quota-badge');
+                
+                if (banner.category === 'special') {
+                    quotaBadge.classList.remove('hidden');
+                    const today = new Date().toDateString();
+                    const daily = appState.user.gacha_daily_limits?.[bId] || { date: '', count: 0 };
+                    const used = daily.date === today ? daily.count : 0;
+                    document.getElementById('gacha-quota-count').innerText = 5 - used;
+                } else {
+                    quotaBadge.classList.add('hidden');
+                }
                 
                 // 2. เช็กว่าผู้เล่นคนนี้มี "ตู้ส่วนตัว" ที่ผ่านการเขย่าแล้วหรือไม่
                 const u = appState.user;
@@ -7009,7 +7372,7 @@
                     };
                 }
 
-                const cardImg = `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s800`;
+                const cardImg = `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s400`;
                 
                 document.getElementById('gacha-floating-item').src = cardImg;
                 document.getElementById('gacha-btn-card-img').src = cardImg;
@@ -7043,9 +7406,10 @@
                     // เช็คว่ามีตัวอักษร A ไหม? และ ต้องไม่มีตัวอักษร S เด็ดขาด!
                     const hasA = bName.includes('A') || cName.includes('A');
                     const hasS = bName.includes('S') || cName.includes('S');
+                    const hasCs = bName.includes("ร้านสุ่ม");
 
                     // ถ้าเป็นตู้ A (และไม่ใช่ S) ให้แสดงปุ่ม
-                    if (hasA && !hasS) {
+                    if (hasA && !hasS && !hasCs) {
                         shakeBtn.classList.remove('hidden');
                         shakeBtn.classList.add('flex');
                     } else {
@@ -7115,7 +7479,7 @@
                 let bgSource = reward.cardImg || '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj';
                 document.getElementById('gacha-card-bg').src = bgSource.startsWith('http') 
                     ? bgSource 
-                    : `https://drive.google.com/thumbnail?id=${bgSource}&sz=s800`;
+                    : `https://drive.google.com/thumbnail?id=${bgSource}&sz=s400`;
                 
                 // 1. Hide Button smoothly
                 document.getElementById('gacha-btn-open').classList.add('scale-90', 'opacity-0', 'pointer-events-none');
@@ -7178,7 +7542,7 @@
                 if (rImage.startsWith('http')) {
                     finalRewardImg = rImage; // ถ้าเป็น HTTP/HTTPS (เช่น Cloudinary) ใช้ตรงๆ เลย
                 } else if (rImage.length > 10) {
-                    finalRewardImg = `https://drive.google.com/thumbnail?id=${rImage}&sz=s800&t=${cacheBuster}`; // ถ้าเป็น Drive ID
+                    finalRewardImg = `https://drive.google.com/thumbnail?id=${rImage}&sz=s400&t=${cacheBuster}`; // ถ้าเป็น Drive ID
                 } else {
                     finalRewardImg = ITEM_IMAGES[rImage] || CAT_ASSETS[rImage] || ITEM_IMAGES.sc; // ของระบบ
                 }
@@ -7213,7 +7577,7 @@
 
                     await sleep(500);
 
-                    rewardItemImg.src = CAT_ASSETS.cc || `https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s800`;
+                    rewardItemImg.src = CAT_ASSETS.cc || `https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s400`;
                     rewardName.innerText = '10 CatCoin (ไอเท็มซ้ำ)';
 
                     rewardItemImg.classList.remove('opacity-0', 'scale-50');
@@ -7246,30 +7610,31 @@
             },
             createGachaParticles() {
                 const container = document.getElementById('gacha-reveal-particles');
-                container.innerHTML = ''; // clear old
+                // เคลียร์ของเก่าทิ้งทันที
+                container.innerHTML = ''; 
 
                 const particleCount = 40;
+                // เพิ่มตัวแปรสำหรับหน่วงเวลาเคลียร์ DOM
+                let maxDuration = 0; 
+
                 for (let i = 0; i < particleCount; i++) {
                     const p = document.createElement('div');
                     p.className = 'gacha-particle';
                     
-                    // Shape: Mix of 4-point and 5-point stars
+                    // ... โค้ดคำนวณของคุณ ...
                     p.innerHTML = Math.random() > 0.5 ? '<i class="ri-sparkling-fill"></i>' : '<i class="fa-solid fa-star"></i>';
-                    
-                    // Physics properties
                     const angle = Math.random() * 360;
-                    const distance = 100 + Math.random() * 250; // Random spread distance (px)
+                    const distance = 100 + Math.random() * 250;
                     const tx = Math.cos(angle * Math.PI / 180) * distance;
                     const ty = Math.sin(angle * Math.PI / 180) * distance;
-                    
                     const size = 0.5 + Math.random() * 1.5;
-                    const duration = 1 + Math.random() * 2; // 1s to 3s fade out
+                    const duration = 1 + Math.random() * 2; 
                     const rot = (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360);
 
-                    // Colors & Glow
+                    if (duration > maxDuration) maxDuration = duration;
+
                     p.style.color = Math.random() > 0.5 ? '#fff' : '#ffe28a';
                     p.style.filter = `drop-shadow(0 0 ${2 + Math.random() * 5}px rgba(255,255,255,0.8))`;
-                    
                     p.style.setProperty('--tx', `${tx}px`);
                     p.style.setProperty('--ty', `${ty}px`);
                     p.style.setProperty('--s', size);
@@ -7278,6 +7643,12 @@
                     
                     container.appendChild(p);
                 }
+
+                // 🚀 เพิ่มบรรทัดนี้: ลบ DOM ทิ้งหลังจากแอนิเมชันตัวที่นานที่สุดจบลง
+                // ใช้หน่วยเป็นมิลลิวินาที (duration * 1000)
+                setTimeout(() => {
+                    if (container) container.innerHTML = '';
+                }, (maxDuration * 1000) + 100); 
             },
 
             async claimGacha() {
@@ -8385,8 +8756,8 @@
                 const u = appState.user || {};
                 const catData = u.catData || {};
 
-                const catImg = `https://drive.google.com/thumbnail?id=${catData.equippedCat}&sz=s800`;
-                const bgImg = `https://drive.google.com/thumbnail?id=${catData.equippedBg}&sz=s800`;
+                const catImg = `https://drive.google.com/thumbnail?id=${catData.equippedCat}&sz=s400`;
+                const bgImg = `https://drive.google.com/thumbnail?id=${catData.equippedBg}&sz=s400`;
                 const rank = getCatRank(catData.level);
 
                 catroomView.innerHTML = `
@@ -8447,7 +8818,7 @@
             renderCatRoomMain() {
                 const subView = document.getElementById('catroom-sub-view');
                 const catData = appState.user.catData || {};
-                const catImg = `https://drive.google.com/thumbnail?id=${catData.equippedCat}&sz=s800`;
+                const catImg = `https://drive.google.com/thumbnail?id=${catData.equippedCat}&sz=s400`;
                 const rank = getCatRank(catData.level);
 
                 let hungerWidth = Math.max(0, Math.min(100, catData.hunger || 0));
@@ -8602,7 +8973,7 @@
                         gridHtml = `<div class="col-span-3 text-center py-10 text-white/50 text-sm bg-black/20 rounded-2xl backdrop-blur-sm">ไม่มีไอเทมในหมวดนี้</div>`;
                     } else {
                         filteredItems.forEach(([key, val]) => {
-                            const imgUrl = `https://drive.google.com/thumbnail?id=${val.driveId}&sz=s800`;
+                            const imgUrl = `https://drive.google.com/thumbnail?id=${val.driveId}&sz=s400`;
                             const adminOverlay = isTeacher ? `
                                 <div class="absolute top-2 right-2 flex gap-1 z-20">
                                     <button onclick="app.editCatShopItem('${key}')" class="w-6 h-6 bg-blue-500/80 text-white rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-pen"></i></button>
@@ -8845,7 +9216,7 @@
                                 </span>
 
                                 <img
-                                    src="https://drive.google.com/thumbnail?id=${f.driveId}&sz=s800"
+                                    src="https://drive.google.com/thumbnail?id=${f.driveId}&sz=s400"
                                     class="w-8 h-8 object-contain mb-1 drop-shadow"
                                 >
 
@@ -8904,7 +9275,7 @@
                                     const shopItem = catShop[r.id];
                                     if (shopItem) {
                                         rName = shopItem.name;
-                                        rImg = `https://drive.google.com/thumbnail?id=${shopItem.driveId}&sz=s800`;
+                                        rImg = `https://drive.google.com/thumbnail?id=${shopItem.driveId}&sz=s400`;
                                         rAmt = `x${r.amount || 1}`; 
                                         
                                         if (r.type === 'cat' || r.type === 'bg') {
@@ -9234,7 +9605,7 @@
             const foodName = foodItem ? foodItem.name : 'อาหารแมว';
             // สร้างลิงก์รูปภาพจาก driveId ของอาหาร (ถ้าไม่มีจะใช้ภาพ Default แทน)
             const foodImage = foodItem && foodItem.driveId 
-                ? `https://drive.google.com/thumbnail?id=${foodItem.driveId}&sz=s800` 
+                ? `https://drive.google.com/thumbnail?id=${foodItem.driveId}&sz=s400` 
                 : 'https://cdn-icons-png.flaticon.com/512/3043/3043834.png'; 
 
             // 1. เช็คเพดานการกินสูงสุดที่เหลืออยู่ (Overfeed Limit)
@@ -9553,7 +9924,7 @@
                 available.forEach(item => {
                     html += `
                         <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex flex-col items-center group">
-                            <img src="https://drive.google.com/thumbnail?id=${item.driveId}&sz=s800" class="w-16 h-16 object-contain mb-2">
+                            <img src="https://drive.google.com/thumbnail?id=${item.driveId}&sz=s400" class="w-16 h-16 object-contain mb-2">
                             <span class="text-xs font-bold truncate w-full text-center mb-2">${item.name}</span>
                             <button onclick="app.equipCatItem('${type}', '${item.driveId}')" class="w-full bg-dark text-white text-[10px] py-1.5 rounded-lg active:scale-95 transition">เลือกสวมใส่</button>
                         </div>
@@ -9582,16 +9953,16 @@
                     // Update DOM instantly if we are in main cat room view
                     if (type === 'bg') {
                         const bgLayer = document.getElementById('catroom-bg-layer');
-                        if(bgLayer) bgLayer.style.backgroundImage = `url('https://drive.google.com/thumbnail?id=${driveId}&sz=s800')`;
+                        if(bgLayer) bgLayer.style.backgroundImage = `url('https://drive.google.com/thumbnail?id=${driveId}&sz=s400')`;
                     } else if (type === 'cat') {
                         const catCenter = document.getElementById('catroom-center-cat');
-                        if(catCenter) catCenter.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
+                        if(catCenter) catCenter.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
                     } else if (type === 'cat_frame') {
                         const profileFrame =
                             document.getElementById('profile-frame');
                         if(profileFrame){
                             profileFrame.src =
-                            `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
+                            `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
                         }
                     }
                     this.renderCatRoom();
@@ -10017,7 +10388,7 @@
                         let html = '';
                         
                         Object.entries(mails).sort((a,b) => b[1].timestamp - a[1].timestamp).forEach(([mailId, data]) => {
-                            const imgUrl = `https://drive.google.com/thumbnail?id=${data.driveId}&sz=s800`;
+                            const imgUrl = `https://drive.google.com/thumbnail?id=${data.driveId}&sz=s400`;
                             html += `
                                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center justify-between shadow-sm">
                                     <div class="flex items-center gap-3 min-w-0">
@@ -10497,7 +10868,7 @@
 
                     if (rawUrl.includes('drive.google.com') || rawUrl.length > 20 && !rawUrl.startsWith('http')) {
                         const driveId = rawUrl.includes('id=') ? rawUrl.split('id=')[1].split('&')[0] : rawUrl;
-                        finalImg = `https://drive.google.com/thumbnail?id=${driveId}&sz=s800`;
+                        finalImg = `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
                     } else if (!rawUrl.startsWith('http')) {
                         finalImg = ITEM_IMAGES[rawUrl] || CAT_ASSETS[rawUrl] || ITEM_IMAGES.sc;
                     }
@@ -10555,17 +10926,46 @@
                 if (u.role === 'teacher' && !isTest) return Toast.fire({icon:'info', title:'โปรดใช้ปุ่ม "ทดสอบสุ่ม" ด้านล่าง'});
 
                 Loader.show();
-                // ดึงข้อมูลตู้หลัก ข้อมูลการ์ดของผู้ใช้ ข้อมูล Pity และเช็กรายการไอเทมในตู้ส่วนตัวของผู้ใช้ (ถ้ามี)
-                const [bSnap, uCardSnap, uPitySnap, personalItemsSnap] = await Promise.all([
+                // ดึงข้อมูลตู้หลัก ข้อมูลการ์ดของผู้ใช้ ข้อมูล Pity ข้อมูลตู้ส่วนตัว และ ข้อมูลจำกัดการสุ่มรายวัน
+                const [bSnap, uCardSnap, uPitySnap, personalItemsSnap, limitSnap] = await Promise.all([
                     get(ref(db, `gacha_banners/${bId}`)),
                     get(ref(db, `users/${u.uid}/gacha_cards/${bId}`)),
                     get(ref(db, `users/${u.uid}/gacha_pity/${bId}`)),
-                    get(ref(db, `users/${u.uid}/gacha_personal_banners/${bId}/items`))
+                    get(ref(db, `users/${u.uid}/gacha_personal_banners/${bId}/items`)),
+                    get(ref(db, `users/${u.uid}/gacha_daily_limits/${bId}`))
                 ]);
-                Loader.hide();
+                
 
                 const banner = bSnap.val();
-                if (!banner) return Toast.fire({icon:'error', title:'ไม่พบข้อมูลตู้สุ่มนี้'});
+                if (!banner) {
+                    Loader.hide();
+                    return Toast.fire({icon:'error', title:'ไม่พบข้อมูลตู้สุ่มนี้'});
+                }
+
+                // 🌟 [เพิ่มใหม่] ระบบจำกัดการสุ่ม 5 ครั้งต่อวันสำหรับตู้หมวด special
+                const today = new Date().toDateString();
+                let dailyLimit = limitSnap.exists() ? limitSnap.val() : { date: '', count: 0 };
+                
+                if (banner.category === 'special' && !isTest) {
+                    // ถ้าระบบบันทึกเป็นของเมื่อวาน ให้รีเซ็ตใหม่
+                    if (dailyLimit.date !== today) {
+                        dailyLimit = { date: today, count: 0 };
+                    }
+                    
+                    // เช็คโควตา
+                    if (dailyLimit.count >= 5) {
+                        Loader.hide();
+                        return Swal.fire({
+                            icon: 'warning',
+                            title: 'สิทธิ์การสุ่มเต็มแล้ว',
+                            text: 'คุณใช้สิทธิ์สุ่มตู้คะแนนพิเศษครบ 5 ครั้งของวันนี้แล้ว กรุณากลับมาใหม่พรุ่งนี้นะครับ',
+                            confirmButtonColor: '#F5275B',
+                            customClass: { popup: 'rounded-[2rem]' }
+                        });
+                    }
+                }
+
+                Loader.hide();
 
                 // เลือกว่าจะสุ่มจากตู้ส่วนตัว (ที่ถูกเขย่ามา) หรือตู้ส่วนกลางปกติ
                 let itemsObj = personalItemsSnap.exists() ? personalItemsSnap.val() : banner.items;
@@ -10576,11 +10976,18 @@
                 
                 // ถ้านักเรียนสุ่มปกติ ต้องเช็คยอดการ์ด
                 if (!isTest) {
+                    if (banner.category === 'special') {
+                        const newQuotaCount = (dailyLimit.count + 1);
+                        const displayElement = document.getElementById('gacha-quota-count');
+                        if (displayElement) {
+                            displayElement.innerText = (5 - newQuotaCount);
+                        }
+                    }
                     if (cards < 1) {
                         const tickets = u.items?.ticket || 0;
                         if (tickets < 1) return Swal.fire({icon:'warning', title:'ไม่มีการ์ดและตั๋ว', text:`คุณต้องใช้ ${banner.cardName} 1 ใบในการสุ่ม หรือตั๋ว 1 ใบเพื่อแลก`, customClass:{popup:'rounded-3xl'}});
                             
-                        const cardImgUrl = banner.cardImage.includes('http') ? banner.cardImage : `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s800`;
+                        const cardImgUrl = banner.cardImage.includes('http') ? banner.cardImage : `https://drive.google.com/thumbnail?id=${banner.cardImage}&sz=s400`;
                         
                         const res = await Swal.fire({
                             title: `<span style="font-family: 'Kanit'; font-weight: bold; color: #1f2937;">แลกการ์ดสุ่ม?</span>`, 
@@ -10681,6 +11088,15 @@
                         [`gacha_cards/${bId}`]: cards - 1,
                         [`gacha_pity/${bId}`]: newPity
                     };
+
+                    // 🌟 [เพิ่มใหม่] อัปเดตจำนวนครั้งที่สุ่มไปแล้วของวันนี้ลง Firebase
+                    if (banner.category === 'special') {
+                        updates[`gacha_daily_limits/${bId}`] = {
+                            date: today,
+                            count: dailyLimit.count + 1
+                        };
+                    }
+
                     await update(ref(db, `users/${u.uid}`), updates);
                     
                     // ** ต้องอัปเดตสถานะในแอพด้วย (สำคัญมากเพื่อให้รอบต่อไปคำนวณถูก) **
@@ -10688,6 +11104,15 @@
                     appState.user.gacha_cards[bId] = cards - 1;
                     appState.user.gacha_pity = appState.user.gacha_pity || {};
                     appState.user.gacha_pity[bId] = newPity;
+
+                    // 🌟 [เพิ่มใหม่] อัปเดต State จำกัดการสุ่มรายวัน
+                    if (banner.category === 'special') {
+                        appState.user.gacha_daily_limits = appState.user.gacha_daily_limits || {};
+                        appState.user.gacha_daily_limits[bId] = {
+                            date: today,
+                            count: dailyLimit.count + 1
+                        };
+                    }
                     
                     document.getElementById('gacha-view-card-count').innerText = cards - 1;
                 } else {
@@ -10725,7 +11150,7 @@
 
                 // 1. เริ่ม Preload รูปภาพพื้นหลังการ์ดใหม่ไว้ในหน่วยความจำทันที
                 const bgDriveId = RARITY_CARD_BGS[item.rarity] || '1TjXV2MeCjbCXqSppl_lda6IFxq_bg0Cj';
-                const targetBgUrl = `https://drive.google.com/thumbnail?id=${bgDriveId}&sz=s800`;
+                const targetBgUrl = `https://drive.google.com/thumbnail?id=${bgDriveId}&sz=s400`;
                 const imgPreload = new Image();
                 imgPreload.src = targetBgUrl;
 
@@ -10803,7 +11228,7 @@
                     itemImg.src = finalDriveId; 
                 } else if (finalDriveId.length > 10) {
                     // ถ้าเป็น ID ของ Google Drive (ยาวกว่า 10 ตัวและไม่มี http)
-                    itemImg.src = `https://drive.google.com/thumbnail?id=${finalDriveId}&sz=s800&t=${cacheBuster}`; 
+                    itemImg.src = `https://drive.google.com/thumbnail?id=${finalDriveId}&sz=s400&t=${cacheBuster}`; 
                 } else {
                     // ถ้าสั้นๆ แสดงว่าเป็นไอเท็มพื้นฐานของระบบ (เช่น 'cs', 'ct')
                     itemImg.src = ITEM_IMAGES[finalDriveId] || CAT_ASSETS[finalDriveId] || ITEM_IMAGES.sc; 
@@ -10854,7 +11279,7 @@
                     await sleep(500);
 
                     // เปลี่ยนรูปและชื่อเป็น CatCoin (ใช้ลิงก์จากตัวแปร CAT_ASSETS.cc ในระบบของคุณ)
-                    rewardImg.src = CAT_ASSETS.cc || 'https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s800'; 
+                    rewardImg.src = CAT_ASSETS.cc || 'https://drive.google.com/thumbnail?id=1uDb_-PIaIlLMwfWu6ZRNcAT_S1ZzRQTj&sz=s400'; 
                     rewardName.innerText = 'เปลี่ยนเป็น 10 CC';
 
                     // Fade In: เด้งรูปลงมาใหม่
@@ -11540,8 +11965,8 @@
                     const isSelected = id === currentTitleId;
                     const borderClass = isSelected ? 'border-primary shadow-md ring-2 ring-primary/50' : 'border-gray-200 hover:border-gray-300';
                     
-                    const badgeImg = t.img.startsWith('http') ? t.img : `https://drive.google.com/thumbnail?id=${t.img}&sz=s800`;
-                    const bgStyle = t.bgImg ? `style="background-image: url('${t.bgImg.startsWith('http') ? t.bgImg : 'https://drive.google.com/thumbnail?id=' + t.bgImg + '&sz=s800'}'); background-size: cover; background-position: center;"` : '';
+                    const badgeImg = t.img.startsWith('http') ? t.img : `https://drive.google.com/thumbnail?id=${t.img}&sz=s400`;
+                    const bgStyle = t.bgImg ? `style="background-image: url('${t.bgImg.startsWith('http') ? t.bgImg : 'https://drive.google.com/thumbnail?id=' + t.bgImg + '&sz=s400'}'); background-size: cover; background-position: center;"` : '';
                     const bgClass = t.bgImg ? 'text-white' : t.bg;
                     const overlayClass = t.bgImg ? 'bg-black/10' : 'bg-white/10 group-hover:bg-white/20';
 
@@ -11614,8 +12039,8 @@
                 } else {
                     html += `<div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-24 space-y-3">`;
                     Object.entries(titles).forEach(([id, t]) => {
-                        const badgeImg = t.img.startsWith('http') ? t.img : `https://drive.google.com/thumbnail?id=${t.img}&sz=s800`;
-                        const bgStyle = t.bgImg ? `style="background-image: url('${t.bgImg.startsWith('http') ? t.bgImg : 'https://drive.google.com/thumbnail?id=' + t.bgImg + '&sz=s800'}'); background-size: cover; background-position: center;"` : '';
+                        const badgeImg = t.img.startsWith('http') ? t.img : `https://drive.google.com/thumbnail?id=${t.img}&sz=s400`;
+                        const bgStyle = t.bgImg ? `style="background-image: url('${t.bgImg.startsWith('http') ? t.bgImg : 'https://drive.google.com/thumbnail?id=' + t.bgImg + '&sz=s400'}'); background-size: cover; background-position: center;"` : '';
                         const bgClass = t.bgImg ? 'text-white' : t.bg;
                         const overlayClass = t.bgImg ? 'bg-black/10' : 'bg-white/10';
 
@@ -12282,7 +12707,7 @@
                     Views.renderBanManager();
                 }
             },
-
+            
             startGachaPull: () => Views.startGachaPull(),
             openGachaAdminManager: (bId) => Views.openGachaAdminManager(bId),
             searchStudentGachaPersonal: (bId) => Views.searchStudentGachaPersonal(bId),
@@ -12309,6 +12734,46 @@
                     // สลับสไตล์ของปุ่ม (Config ทำงาน / Student ปิด)
                     btnStudent.className = "flex-1 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-all flex items-center justify-center gap-1.5";
                     btnConfig.className = "flex-1 py-3 border-b-2 border-indigo-600 text-indigo-600 transition-all flex items-center justify-center gap-1.5";
+                }
+            },
+            async deleteGachaBanner(bId) {
+                const result = await Swal.fire({
+                    title: 'ยืนยันการลบตู้สุ่ม?',
+                    text: "เมื่อลบแล้วจะไม่สามารถกู้คืนข้อมูลตู้นี้ได้!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'ใช่, ลบเลย!',
+                    cancelButtonText: 'ยกเลิก'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        Swal.fire({
+                            title: 'กำลังลบ...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+
+                        // ลบข้อมูลออกจากฐานข้อมูล
+                        await set(ref(db, `gacha_banners/${bId}`), null);
+
+                        await Swal.fire({
+                            title: 'ลบสำเร็จ!',
+                            text: 'ตู้สุ่มถูกลบออกจากระบบแล้ว',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        // รีเฟรชหน้า Gacha
+                        Views.renderGacha(); 
+
+                    } catch (error) {
+                        console.error("Delete Gacha Error:", error);
+                        Swal.fire('เกิดข้อผิดพลาด!', 'ไม่สามารถลบได้', 'error');
+                    }
                 }
             },
             
@@ -12428,8 +12893,14 @@
                 Loader.show();
                 let systemCards = {};
                 try {
-                    const snap = await get(ref(db, 'system_cards'));
-                    if (snap.exists()) systemCards = snap.val();
+                    // 1. เช็คก่อนว่ามี Cache ไหม ถ้าไม่มีให้ดึงจาก Firebase
+                    if (!window.renderStore.systemCards) {
+                        const snap = await get(ref(db, 'system_cards'));
+                        window.renderStore.systemCards = snap.exists() ? snap.val() : {};
+                    }
+                    // 2. จับค่าจาก Cache ยัดลงตัวแปร systemCards ไปใช้ต่อได้เลย
+                    systemCards = window.renderStore.systemCards;
+                    
                 } catch (e) {
                     console.error("Error fetching system cards:", e);
                 }

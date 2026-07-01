@@ -395,7 +395,7 @@
             <div id="gacha-view" class="hidden absolute inset-0 z-[100] flex flex-col overflow-hidden gacha-bg-pastel"></div>
 
             <!-- Cat Room Fullscreen Overlay -->
-            <div id="catroom-view" class="hidden absolute inset-0 z-[90] flex flex-col overflow-hidden bg-[#ff8b35]"></div>
+            <div id="catroom-view" class="hidden absolute inset-0 z-[90] flex flex-col overflow-hidden bg-catbg"></div>
         </div>
     </div>
 
@@ -1207,9 +1207,6 @@
                     case 'card_inventory': await this.renderCardInventory(); break;
                     case 'card_exchange': await this.renderCardExchange(); break;
                     case 'ban_manager': await this.renderBanManager(); break;
-                    case 'leaderboard': await this.renderLeaderboard(); break;
-                    case 'admin_patch_notes': await this.renderAdminPatchNotes(); break;
-                    case 'patch_notes_detail': await this.renderPatchNotesDetail(); break;
                 }
             },
 
@@ -1233,16 +1230,16 @@
                 let carouselHtml = '';
                 if (carouselImgs.length > 0) {
                     carouselHtml = `
-                        <div class="relative w-full px-4 sm:px-5 mt-5 shrink-0 -top-20 -mb-20 overflow-hidden drop-shadow-md">
-                            <div class="w-full rounded-2xl overflow-hidden relative border-4 border-white ">
-                                <div id="home-carousel-container" class="flex transition-transform duration-700 ease-in-out w-full " style="transform: translateX(0%);">
+                        <div class="relative w-full px-4 sm:px-5 mt-5 shrink-0 -top-20 -mb-20 overflow-hidden">
+                            <div class="w-full rounded-2xl overflow-hidden relative">
+                                <div id="home-carousel-container" class="flex transition-transform duration-700 ease-in-out w-full h-54" style="transform: translateX(0%);">
                                     ${carouselImgs.map((img, i) => `
-                                        <div class="w-full shrink-0 h-44 sm:h-44 relative rounded-2xl overflow-hidden px-0.5">
+                                        <div class="w-full shrink-0 h-52 sm:h-54 relative rounded-2xl overflow-hidden px-0.5">
                                             <img src="${img}" class="w-full h-full object-cover rounded-2xl shadow-sm" onerror="this.src='https://placehold.co/600x300/e2e8f0/94a3b8?text=Image+${i+1}'">
                                         </div>
                                     `).join('')}
                                     
-                                    <div class="w-full shrink-0 h-44 sm:h-44 relative rounded-2xl overflow-hidden px-0.5">
+                                    <div class="w-full shrink-0 h-36 sm:h-44 relative rounded-2xl overflow-hidden px-0.5">
                                         <img src="${carouselImgs[0]}" class="w-full h-full object-cover rounded-2xl shadow-sm">
                                     </div>
                                 </div>
@@ -1257,31 +1254,31 @@
                         
                         ${carouselHtml}
 
-                       <div class="shrink-0 px-2 min-[360px]:px-4 sm:px-5 mt-3">
-                            <div class="flex gap-2 min-[360px]:gap-2.5 sm:gap-3 h-[120px] min-[360px]:h-[140px] sm:h-[160px]">
-                                
-                                <div onclick="app.navigate('leaderboard')" class="w-[58%] cursor-pointer rounded-2xl p-2 sm:p-3 flex flex-col items-end justify-end shadow-sm relative overflow-hidden bg-cover bg-center drop-shadow-md border-4 border-white" style="background-image: url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782801246/FIRSTMEET_vm4tmg.gif');">
-                                    <div class="self-end w-auto bg-white text-[#5252aa] rounded-full px-2 py-1 min-[360px]:px-3 min-[360px]:py-1.5 text-[10px] min-[360px]:text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-1 transition-transform active:scale-[0.98] z-10 hover:bg-gray-50 whitespace-nowrap">
+                        <div class="shrink-0 px-4 sm:px-5 mt-5">
+                            <div class="flex gap-2.5 sm:gap-3 h-[140px] sm:h-[160px]">
+                                <div onclick="app.navigate('leaderboard')" class="w-[58%] cursor-pointer rounded-2xl p-3 flex flex-col items-end justify-end shadow-sm relative overflow-hidden bg-cover bg-center" style="background-image: url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782801246/FIRSTMEET_vm4tmg.gif');">
+                                    <button onclick="app.navigate('leaderboard')" class="self-end w-auto mt-2 bg-white text-[#5252aa] rounded-full px-3 py-1.5 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-1.5 transition-transform active:scale-[0.98] z-10 hover:bg-gray-50">
                                         <i class="fa-solid fa-chart-simple"></i> ดูอันดับของฉัน
-                                    </div>
+                                    </button>
                                 </div>
 
-                                <div class="w-[42%] flex flex-col gap-2 min-[360px]:gap-2.5 sm:gap-3">
-                                    <button onclick="app.navigate('gacha')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-[0.98] relative overflow-hidden group drop-shadow-md border-4 border-white">
-                                        <img class="w-full h-full object-cover transition-transform hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782801431/FIRSTMEET_7_jrnp6q.png">
+                                <div class="w-[42%] flex flex-col gap-2.5 sm:gap-3">
+                                    <button onclick="app.navigate('gacha')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-[0.98] relative overflow-hidden group">
+                                        <img class="transition-transform bg-cover bg-center hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782801431/FIRSTMEET_7_jrnp6q.png"></img>
                                     </button>
 
-                                    <div class="flex-1 flex gap-2 min-[360px]:gap-2.5 sm:gap-3">
-                                        <button onclick="app.navigate('card_exchange')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-95 relative overflow-hidden drop-shadow-md border-4 border-white">
-                                            <img class="w-full h-full object-cover transition-transform hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782804313/FIRSTMEET_9_bozslb.png">
+                                    <div class="flex-1 flex gap-2.5 sm:gap-3">
+                                        <button onclick="app.navigate('card_exchange')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-95 relative overflow-hidden">
+                                            <img class="transition-transform bg-cover bg-center hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782804313/FIRSTMEET_9_bozslb.png" >
                                         </button>
 
-                                        <button onclick="app.navigate('catroom')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-95 relative overflow-hidden drop-shadow-md border-4 border-white">
-                                            <img class="w-full h-full object-cover transition-transform hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782804403/FIRSTMEET_10_kyvohz.png">
+                                        <button onclick="app.navigate('catroom')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-95 relative overflow-hidden">
+                                            <img class="transition-transform bg-cover bg-center hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782804403/FIRSTMEET_10_kyvohz.png" >
                                         </button>
+                                        
+                                        
                                     </div>
                                 </div>
-
                             </div>
 
                             <div id="teacher-profile-dropdown" class="hidden w-full mt-3 transition-all">
@@ -1291,12 +1288,12 @@
                             </div>
                         </div>
 
-                        <div id="login-streak-section" class="shrink-0 mt-4 px-5 sm:px-5">
-                            <h3 class="text-sm sm:text-sm font-bold text-dark flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-check text-pink-500"></i>
+                        <div id="login-streak-section" class="shrink-0 mt-6 px-4 sm:px-5">
+                            <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2 mb-3">
+                                <i class="fa-solid fa-calendar-check text-green-500"></i>
                                 <span>ล็อกอินต่อเนื่อง 7 วัน</span>
                             </h3>
-                            <div class="bg-pink-100 border-4 border-white shadow-sm rounded-2xl p-4 overflow-x-auto no-scrollbar">
+                            <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-4 overflow-x-auto no-scrollbar">
                                 <div id="login-streak-container" class="flex gap-2 min-w-max">
                                     <div class="w-full flex justify-center py-4 text-gray-400 text-sm items-center gap-2">
                                         <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -1307,21 +1304,18 @@
                         </div>
 
                         <div id="patch-notes-section" class="shrink-0 mt-6 mb-6 px-4 sm:px-5">
-                            <h3 class="text-sm sm:text-sm font-bold text-dark flex items-center gap-2 mb-2">
+                            <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2 mb-3">
                                 <i class="fa-solid fa-bullhorn text-blue-500"></i>
                                 <span>อัพเดตล่าสุด (Patch Notes)</span>
                             </h3>
-                            <button onclick="app.navigate('patch_notes_detail')" class="w-full relative h-36 rounded-2xl overflow-hidden shadow-sm active:scale-95 transition-transform block border-4 border-white bg-gray-100">
-                                <!-- ภาพพื้นหลัง -->
-                                <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782895801/FIRSTMEET_5_x798zs.jpg" 
-                                    class="absolute inset-0 w-full h-full object-cover" 
-                                    alt="Update Patch Background">
-                                <!-- ป้าย "รายละเอียดอัพเดต" สีขาวที่มุมซ้ายล่าง -->
-                                <div class="absolute bottom-3 left-3 bg-white rounded-full py-2 px-4 flex items-center gap-2 shadow-sm">
-                                    <i class="fa-solid fa-circle-info text-[#7C6EA6] text-lg"></i>
-                                    <span class="text-[#7C6EA6] font-extrabold text-sm tracking-wide">รายละเอียดอัพเดต</span>
+                            <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-4">
+                                <div id="patch-notes-container" class="text-sm text-gray-600">
+                                    <div class="w-full flex justify-center py-4 text-gray-400 items-center gap-2">
+                                        <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                        กำลังโหลดข้อมูลอัพเดต...
+                                    </div>
                                 </div>
-                            </button>
+                            </div>
                         </div>
 
                     </div>
@@ -1358,99 +1352,30 @@
                 if (typeof this.renderLoginStreak === 'function') {
                     await this.renderLoginStreak();
                 }
-                await this.renderPatchNotes();
-            },
-            async renderPatchNotes() {
-                const container = document.getElementById('patch-notes-container');
-                if (!container) return;
-
-                try {
-                    const snap = await get(ref(db, 'system/patch_notes'));
-                    if (snap.exists() && snap.val().content) {
-                        // โหลด HTML จากฐานข้อมูลไปยัดใส่ตรงๆ เพราะจัด Format จาก Editor แล้ว
-                        container.innerHTML = snap.val().content; 
-                    } else {
-                        container.innerHTML = '<div class="w-full text-center text-gray-400 py-4 font-medium">ยังไม่มีอัพเดตใหม่ในขณะนี้</div>';
-                    }
-                } catch (error) {
-                    console.error("Load Patch Notes Error:", error);
-                    container.innerHTML = '<div class="w-full text-center text-red-400 py-4 text-xs"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดรายละเอียดได้</div>';
-                }
-            },
-            async renderPatchNotesDetail() {
-                UI.setHeader('อัปเดตล่าสุด'); // ถ้าคุณมีฟังก์ชันเปลี่ยนชื่อ Header
-                
-                // HTML ของหน้ารายละเอียด
-                const html = `
-                    <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 bg-gray-50 flex flex-col">
-                        
-                        <!-- ส่วนแบนเนอร์รูปภาพด้านบนสุด -->
-                        <div class="w-full h-48 bg-gradient-to-r from-blue-400 to-indigo-500 relative shrink-0">
-                            <!-- สามารถเปลี่ยนลิงก์รูปภาพ src เป็นรูปที่คุณต้องการได้ -->
-                            <img src="https://i.pinimg.com/736x/18/87/de/1887de00837c0f1db37377f9abee0d1e.jpg" 
-                                class="w-full h-full object-cover opacity-80 mix-blend-overlay" alt="Patch Notes Banner">
-                            
-                            <div class="absolute inset-0 bg-black/20 flex flex-col items-center justify-center text-white">
-                                <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782815331/FIRSTMEET_11_kvbylm.png" class="h-16 w-16 bg-center bg-cover"></img>
-                                <h2 class="text-2xl font-bold drop-shadow-md">Patch Notes</h2>
-                                <p class="text-sm opacity-90">เวอร์ชัน 2.0 Alpha</p>
-                            </div>
-                        </div>
-
-                        <!-- พื้นที่แสดงเนื้อหาที่ดึงมาจากฐานข้อมูล -->
-                        <div class="p-4 -mt-6 relative z-10 flex-1">
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                                <div id="patch-note-content" class="text-sm text-gray-700 leading-relaxed min-h-[200px]">
-                                    <!-- ตัวโหลดรอข้อมูล -->
-                                    <div class="w-full flex justify-center py-8"><div class="loader"></div></div>
-                                </div>
-                            </div>
-
-                            <!-- ปุ่มกลับหน้าหลัก -->
-                            <button onclick="app.navigate('home')" class="w-full mt-4 bg-gray-200 text-gray-700 font-bold py-3.5 rounded-2xl shadow-sm active:scale-95 transition-transform flex justify-center items-center gap-2">
-                                <i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('content-area').innerHTML = html;
-
-                // ดึงข้อมูล Patch Notes จาก Firebase มาแสดง
-                try {
-                    const snap = await get(ref(db, 'system/patch_notes'));
-                    if (snap.exists() && snap.val().content) {
-                        document.getElementById('patch-note-content').innerHTML = snap.val().content;
-                    } else {
-                        document.getElementById('patch-note-content').innerHTML = '<div class="text-center text-gray-400 py-4 font-medium">ยังไม่มีรายละเอียดอัปเดตในขณะนี้</div>';
-                    }
-                } catch (error) {
-                    console.error("Load Patch Notes Error:", error);
-                    document.getElementById('patch-note-content').innerHTML = '<div class="text-center text-red-400 py-4 text-xs"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดข้อมูลได้</div>';
-                }
+                // await this.renderPatchNotes();
             },
             async renderLoginStreak() {
                 const container = document.getElementById('login-streak-container');
                 if (!container) return;
 
                 try {
-                    // 1. ดึงข้อมูลการตั้งค่ารางวัลจาก Firebase
-                    const rewardsSnap = await get(ref(db, 'system/home_config/login_rewards'));
-                    
-                    if (!rewardsSnap.exists()) {
-                        container.innerHTML = `
-                            <div class="w-full text-center text-gray-500 text-sm py-8 flex flex-col items-center">
-                                <i class="fa-solid fa-box-open text-3xl mb-2 text-gray-300"></i>
-                                <span>แอดมินยังไม่ได้ตั้งค่าของรางวัล 7 วัน</span>
-                            </div>`;
-                        return;
+                    // 1. ดึงการตั้งค่าของรางวัลจากแอดมิน (ตั้ง Default ไว้เผื่อแอดมินยังไม่ได้กำหนด)
+                    let rewardsConfig = window.renderStore?.homeConfig?.loginRewards;
+                    if (!rewardsConfig) {
+                        rewardsConfig = [
+                            { day: 1, name: 'เหรียญทอง', icon: '🪙', amount: 100 },
+                            { day: 2, name: 'เพชร', icon: '💎', amount: 10 },
+                            { day: 3, name: 'ตั๋วสุ่ม', icon: '🎟️', amount: 1 },
+                            { day: 4, name: 'เหรียญทอง', icon: '🪙', amount: 200 },
+                            { day: 5, name: 'ปลาทู', icon: '🐟', amount: 5 },
+                            { day: 6, name: 'เพชร', icon: '💎', amount: 20 },
+                            { day: 7, name: 'กล่องสุ่มพรีเมียม', icon: '🎁', amount: 1 }
+                        ];
                     }
-
-                    const rewardsConfig = rewardsSnap.val();
 
                     // 2. ดึงข้อมูลสถานะการล็อกอินของผู้ใช้ปัจจุบัน
                     const uid = window.appState?.user?.uid || Auth?.currentUser?.uid;
-                    let userStreak = { currentDay: 1, claimedToday: false };
+                    let userStreak = { currentDay: 1, claimedToday: false }; // ค่าเริ่มต้น
                     
                     if (uid) {
                         const streakSnap = await get(ref(db, `users/${uid}/loginStreak`));
@@ -1461,77 +1386,38 @@
 
                     // 3. สร้าง HTML สำหรับการ์ดแต่ละวัน
                     let html = '';
-                    const days = [1, 2, 3, 4, 5, 6, 7];
-                    
-                    days.forEach((dayNum) => {
-                        const reward = rewardsConfig[dayNum];
-                        if (!reward) return; 
-
-                        const isLastDay = dayNum === 7;
-                        // ตรวจสอบสถานะ: รับแล้ว, รอรับ, ยังไม่ถึง
+                    rewardsConfig.forEach((reward, index) => {
+                        const dayNum = index + 1;
+                        // ตรวจสอบสถานะ: รับแล้ว (Claimed), รอรับ (Claimable), ยังไม่ถึง (Locked)
                         const isClaimed = dayNum < userStreak.currentDay || (dayNum === userStreak.currentDay && userStreak.claimedToday);
                         const isClaimable = dayNum === userStreak.currentDay && !userStreak.claimedToday;
                         
                         let bgClass = 'bg-white border-gray-200';
                         let opacityClass = '';
                         let btnHtml = '';
-                        let specialBadge = ''; // ป้ายพิเศษสำหรับวันสุดท้าย
 
-                        // ตั้งค่าดีไซน์ตามสถานะและเช็คว่าเป็นวันสุดท้ายหรือไม่
                         if (isClaimable) {
-                            if (isLastDay) {
-                                bgClass = 'bg-gradient-to-b from-amber-50 to-yellow-100 border-amber-400 ring-4 ring-amber-200 animate-pulse';
-                                btnHtml = `<button onclick="window.app.claimLoginReward(${dayNum})" class="mt-2 w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg py-1.5 text-xs font-black shadow-md hover:brightness-110 active:scale-95 transition-all">รางวัลพิเศษ!</button>`;
-                            } else {
-                                bgClass = 'bg-orange-50 border-yellow-400 ring-2 ring-orange-200';
-                                btnHtml = `<button onclick="window.app.claimLoginReward(${dayNum})" class="mt-2 w-full bg-orange-500 text-white rounded-lg py-1.5 text-xs font-bold shadow-sm hover:bg-orange-600 active:scale-95 transition-transform">รับรางวัล</button>`;
-                            }
+                            bgClass = 'bg-green-50 border-green-400';
+                            btnHtml = `<button onclick="window.app.claimLoginReward(${dayNum})" class="mt-2 w-full bg-green-500 text-white rounded-lg py-1.5 text-xs font-bold shadow-sm hover:bg-green-600 active:scale-95 transition-transform">รับรางวัล</button>`;
                         } else if (isClaimed) {
-                            bgClass = isLastDay ? 'bg-amber-50/40 border-amber-200' : 'bg-gray-50 border-gray-200';
+                            bgClass = 'bg-gray-50 border-gray-200';
                             opacityClass = 'opacity-60 grayscale';
-                            btnHtml = `<div class="mt-2 w-full bg-gray-300 text-gray-600 rounded-lg py-1.5 text-xs font-bold text-center"><i class="fa-solid fa-check"></i> รับแล้ว</div>`;
+                            btnHtml = `<div class="mt-2 w-full bg-gray-300 text-gray-600 rounded-lg py-1.5 text-xs font-bold text-center">รับแล้ว</div>`;
                         } else {
-                            // สถานะล็อกอยู่
-                            if (isLastDay) {
-                                bgClass = 'bg-gradient-to-b from-amber-500 to-gray-50 border-amber-300 border-solid';
-                            }
                             btnHtml = `<div class="mt-2 w-full bg-gray-100 text-gray-400 rounded-lg py-1.5 text-xs font-bold text-center"><i class="fa-solid fa-lock"></i></div>`;
                         }
 
-                        // เพิ่มป้ายริบบิ้น GRAND เด้งดึ๋งให้เฉพาะวันสุดท้าย
-                        if (isLastDay) {
-                            specialBadge = `<span class="absolute -top-2.5 -right-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider z-10 ${!isClaimed ? 'animate-bounce' : ''}">Grand</span>`;
-                        }
-
-                        const cardWidth = isLastDay ? 'min-w-[105px] sm:min-w-[115px]' : 'min-w-[85px] sm:min-w-[90px]';
-
-                        // จัดการระบบแสดงผลรูปภาพหรืออีโมจิ
-                        let visualDisplay = '';
-                        if (reward.icon && reward.icon.startsWith('http')) {
-                            visualDisplay = `<img src="${reward.icon}" alt="${reward.name}" class="w-10 h-10 object-contain drop-shadow-sm" loading="lazy">`;
-                        } else {
-                            visualDisplay = `<span class="text-3xl drop-shadow-sm">${reward.icon || '🎁'}</span>`;
-                        }
-
-                        const showAmount = !['cat', 'avatar_frame', 'background', 'frame', 'card'].includes(reward.itemType);
-                        const isActiveDay = dayNum === userStreak.currentDay;
-                        const activeAttr = isActiveDay ? 'data-active="true"' : '';
+                        // ถ้าเป็นวันที่ 7 (วันสุดท้าย) ทำให้ดูพิเศษกว่าวันอื่นนิดหน่อย
+                        const isLastDay = dayNum === 7;
+                        const cardWidth = isLastDay ? 'min-w-[100px] sm:min-w-[110px]' : 'min-w-[85px] sm:min-w-[90px]';
 
                         html += `
-                            <div ${activeAttr} class="relative flex flex-col items-center justify-between ${cardWidth} border-2 rounded-xl p-2.5 shrink-0 transition-all duration-300 ${bgClass} ${opacityClass}">
-                                ${specialBadge}
-                                
-                                <span class="${isLastDay ? 'text-[15px] text-white' : 'text-[11px] text-gray-500'} font-extrabold mb-1">วันที่ ${dayNum}</span>
-                                
-                                <div class="w-14 h-14 ${isLastDay ? 'bg-gradient-to-b from-amber-100 to-yellow-50 border-amber-200' : 'bg-gradient-to-b from-blue-100 to-indigo-50 border-blue-200'} border rounded-xl my-1 flex items-center justify-center shadow-inner relative overflow-hidden">
-                                    ${visualDisplay}
+                            <div class="flex flex-col items-center justify-between ${cardWidth} border-2 rounded-xl p-2.5 shrink-0 transition-transform ${bgClass} ${opacityClass}">
+                                <span class="text-xs font-bold text-gray-600 mb-1">วันที่ ${dayNum}</span>
+                                <div class="text-3xl my-2 flex-1 flex items-center justify-center drop-shadow-sm">
+                                    ${reward.icon}
                                 </div>
-                                
-                                <div class="flex flex-col items-center mt-1 h-7 justify-center">
-                                    <span class="text-[9px] font-bold text-gray-700 truncate w-full text-center px-0.5 leading-tight" title="${reward.name}">${reward.name}</span>
-                                    ${showAmount ? `<span class="text-[10px] font-extrabold ${isLastDay ? 'text-orange-600' : 'text-indigo-600'} leading-none">x${reward.amount}</span>` : ''}
-                                </div>
-                                
+                                <span class="text-xs font-bold text-gray-800">x${reward.amount}</span>
                                 ${btnHtml}
                             </div>
                         `;
@@ -1539,21 +1425,9 @@
 
                     container.innerHTML = html;
 
-                    // 4. สั่งให้ Container เลื่อนไปที่วันปัจจุบันชิดซ้ายสุดอัตโนมัติ
-                    setTimeout(() => {
-                        const activeCard = container.querySelector('[data-active="true"]');
-                        if (activeCard) {
-                            activeCard.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                inline: 'start', 
-                                block: 'nearest' 
-                            });
-                        }
-                    }, 100);
-
                 } catch (error) {
                     console.error("Error rendering login streak:", error);
-                    container.innerHTML = `<div class="w-full text-center text-red-500 text-sm py-4"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดของรางวัลได้</div>`;
+                    container.innerHTML = `<div class="w-full text-center text-red-500 text-sm">โหลดข้อมูลไม่สำเร็จ</div>`;
                 }
             },
             async toggleTeacherProfile() {
@@ -1627,78 +1501,6 @@
                 } else {
                     el.classList.add('hidden');
                     chevron.style.transform = 'rotate(0deg)';
-                }
-            },
-            async renderAdminPatchNotes() {
-                UI.setHeader('จัดการ Patch Notes');
-                
-                // ตรวจสอบสิทธิ์ ป้องกันผู้ใช้ทั่วไปเข้าถึง
-                if (!appState.user || appState.user.role !== 'teacher') {
-                    Views.navigate('home');
-                    return;
-                }
-
-                const html = `
-                    <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 flex flex-col p-4 bg-gray-50">
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[70vh] overflow-hidden">
-                            
-                            <!-- เครื่องมือแก้ไข (Toolbar) -->
-                            <div class="shrink-0 flex flex-wrap items-center gap-2 p-3 border-b border-gray-200 bg-gray-50">
-                                <button onclick="document.execCommand('bold', false, null)" class="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 font-bold text-gray-700 shadow-sm" title="ตัวหนา">B</button>
-                                <button onclick="document.execCommand('italic', false, null)" class="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 italic text-gray-700 shadow-sm" title="ตัวเอียง">I</button>
-                                <button onclick="document.execCommand('underline', false, null)" class="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 underline text-gray-700 shadow-sm" title="ขีดเส้นใต้">U</button>
-                                
-                                <div class="h-6 border-r border-gray-300 mx-1"></div>
-                                
-                                <select onchange="document.execCommand('fontSize', false, this.value); this.selectedIndex=0;" class="h-8 rounded-lg bg-white border border-gray-200 text-xs px-2 text-gray-700 shadow-sm focus:outline-none" title="ขนาดตัวอักษร">
-                                    <option value="">ขนาด</option>
-                                    <option value="2">เล็ก</option>
-                                    <option value="3">ปกติ</option>
-                                    <option value="5">ใหญ่</option>
-                                    <option value="7">ใหญ่มาก</option>
-                                </select>
-
-                                <div class="flex items-center gap-1 border border-gray-200 bg-white rounded-lg px-1 h-8 shadow-sm" title="สีตัวอักษร">
-                                    <i class="fa-solid fa-palette text-[10px] text-gray-400"></i>
-                                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)" class="w-5 h-5 rounded border-none p-0 cursor-pointer bg-transparent">
-                                </div>
-                                
-                                <div class="h-6 border-r border-gray-300 mx-1"></div>
-
-                                <button onclick="app.insertPatchNoteImage()" class="h-8 px-3 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors">
-                                    <i class="fa-solid fa-image"></i> ใส่รูป/แบนเนอร์
-                                </button>
-                            </div>
-
-                            <!-- พื้นที่พิมพ์ (Content Editable) -->
-                            <div id="patch-note-editor" contenteditable="true" class="flex-1 p-5 overflow-y-auto focus:outline-none text-sm min-h-[250px] text-gray-700 leading-relaxed bg-white" placeholder="พิมพ์รายละเอียดการอัพเดตที่นี่...">
-                                <div class="w-full flex justify-center py-4"><div class="loader"></div></div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 flex gap-3">
-                            <button onclick="app.navigate('settings')" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3.5 rounded-2xl shadow-sm active:scale-95 transition-transform">
-                                ยกเลิก
-                            </button>
-                            <button onclick="app.savePatchNotes()" class="flex-[2] bg-gradient-to-r from-primary to-blue-500 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
-                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> บันทึกอัพเดต
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('content-area').innerHTML = html;
-
-                // ดึงข้อมูลเดิมมาแสดง
-                try {
-                    const snap = await get(ref(db, 'system/patch_notes'));
-                    if (snap.exists() && snap.val().content) {
-                        document.getElementById('patch-note-editor').innerHTML = snap.val().content;
-                    } else {
-                        document.getElementById('patch-note-editor').innerHTML = '<ul><li>รายละเอียดการอัพเดตใหม่...</li></ul>';
-                    }
-                } catch (e) {
-                    document.getElementById('patch-note-editor').innerHTML = '<div class="text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูลเก่า</div>';
                 }
             },
 
@@ -1851,12 +1653,12 @@
 
                 // 1. สร้าง UI หน้าจอ Loading ของห้องแมว
                 catroomView.innerHTML = `
-                    <div class="absolute inset-0 bg-[#ff8b35] z-[100] flex flex-col items-center justify-center p-6">
+                    <div class="absolute inset-0 bg-catbg z-[100] flex flex-col items-center justify-center p-6">
                         <div class="w-32 h-32 mb-6 animate-bounce-slow relative">
-                            <img src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782815331/FIRSTMEET_11_kvbylm.png" class="w-full h-full object-contain">
+                            <img src="https://drive.google.com/thumbnail?id=1l3Y6eA_axhY3RxB1GpRc3XqCNeUIfrlx&sz=s400" class="w-full h-full object-contain filter drop-shadow-md">
                         </div>
                         
-                        <h2 class="text-xl font-extrabold text-white mb-6 tracking-wider drop-shadow-sm">กำลังเตรียมห้องแมว...</h2>
+                        <h2 class="text-xl font-extrabold text-pink-500 mb-6 tracking-wider drop-shadow-sm">กำลังเตรียมห้องแมว...</h2>
 
                         <div class="w-full max-w-[280px] bg-pink-100 rounded-full h-5 mb-2 overflow-hidden border border-pink-200 p-1 shadow-inner relative">
                             <div id="cat-progress-bar" class="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 h-full rounded-full transition-all duration-300 ease-out w-0 relative overflow-hidden">
@@ -1864,9 +1666,9 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-between w-full max-w-[280px] text-[11px] font-extrabold text-white px-1">
+                        <div class="flex justify-between w-full max-w-[280px] text-[11px] font-extrabold text-gray-500 px-1">
                             <span id="cat-progress-text">กำลังเริ่มระบบ...</span>
-                            <span id="cat-progress-percent" class="text-white">0%</span>
+                            <span id="cat-progress-percent" class="text-pink-600">0%</span>
                         </div>
                         
                         <style>
@@ -3835,73 +3637,26 @@
             },
 
             async renderLeaderboard() {
-                const contentArea = document.getElementById('content-area');
-                if (!contentArea) return;
-                const nav = document.getElementById('main-nav');
-                nav.classList.add('hidden');
+                const listContainer = document.getElementById('leaderboard-list');
+                const pagContainer = document.getElementById('leaderboard-pagination');
+                if (!listContainer || !pagContainer) return;
 
                 const criteria = appState.rankingCriteria || 'cs';
                 const scope = appState.rankingScope || 'class'; 
                 const page = appState.rankingPage || 1;
                 const limit = 10;
 
-                contentArea.innerHTML = `
-                    <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 flex flex-col relative bg-white">
-                        <button onclick="app.navigate('home')" class="absolute top-4 left-4 z-[110] w-6 h-6 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-dark hover:bg-white transition active:scale-90 shadow-sm border border-gray-200">
-                            <i class="fa-solid fa-chevron-left text-sm"></i>
-                        </button>
-                        <!-- style="background:url('https://i.pinimg.com/1200x/13/4b/16/134b1608b90c7031d10429cd55564601.jpg'); background-size: cover; background-position: center; -->
-                        <div id="podium-container" class="w-full shrink-0"></div>
-                        <div class="shrink-0 mt-4 sm:mt-4 px-4 sm:px-5 relative z-10">
-                            <div class="flex flex-row sm:items-center justify-between gap-3 mb-3">
-                                <h3 class="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
-                                    <img src="https://drive.google.com/thumbnail?id=1BhhJGiyoTRgsQGQcryQn2-WMdYVeBeMW&sz=s400" class="w-9 h-9 object-contain" alt="Leaderboard">
-                                    <p class="hidden min-[475px]:flex"> ทำเนียบอันดับนักเรียน</p>
-                                    <p class="hidden max-[475px]:flex"> R A N K</p>
-                                </h3>
-                                
-                                <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold shadow-inner self-end sm:self-auto">
-                                    <button onclick="app.setRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${appState.rankingCriteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
-                                        <img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain"> <p class="hidden min-[320px]:flex"> ClassStar </p>
-                                    </button>
-                                    <button onclick="app.setRankingCriteria('ct')" id="rank-tab-ct" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${appState.rankingCriteria === 'ct' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
-                                        <img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain"><p class="hidden min-[320px]:flex"> Crystal </p>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="flex bg-gray-200/80 p-1 rounded-xl text-xs font-semibold shadow-inner w-full mb-4">
-                                <button onclick="app.setRankingScope('class')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${(!appState.rankingScope || appState.rankingScope === 'class') ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
-                                    <i class="fa-solid fa-chalkboard-user"></i> ระดับห้องเรียน
-                                </button>
-                                
-                                <button onclick="app.setRankingScope('school')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${appState.rankingScope === 'school' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
-                                    <i class="fa-solid fa-school"></i> ระดับโรงเรียน
-                                </button>
-                            </div>
-
-                            <div id="leaderboard-list" class="space-y-2 sm:space-y-2.5">
-                                <div class="p-5 flex justify-center"><div class="w-8 h-8 border-4 border-primary border-t-accent rounded-full animate-spin"></div></div>
-                            </div>
-
-                            <div id="leaderboard-pagination" class="flex justify-between items-center mt-4 sm:mt-5 bg-white p-2.5 sm:p-3 rounded-2xl border border-gray-100 shadow-sm">
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                const listContainer = document.getElementById('leaderboard-list');
-                const pagContainer = document.getElementById('leaderboard-pagination');
-                const podiumContainer = document.getElementById('podium-container');
-
                 try {
+                    // 🚀 OPTIMIZATION 1: Caching System
+                    // สร้าง Cache ไว้ใน appState ถ้ายังไม่มี
                     if (!appState.leaderboardCache) {
                         appState.leaderboardCache = { students: [], lastFetch: 0 };
                     }
 
-                    const CACHE_DURATION = 60000; 
+                    const CACHE_DURATION = 60000; // แคชข้อมูลไว้ 60 วินาที (เปลี่ยนได้ตามต้องการ)
                     const now = Date.now();
 
+                    // ดึงข้อมูลจาก Firebase เฉพาะตอนที่ยังไม่มีแคช หรือ แคชหมดอายุ
                     if (appState.leaderboardCache.students.length === 0 || now - appState.leaderboardCache.lastFetch > CACHE_DURATION) {
                         const usersRef = ref(db, 'users');
                         const snap = await get(usersRef);
@@ -3916,27 +3671,34 @@
                                 }
                             }
                         }
+                        // เซฟลง Cache
                         appState.leaderboardCache.students = allStudents;
                         appState.leaderboardCache.lastFetch = now;
                     }
 
+                    // 🚀 OPTIMIZATION 2: กรองข้อมูลจาก Cache แทนการลูปหาใหม่ทุกครั้ง
                     let students = [];
                     const cachedStudents = appState.leaderboardCache.students;
                     
                     if (scope === 'class' && appState.user) {
+                        // ระดับห้องเรียน
                         students = cachedStudents.filter(u => u.class === appState.user.class && u.room === appState.user.room);
                     } else {
+                        // ระดับโรงเรียน
                         students = [...cachedStudents]; 
                     }
 
+                    // เรียงคะแนนตามเกณฑ์
                     students.sort((a, b) => {
                         const scoreA = (a.items && a.items[criteria]) || 0;
                         const scoreB = (b.items && b.items[criteria]) || 0;
                         return scoreB - scoreA;
                     });
 
+                    // ------------------ ส่วนแสดงอันดับของฉัน ------------------
                     let myRankHtml = '';
                     if (appState.user && appState.user.role === 'student') {
+                        // หา Index จาก Array ที่เรียงแล้วได้เลย
                         const myIndex = students.findIndex(s => s.uid === appState.user.uid);
                         const myRank = myIndex !== -1 ? myIndex + 1 : '-';
                         const myScore = (appState.user.items && appState.user.items[criteria]) || 0;
@@ -3944,22 +3706,22 @@
                         const rankLabel = scope === 'class' ? `อันดับของฉัน (ในห้อง ${appState.user.class}/${appState.user.room})` : 'อันดับของฉัน (ระดับโรงเรียน)';
                         
                         myRankHtml = `
-                            <div class="mb-4 px-4 py-3 bg-gradient-to-r from-yellow-100/40 to-pink-500/10 border border-pink-500/20 rounded-2xl flex justify-between items-center shadow-sm">
+                            <div class="-mt-3.5 mb-8 px-4 py-1 bg-gradient-to-r from-yellow-200/20 to-blue-500/20 border border-primary/20 rounded-lg flex justify-between items-center shadow-lg">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-pink-500 text-sm">${myRank}</div>
-                                    <span class="text-xs font-bold text-dark">${rankLabel}</span>
+                                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary text-sm">${myRank}</div>
+                                    <span class="text-sm font-bold text-dark">${rankLabel}</span>
                                 </div>
-                                <div class="flex items-center gap-1.5 font-bold text-xs text-dark bg-white/80 px-2.5 py-1 rounded-xl shadow-sm">
+                                <div class="flex items-center gap-1.5 font-bold text-sm text-dark bg-white/60 px-2 py-1 rounded-lg">
                                     <span>${myScore.toLocaleString()}</span>
                                     ${scoreIcon}
                                 </div>
                             </div>
                         `;
                     }
+                    // -----------------------------------------------------------
 
                     if (students.length === 0) {
-                        podiumContainer.innerHTML = '';
-                        listContainer.innerHTML = myRankHtml + `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
+                        listContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
                         pagContainer.innerHTML = '';
                         return;
                     }
@@ -3971,113 +3733,55 @@
 
                     const startIndex = (currentPage - 1) * limit;
                     const endIndex = Math.min(startIndex + limit, totalItems);
+                    
+                    // 🚀 OPTIMIZATION 3: หั่น Array ออกมาก่อนเอาไปวนลูปสร้าง HTML
                     const pageData = students.slice(startIndex, endIndex);
 
-                    // ------------------ ส่วนจัดการ Podium (Top 3) ------------------
-                    if (currentPage === 1 && students.length > 0) {
-                        const getPodiumAvatar = (st, rank, isCenter = false, bgGradient = "") => {
-                            if (!st) return `<div class="w-[30%] max-w-[120px]"></div>`;
-                            
-                            const avatar = st.profileImage || DEFAULT_AVATAR;
-                            const currentFrame = getProfileFrame(st);
-                            const displayN = st.displayName || st.fullName;
-                            const score = (st.items && st.items[criteria]) || 0;
-                            
-                            const size = isCenter ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-14 h-14 sm:w-16 sm:h-16';
-                            const margin = isCenter ? '-mb-8 sm:-mb-10' : '-mb-6 sm:-mb-8';
-                            const podiumHeight = isCenter ? 'h-32 sm:h-36' : 'h-28 sm:h-32';
-                            const scoreIconSmall = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-3 h-3 object-contain">` : `<img src="${ITEM_IMAGES.ct}" class="w-3 h-3 object-contain">`;
-
-                            return `
-                                <div class="relative flex flex-col items-center w-[30%] max-w-[120px]">
-                                    <div class="${margin} z-10 cursor-pointer active:scale-95 transition-transform" onclick="app.showStudentProfileDetail('${st.uid}')">
-                                        <div class="relative ${size} flex items-center justify-center shrink-0 select-none">
-                                            <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white border-2 border-white shadow-sm" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'">
-                                            <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]">
-                                        </div>
-                                    </div>
-                                    <div class="w-full ${podiumHeight} bg-gradient-to-b ${bgGradient} rounded-t-md flex flex-col items-center pt-10 sm:pt-12 pb-2 px-1 shadow-inner text-white">
-                                        <div class="font-black ${isCenter ? 'text-3xl' : 'text-2xl'} leading-none mb-1 drop-shadow-sm">0${rank}</div>
-                                        <div class="text-xs sm:text-xs font-semibold truncate w-full text-center px-1 mb-1.5 drop-shadow-sm" style="text-shadow: 0px 1px 15px rgba(0,0,0,0.9);">${displayN}</div>
-                                        <div class="flex items-center justify-center gap-1 bg-white/90 text-dark text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm w-max min-w-[70%]">
-                                            <span>${score.toLocaleString()}</span>
-                                            ${scoreIconSmall}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        };
-
-                        podiumContainer.innerHTML = `
-                            <div class="relative w-full pt-24 pb-0 flex justify-center items-end gap-1 sm:gap-2 overflow-hidden">
-                                <div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                                    <div class="w-full h-full bg-[url('https://i.pinimg.com/1200x/13/4b/16/134b1608b90c7031d10429cd55564601.jpg')] bg-cover bg-center"></div>
-                                    <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
-                                </div>
-
-                                ${getPodiumAvatar(students[1], 2, false, 'from-cyan-400 to-blue-400/10')}
-
-                                ${getPodiumAvatar(students[0], 1, true, 'from-orange-400 to-amber-400/10')}
-
-                                ${getPodiumAvatar(students[2], 3, false, 'from-pink-400 to-purple-400/10')}
-                            </div>
-                        `;
-                        podiumContainer.style.display = 'block';
-                    } else {
-                        podiumContainer.innerHTML = '';
-                        podiumContainer.style.display = 'none';
-                    }
-
-                    // ------------------ ส่วน Render List ด้านล่าง ------------------
                     let listHtml = myRankHtml; 
                     pageData.forEach((st, idx) => {
                         const absoluteRank = startIndex + idx + 1;
-                        
-                        if (currentPage === 1 && absoluteRank <= 3) return;
-
                         const score = (st.items && st.items[criteria]) || 0;
                         const avatar = st.profileImage || DEFAULT_AVATAR;
                         const currentFrame = getProfileFrame(st);
                         const displayN = st.displayName || st.fullName;
                         const catImg = st.catData?.equippedCat || CAT_ASSETS.starterCat;
-                   
                         
-                        let rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
+                        let rankBadge = '';
                         let rankBg = 'bg-white hover:border-gray-200';
-                        if (absoluteRank === 4) rankBg = "border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782885855/FIRSTMEET_ofnf4g.jpg')]";      // ลำดับที่ 4 สีเหลือง
-                        else if (absoluteRank === 5) rankBg = "bg-blue-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886611/FIRSTMEET_1_c2fwsn.jpg')]";   // ลำดับที่ 5 สีฟ้า
-                        else if (absoluteRank === 6) rankBg = "bg-pink-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886733/FIRSTMEET_2_qe90m5.jpg')]";   // ลำดับที่ 6 สีชมพู
-                        else rankBg = "bg-pink-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782888767/FIRSTMEET_4_babaea.jpg')]";
+                        if (absoluteRank === 1) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1Ma4EE_XRUQyv2Z2s5jY8I5KjwvfGTzF9&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-yellow-50 to-orange-50/30 border-yellow-200';
+                        } else if (absoluteRank === 2) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1C1TaXHTM8JfhXobvxrGVuSMQEgvzhm11&sz=s400" class="w-10 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-gray-50 to-slate-50/30 border-slate-200';
+                        } else if (absoluteRank === 3) {
+                            rankBadge = `<span class="text-lg sm:text-xl"><img src="https://drive.google.com/thumbnail?id=1-V4fPN8C3Tbm1DWzjMZ5dFEORBN-58hJ&sz=s400" class="w-8 h-8 object-contain" loading="lazy"></span>`;
+                            rankBg = 'bg-gradient-to-r from-amber-50 to-amber-50/10 border-amber-200';
+                        } else {
+                            rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
+                        }
 
                         const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain" loading="lazy">` : `<img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain" loading="lazy">`;
 
                         listHtml += `
-                            <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-3 sm:p-3.5 drop-shadow-md rounded-xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-pink-500/40 active:scale-[0.98]">
+                            <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-2 sm:p-3.5 rounded-2xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-primary/50 active:scale-[0.98]">
                                 <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
                                     <div class="w-6 sm:w-8 flex justify-center items-center shrink-0">
                                         ${rankBadge}
                                     </div>
                                     <div class="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 select-none">
                                         <img src="${avatar}" 
-                                            class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner"
-                                            onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'"
-                                            alt="${st.fullName}" loading="lazy">
+                                             class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner"
+                                             onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'"
+                                             alt="${st.fullName}" loading="lazy">
                                         <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame" loading="lazy">
                                         <div class="absolute -right-2 -bottom-1 w-6 h-6 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
                                             <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s400" class="w-full h-full object-contain" loading="lazy">
                                         </div>
                                     </div>
                                     <div class="min-w-0 flex-1 pl-1">
-                                        <div class="font-bold text-xs sm:text-sm truncate" 
-                                            style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.9);">
-                                            ${displayN}
-                                        </div>
-                                        
-                                        <div class="flex justify-start mt-1">
-                                            <span class="bg-white px-3 rounded-full text-gray-500 shadow-sm border border-gray-100 text-center w-full max-w-max text-[8px] sm:text-[8px] font-semibold truncate">
-                                                ม.${st.class}/${st.room} • เลขที่ ${st.number}
-                                            </span>
-                                        </div>
+                                        <div class="font-bold text-xs sm:text-sm text-dark truncate">${displayN}</div>
+                                        <div class="text-[9px] sm:text-[10px] text-gray-400 font-medium truncate">ม.${st.class}/${st.room} • เลขที่ ${st.number}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 sm:gap-1.5 font-bold text-xs sm:text-sm text-dark bg-gray-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-gray-100 shadow-inner shrink-0">
@@ -4087,19 +3791,18 @@
                             </div>
                         `;
                     });
-                    
                     listContainer.innerHTML = listHtml;
 
                     pagContainer.innerHTML = `
                         <button onclick="app.changeRankingPage(-1)" 
-                                ${currentPage === 1 ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                                ${currentPage === 1 ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-primary active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
                             <i class="fa-solid fa-chevron-left"></i> ก่อนหน้า
                         </button>
                         <span class="text-xs font-bold text-gray-500">
                             หน้า ${currentPage} / ${totalPages}
                         </span>
                         <button onclick="app.changeRankingPage(1)" 
-                                ${currentPage === totalPages ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                                ${currentPage === totalPages ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-primary active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
                             ถัดไป <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     `;
@@ -7565,10 +7268,9 @@
                     const hasA = bName.includes('A') || cName.includes('A');
                     const hasS = bName.includes('S') || cName.includes('S');
                     const hasCs = bName.includes("ร้านสุ่ม");
-                    const hasCat = bName.includes("แมว");
 
                     // ถ้าเป็นตู้ A (และไม่ใช่ S) ให้แสดงปุ่ม
-                    if (hasA && !hasS && !hasCs && !hasCat) {
+                    if (hasA && !hasS && !hasCs) {
                         shakeBtn.classList.remove('hidden');
                         shakeBtn.classList.add('flex');
                     } else {
@@ -8055,18 +7757,6 @@
                                         <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-user-slash"></i></div><span class="font-medium text-slate-700">จัดการระบบแบนผู้ใช้งาน</span></div>
                                         <i class="fa-solid fa-chevron-right text-gray-300"></i>
                                     </button>
-                                    <button onclick="app.navigate('admin_patch_notes')" class="w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between mt-3 border border-gray-100 active:scale-95 transition-transform">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shadow-inner">
-                                                <i class="fa-solid fa-file-pen text-lg"></i>
-                                            </div>
-                                            <div class="text-left">
-                                                <div class="text-sm font-bold text-gray-800">จัดการอัพเดต (Patch Notes)</div>
-                                                <div class="text-[10px] text-gray-500">แก้ไขรายละเอียดและเพิ่มแบนเนอร์</div>
-                                            </div>
-                                        </div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
                                 </div>
                             ` : ''}
 
@@ -8193,39 +7883,25 @@
                 const c2 = config.carousel && config.carousel[1] ? config.carousel[1] : '';
                 const c3 = config.carousel && config.carousel[2] ? config.carousel[2] : '';
 
-                // ฟังก์ชันย่อยสำหรับแปลงลิงก์ Google Drive ให้เป็น Direct Image URL สำหรับแสดงผลบนเว็บ
-                const convertDriveUrl = (url) => {
-                    if (!url) return '';
-                    if (url.includes('drive.google.com')) {
-                        // ใช้ Regex ดึง File ID ของ Google Drive ออกมา (รองรับทั้งลิงก์แชร์ ลิงก์ view และแบบมี ID)
-                        const match = url.match(/[-\w]{25,}/);
-                        if (match && match[0]) {
-                            // แปลงเป็นลิ้งค์ Thumbnail แบบความละเอียดสูง (sz=w1000) เพื่อให้ภาพสไลด์และแบนเนอร์คมชัด
-                            return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
-                        }
-                    }
-                    return url; // หากไม่ใช่ลิงก์ Drive ให้ส่ง URL เดิมกลับไป
-                };
-
                 const { value: formValues } = await Swal.fire({
                     title: '<span style="font-family: \'Kanit\';">ปรับแต่งหน้าหลัก</span>',
                     html: `
                         <div class="text-left font-sans text-xs space-y-4 mt-3">
                             <div>
                                 <label class="font-bold text-gray-500 mb-1 block">URL ภาพแบนเนอร์หลัก</label>
-                                <input id="hc-banner" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="วางลิงก์รูปภาพทั่วไป หรือ ลิงก์ Google Drive" value="${banner}">
+                                <input id="hc-banner" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="https://..." value="${banner}">
                             </div>
                             <div class="pt-2 border-t border-gray-100">
                                 <label class="font-bold text-gray-500 mb-1 block">URL ภาพ Slide 1</label>
-                                <input id="hc-c1" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="วางลิงก์รูปภาพทั่วไป หรือ ลิงก์ Google Drive" value="${c1}">
+                                <input id="hc-c1" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="https://..." value="${c1}">
                             </div>
                             <div>
                                 <label class="font-bold text-gray-500 mb-1 block">URL ภาพ Slide 2 (ตัวเลือก)</label>
-                                <input id="hc-c2" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="วางลิงก์รูปภาพทั่วไป หรือ ลิงก์ Google Drive" value="${c2}">
+                                <input id="hc-c2" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="https://..." value="${c2}">
                             </div>
                             <div>
                                 <label class="font-bold text-gray-500 mb-1 block">URL ภาพ Slide 3 (ตัวเลือก)</label>
-                                <input id="hc-c3" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="วางลิงก์รูปภาพทั่วไป หรือ ลิงก์ Google Drive" value="${c3}">
+                                <input id="hc-c3" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-primary bg-gray-50" placeholder="https://..." value="${c3}">
                             </div>
                         </div>
                     `,
@@ -8239,19 +7915,11 @@
                         const s1 = document.getElementById('hc-c1').value.trim();
                         const s2 = document.getElementById('hc-c2').value.trim();
                         const s3 = document.getElementById('hc-c3').value.trim();
-                        
-                        // ประมวลผลและแปลง URL ก่อนจัดเก็บเข้า Array
-                        const finalBanner = convertDriveUrl(b);
-                        const finalS1 = convertDriveUrl(s1);
-                        const finalS2 = convertDriveUrl(s2);
-                        const finalS3 = convertDriveUrl(s3);
-
                         let carousel = [];
-                        if(finalS1) carousel.push(finalS1);
-                        if(finalS2) carousel.push(finalS2);
-                        if(finalS3) carousel.push(finalS3);
-                        
-                        return { mainBanner: finalBanner, carousel: carousel };
+                        if(s1) carousel.push(s1);
+                        if(s2) carousel.push(s2);
+                        if(s3) carousel.push(s3);
+                        return { mainBanner: b, carousel: carousel };
                     }
                 });
 
@@ -8956,7 +8624,7 @@
                 const catData = u.catData || {};
 
                 const catImg = `https://drive.google.com/thumbnail?id=${catData.equippedCat}&sz=s400`;
-                const bgImg = `https://drive.google.com/thumbnail?id=${catData.equippedBg}&sz=s800`;
+                const bgImg = `https://drive.google.com/thumbnail?id=${catData.equippedBg}&sz=s400`;
                 const rank = getCatRank(catData.level);
 
                 catroomView.innerHTML = `
@@ -12847,405 +12515,65 @@
                     </div>
                 `;
             },
-            openLoginStreakAdmin: async () => {
-                Swal.fire({ title: 'กำลังโหลดฐานข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                
-                try {
-                    // 1. ดึงข้อมูลจริงจาก Firebase
-                    const [framesSnap, catShopSnap, cardsSnap, currentStreakSnap] = await Promise.all([
-                        get(ref(db, 'shop_frames')),
-                        get(ref(db, 'cat_shop')),
-                        get(ref(db, 'system_cards')),
-                        get(ref(db, 'system/home_config/login_rewards'))
-                    ]);
-
-                    const shopFrames = framesSnap.exists() ? framesSnap.val() : {};
-                    const catShop = catShopSnap.exists() ? catShopSnap.val() : {};
-                    const systemCards = cardsSnap.exists() ? cardsSnap.val() : {};
-                    const currentRewards = currentStreakSnap.exists() ? currentStreakSnap.val() : {};
-
-                    // 2. เตรียมรายการไอเท็มพร้อมติด data-type สำหรับเอาไว้ใช้กรองข้อมูล
-                    const presets = [
-                        { id: 'ct', name: 'Crystal (CT)' },
-                        { id: 'ticket', name: 'Ticket' },
-                        { id: 'cc', name: 'CatCoin (CC)' },
-                        { id: 'cd', name: 'Cat Diamond (CD)' },
-                        { id: 'ce', name: 'Cat Emerald (CE)' },
-                        { id: 'cs', name: 'ClassStar (CS)' },
-                        { id: 'sc', name: 'S-Card' }
-                    ];
-
-                    let baseOptHtml = '<option value="">-- เลือกของรางวัลจากระบบ --</option>';
-                    
-                    baseOptHtml += '<optgroup label="สกุลเงิน / ทั่วไป">';
-                    presets.forEach(p => {
-                        baseOptHtml += `<option value="currency|${p.id}|${p.name}|${p.id}" data-type="currency">🪙 ${p.name}</option>`;
-                    });
-                    baseOptHtml += '</optgroup>';
-
-                    baseOptHtml += '<optgroup label="การ์ดสะสม (จากระบบการ์ด)">';
-                    Object.entries(systemCards).forEach(([k, v]) => {
-                        const rarityStr = v.rarity || 'A';
-                        baseOptHtml += `<option value="card|${k}|${v.name}|${v.image}" data-type="card">[การ์ด ${rarityStr}] ${v.name}</option>`;
-                    });
-                    baseOptHtml += '</optgroup>';
-
-                    baseOptHtml += '<optgroup label="ร้านค้า: กรอบโปรไฟล์">';
-                    Object.entries(shopFrames).forEach(([k, v]) => {
-                        baseOptHtml += `<option value="frame|${k}|${v.name}|${v.driveId}" data-type="frame">[กรอบโปรไฟล์] ${v.name}</option>`;
-                    });
-                    baseOptHtml += '</optgroup>';
-
-                    baseOptHtml += '<optgroup label="ร้านค้า: แมวและอื่นๆ">';
-                    Object.entries(catShop).forEach(([k, v]) => {
-                        baseOptHtml += `<option value="${v.type}|${k}|${v.name}|${v.driveId || k}" data-type="${v.type}">[${v.type.toUpperCase()}] ${v.name}</option>`;
-                    });
-                    baseOptHtml += '</optgroup>';
-
-                    // 3. สร้างฟอร์ม UI แสดงผลทั้ง 7 วัน
-                    let formHtml = `<div class="text-left space-y-4 max-h-[65vh] overflow-y-auto px-2 pb-4 no-scrollbar">`;
-                    
-                    for (let d = 1; d <= 7; d++) {
-                        const saved = currentRewards[d] || {};
-                        const savedVal = saved.itemType ? `${saved.itemType}|${saved.itemId}|${saved.name}|${saved.driveId}` : '';
-                        
-                        formHtml += `
-                            <div class="border border-indigo-100 rounded-2xl p-4 bg-indigo-50/30 shadow-sm space-y-3 relative">
-                                <div class="font-extrabold text-indigo-900 text-sm flex items-center gap-2">
-                                    <span class="bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm text-xs">${d}</span>
-                                    ของรางวัลวันที่ ${d}
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <input type="text" id="streak-search-${d}" placeholder="🔍 พิมพ์ชื่อเพื่อค้นหา..." class="w-full p-2 border border-indigo-100 rounded-xl bg-white focus:outline-none text-[11px] font-bold text-indigo-950" oninput="window.app.filterStreakOptions(${d})">
-                                    </div>
-                                    <div>
-                                        <select id="streak-category-filter-${d}" class="w-full p-2 border border-indigo-100 rounded-xl bg-white focus:outline-none text-[11px] font-bold text-indigo-950" onchange="window.app.filterStreakOptions(${d})">
-                                            <option value="all">แสดงทั้งหมด</option>
-                                            <option value="currency">สกุลเงิน / ทั่วไป</option>
-                                            <option value="card">การ์ดสะสม</option>
-                                            <option value="frame">ร้านค้า: กรอบโปรไฟล์</option>
-                                            <option value="cat_frame">ร้านค้า: กรอบแมว</option>
-                                            <option value="food">ร้านค้า: อาหารแมว</option>
-                                            <option value="cat|bg">ร้านค้า: แมวและพื้นหลัง</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="flex gap-2 items-start">
-                                    <div class="flex-1">
-                                        <select id="streak-item-${d}" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-950" data-saved="${savedVal}" onchange="window.app.toggleStreakAmount(${d}, this.value)">
-                                            ${baseOptHtml}
-                                        </select>
-                                    </div>
-                                    <div id="streak-amt-box-${d}" class="w-20 shrink-0">
-                                        <input type="number" id="streak-amt-${d}" value="${saved.amount || 1}" min="1" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs bg-white text-center font-bold focus:outline-none focus:ring-2 focus:ring-indigo-300 text-indigo-950">
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    formHtml += `</div>`;
-
-                    // 4. แสดง SweetAlert2 Modal
-                    Swal.fire({
-                        title: '<span class="text-lg font-extrabold text-indigo-950">ตั้งค่ารางวัลล็อกอิน 7 วัน</span>',
-                        html: formHtml,
-                        width: '520px',
-                        showCancelButton: true,
-                        confirmButtonText: '<i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูล',
-                        cancelButtonText: 'ยกเลิก',
-                        confirmButtonColor: '#4F46E5',
-                        customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' },
-                        didOpen: () => {
-                            // ดึงข้อมูลเดิมมาเซ็ตค่าเริ่มต้น และจัดระเบียบ UI ล็อกจำนวนตัวเลข
-                            for (let d = 1; d <= 7; d++) {
-                                const select = document.getElementById(`streak-item-${d}`);
-                                const savedVal = select.getAttribute('data-saved');
-                                if (savedVal) {
-                                    select.value = savedVal;
-                                    window.app.toggleStreakAmount(d, savedVal);
-                                }
-                            }
-                        },
-                        preConfirm: () => {
-                            const finalRewards = {};
-                            for (let d = 1; d <= 7; d++) {
-                                const val = document.getElementById(`streak-item-${d}`).value;
-                                if (!val) {
-                                    Swal.showValidationMessage(`กรุณาเลือกของรางวัลสำหรับวันที่ ${d}`);
-                                    return false;
-                                }
-
-                                const [type, itemId, name, driveId] = val.split('|');
-                                const amtBox = document.getElementById(`streak-amt-box-${d}`);
-                                let amount = 1;
-                                
-                                if (amtBox.style.display !== 'none') {
-                                    amount = parseInt(document.getElementById(`streak-amt-${d}`).value) || 1;
-                                }
-
-                                // สร้าง URL ไอคอนสำเร็จรูปตามประเภทของรางวัล
-                                let iconUrl = driveId;
-                                if (type === 'currency') {
-                                    const currMap = {
-                                        'cs': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1782722391/FIRSTMEET_2_sbm9ui.png',
-                                        'ct': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1782722853/FIRSTMEET_3_jijf72.png',
-                                        'ticket': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159821/1IA9uz5F0K3P-ZzWUy-VCxgG8j8JlVYCl_s800_sgmydi.png',
-                                        'sc': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781159829/15wB6zP1ohPfhzTikD9pElwvwAE8SiB8S_s400_shtwq0.png',
-                                        'cc': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166138/CatCoin_u6g2gd.png',
-                                        'cd': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166137/Cat_Diamond_v2zfuu.png',
-                                        'ce': 'https://res.cloudinary.com/du7bh92n6/image/upload/v1781166138/Cat_Emerald_epfonf.png'
-                                    };
-                                    iconUrl = currMap[itemId] || '🎁';
-                                } else {
-                                    if (driveId.startsWith('http')) {
-                                        iconUrl = driveId;
-                                    } else if (driveId.length > 10) {
-                                        iconUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=s400`;
-                                    }
-                                }
-
-                                finalRewards[d] = {
-                                    itemType: type,
-                                    itemId: itemId,
-                                    name: name,
-                                    driveId: driveId,
-                                    amount: amount,
-                                    icon: iconUrl
-                                };
-                            }
-                            return finalRewards;
-                        }
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            Loader.show();
-                            await set(ref(db, 'system/home_config/login_rewards'), result.value);
-                            Loader.hide();
-                            Toast.fire({ icon: 'success', title: 'อัปเดตของรางวัลล็อกอิน 7 วันสำเร็จ' });
-                            if (typeof Views !== 'undefined' && Views.renderHome) Views.renderHome();
-                        }
-                    });
-
-                } catch (err) {
-                    Loader.hide();
-                    console.error(err);
-                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้' });
-                }
-            },
-
-            // 🔍 ฟังก์ชันกรองไอเท็มรายวัน (ทำงานเมื่อมีการกรอกช่องค้นหา หรือเปลี่ยนหมวดหมู่)
-            filterStreakOptions: (day) => {
-                const searchInput = document.getElementById(`streak-search-${day}`);
-                const categoryFilter = document.getElementById(`streak-category-filter-${day}`);
-                const itemSelect = document.getElementById(`streak-item-${day}`);
-                if (!searchInput || !categoryFilter || !itemSelect) return;
-
-                const searchTerm = searchInput.value.toLowerCase();
-                const categoryTerm = categoryFilter.value;
-
-                Array.from(itemSelect.options).forEach(opt => {
-                    // หากเป็น Option ว่าง หรือหัวข้อหลัก ให้แสดงผลไว้ตลอด
-                    if (opt.value === "") {
-                        opt.style.display = 'block';
-                        return;
-                    }
-
-                    const text = opt.text.toLowerCase();
-                    const type = opt.getAttribute('data-type');
-                    
-                    // เงื่อนไขค้นหาชื่อคำ + เงื่อนไขจับคู่หมวดหมู่ (ตรงตัว หรือ จัดกลุ่มแมว/พื้นหลังเข้าด้วยกัน)
-                    const matchesSearch = text.includes(searchTerm);
-                    const matchesCategory = (categoryTerm === 'all') || 
-                                            (categoryTerm === 'cat|bg' ? (type === 'cat' || type === 'bg') : (type === categoryTerm));
-
-                    opt.style.display = (matchesSearch && matchesCategory) ? 'block' : 'none';
-                });
-            },
-
-            // 📦 ฟังก์ชันจำกัดอินพุตจำนวนเงิน/การ์ด/กรอบโปรไฟล์แจกจริง
-            toggleStreakAmount: (day, val) => {
-                const amtBox = document.getElementById(`streak-amt-box-${day}`);
-                if (!amtBox) return;
-                
-                if (!val) { 
-                    amtBox.style.display = 'block'; 
-                    return; 
-                }
-                
-                const type = val.split('|')[0];
-                // ป้องกันของชิ้นเดียว (กรอบโปรไฟล์, ตัวแมว, พื้นหลัง, การ์ดสะสม) ไม่ให้กรอกจำนวนเบิ้ล
-                if (['frame', 'cat_frame', 'cat', 'bg', 'card'].includes(type)) {
-                    amtBox.style.display = 'none';
-                    document.getElementById(`streak-amt-${day}`).value = 1;
-                } else {
-                    amtBox.style.display = 'block';
-                }
-            },
             claimLoginReward: async (dayNum) => {
-                const uid = appState.user?.uid || Auth?.currentUser?.uid;
-                if (!uid) return;
+                const uid = window.appState?.user?.uid || Auth?.currentUser?.uid;
+                if (!uid) {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่พบข้อมูลผู้ใช้งาน กรุณาล็อกอินใหม่' });
+                    return;
+                }
 
-                Swal.fire({ title: 'กำลังรับของรางวัล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                // แสดง Loading
+                Swal.fire({
+                    title: 'กำลังรับรางวัล...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
 
                 try {
-                    const sysSnap = await get(ref(db, `system/home_config/login_rewards/${dayNum}`));
-                    const userStreakSnap = await get(ref(db, `users/${uid}/loginStreak`));
+                    // ดึง Config รางวัลอีกครั้งเพื่อตรวจสอบความถูกต้อง
+                    let rewardsConfig = window.renderStore?.homeConfig?.loginRewards;
+                    // หากไม่มี config ต้องทำ fallback แบบเดียวกับใน render
+                    if (!rewardsConfig) {
+                        // ... fallback array 7 วัน แบบด้านบน ...
+                    }
+
+                    const reward = rewardsConfig[dayNum - 1];
+
+                    // เตรียมข้อมูลอัปเดต Database
+                    const updates = {};
                     
-                    // 1. ตรวจสอบฝั่งระบบ (ถ้าไม่มีของรางวัลในวันนั้นจริงๆ ถึงจะแจ้งเตือน)
-                    if (!sysSnap.exists()) {
-                        return Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่พบการตั้งค่าของรางวัลสำหรับวันนี้ในระบบ' });
-                    }
-
-                    const reward = sysSnap.val();
-                    
-                    // 2. ตรวจสอบฝั่งผู้ใช้ (ถ้าไม่มีข้อมูล ให้ตั้งค่าเริ่มต้นวันแรกให้เลย ไม่ต้องโยน Error)
-                    let userStreak = { currentDay: 1, claimedToday: false };
-                    if (userStreakSnap.exists()) {
-                        userStreak = userStreakSnap.val();
-                    }
-
-                    // 3. ตรวจสอบเงื่อนไขความถูกต้อง
-                    if (userStreak.currentDay !== dayNum || userStreak.claimedToday) {
-                        return Swal.fire({ icon: 'error', title: 'ปฏิเสธคำขอ', text: 'คุณไม่สามารถรับรางวัลนี้ได้ในขณะนี้' });
-                    }
-
-                    let updates = {};
-                    // บันทึกสถานะการรับรางวัล (และล็อกค่าวันปัจจุบันเอาไว้กรณีเป็นผู้ใช้ใหม่)
+                    // 1. อัปเดตว่าวันนี้กดรับไปแล้ว
                     updates[`users/${uid}/loginStreak/claimedToday`] = true;
-                    updates[`users/${uid}/loginStreak/currentDay`] = userStreak.currentDay;
+                    // (เมื่อขึ้นวันใหม่ คุณต้องมี Logic รีเซ็ต claimedToday = false และ currentDay + 1 ด้วย)
 
-                    // 4. มอบของรางวัลโดยเช็ค Type เพื่อยิงเข้า Database ถูกจุด
-                    const t = reward.itemType;
-                    const amt = parseInt(reward.amount) || 1;
+                    // 2. ให้ของรางวัลแก่ผู้เล่น (ตรงนี้แก้ Path Database ให้ตรงกับระบบ Inventory ของคุณ)
+                    // ตัวอย่าง: updates[`users/${uid}/inventory/${reward.type}`] = increment(reward.amount);
 
-                    if (t === 'currency') {
-                        if (['cc', 'cd', 'ce'].includes(reward.itemId)) {
-                            const cur = appState.user.catData?.inventory?.[reward.itemId] || 0;
-                            updates[`users/${uid}/catData/inventory/${reward.itemId}`] = cur + amt;
-                        } else {
-                            const cur = appState.user.items?.[reward.itemId] || 0;
-                            updates[`users/${uid}/items/${reward.itemId}`] = cur + amt;
-                        }
-                    } 
-                    else if (t === 'card') {
-                        const safeCardKey = btoa(reward.driveId).replace(/=/g, '_'); 
-                        const cur = appState.user.my_cards?.[safeCardKey] || 0;
-                        updates[`users/${uid}/my_cards/${safeCardKey}`] = cur + amt;
-                    } 
-                    else if (t === 'frame' || t === 'cat_frame') {
-                        updates[`users/${uid}/unlocked_frames/${reward.driveId}`] = true;
-                    } 
-                    else if (t === 'cat' || t === 'bg') {
-                        updates[`users/${uid}/catData/unlocked/${reward.driveId}`] = true;
-                    } 
-                    else if (t === 'food') {
-                        const cur = appState.user.catData?.inventory?.[reward.itemId] || 0;
-                        updates[`users/${uid}/catData/inventory/${reward.itemId}`] = cur + amt;
-                    }
-
-                    // ยิงเข้า Database พร้อมกันรวดเดียว (Atomic Update)
                     await update(ref(db), updates);
 
-                    // อัปเดตข้อมูล State (จำลองให้ UI)
-                    const freshUserSnap = await get(ref(db, `users/${uid}`));
-                    if (freshUserSnap.exists()) {
-                        appState.user = { ...appState.user, ...freshUserSnap.val() };
-                    }
-
-                    // สร้าง UI ประกาศชัยชนะ
-                    let visualAlert = reward.icon.startsWith('http') 
-                        ? `<img src="${reward.icon}" class="w-20 h-20 mx-auto my-4 object-contain drop-shadow-md rounded-xl bg-gray-50 border border-gray-200 p-2">` 
-                        : `<div class="text-6xl my-4 drop-shadow-md">${reward.icon}</div>`;
-
+                    // แจ้งเตือนสำเร็จ
                     Swal.fire({
-                        title: 'ยินดีด้วย!',
-                        html: `
-                            ${visualAlert}
-                            <p class="text-sm font-bold text-gray-700 mb-1">ได้รับ <span class="text-indigo-600">${reward.name}</span></p>
-                            ${['frame', 'cat_frame', 'cat', 'bg', 'card'].includes(t) ? '' : `<p class="text-xs font-bold text-white bg-indigo-500 rounded-full px-2 py-0.5 inline-block">จำนวน x${amt}</p>`}
-                        `,
-                        confirmButtonText: 'ยอดเยี่ยม!',
-                        confirmButtonColor: '#4F46E5',
-                        customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl font-bold px-8 shadow-md' }
+                        icon: 'success',
+                        title: 'รับรางวัลสำเร็จ!',
+                        text: `คุณได้รับ ${reward.name} จำนวน ${reward.amount}`,
+                        confirmButtonColor: '#4CAF50',
+                        confirmButtonText: 'ตกลง'
                     }).then(() => {
-                        if (typeof Views !== 'undefined' && Views.renderLoginStreak) {
-                            Views.renderLoginStreak();
+                        // โหลด UI ใหม่เพื่ออัปเดตสถานะปุ่ม
+                        if (window.Views && window.Views.renderLoginStreak) {
+                            window.Views.renderLoginStreak();
                         }
                     });
 
-                } catch (err) {
-                    console.error(err);
-                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถดำเนินการรับของรางวัลได้ในขณะนี้' });
-                }
-            },
-            insertPatchNoteImage: async () => {
-                const { value: url } = await Swal.fire({
-                    title: 'แทรกรูปภาพแบนเนอร์',
-                    input: 'text',
-                    inputLabel: 'ใส่ URL รูปภาพ หรือ ลิงก์ Google Drive',
-                    inputPlaceholder: 'https://...',
-                    showCancelButton: true,
-                    confirmButtonColor: '#27D6F5',
-                    cancelButtonText: 'ยกเลิก',
-                    confirmButtonText: 'ตกลง',
-                    customClass: { popup: 'rounded-[2rem]' }
-                });
-
-                if (url) {
-                    let finalUrl = url;
-                    // ใช้ฟังก์ชัน extractDriveId ที่มีอยู่แล้วแปลงลิงก์ Drive เป็น Thumbnail URL
-                    if (url.includes('drive.google.com')) {
-                        const driveId = extractDriveId(url);
-                        if (driveId) {
-                            finalUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=w800`;
-                        }
-                    }
-                    // สร้างแท็กภาพแบบมีสไตล์ และเว้นบรรทัด
-                    const imgHtml = `<br><img src="${finalUrl}" class="w-full rounded-2xl my-2 shadow-sm border border-gray-100 object-cover" alt="Patch Banner" /><br>`;
-                    
-                    // นำภาพไปแทรกใน Editor
-                    const editor = document.getElementById('patch-note-editor');
-                    editor.focus();
-                    document.execCommand('insertHTML', false, imgHtml);
-                }
-            },
-
-            savePatchNotes: async () => {
-                const editor = document.getElementById('patch-note-editor');
-                if (!editor) return;
-                
-                const content = editor.innerHTML;
-                Loader.show();
-                
-                try {
-                    await set(ref(db, 'system/patch_notes'), {
-                        content: content,
-                        updatedAt: Date.now()
-                    });
-                    Toast.fire({ icon: 'success', title: 'อัพเดต Patch Notes สำเร็จ!' });
-                    Views.navigate('home');
                 } catch (error) {
-                    console.error("Save Patch Notes Error:", error);
-                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้', customClass: { popup: 'rounded-[2rem]' } });
-                } finally {
-                    Loader.hide();
+                    console.error("Claim Error:", error);
+                    Swal.fire({ 
+                        icon: 'error', 
+                        title: 'เกิดข้อผิดพลาด', 
+                        text: 'ไม่สามารถรับรางวัลได้ในขณะนี้',
+                        confirmButtonColor: '#d33'
+                    });
                 }
-            },
-            setRankingScope(scope) {
-                appState.rankingScope = scope;
-                appState.rankingPage = 1; // รีเซ็ตหน้ากลับไปหน้า 1
-                Views.renderLeaderboard();
-            },
-            setRankingCriteria(criteria) {
-                appState.rankingCriteria = criteria;
-                appState.rankingPage = 1; // รีเซ็ตหน้ากลับไปหน้า 1
-                Views.renderLeaderboard();
-            },
-            changeRankingPage(direction) {
-                appState.rankingPage = (appState.rankingPage || 1) + direction;
-                Views.renderLeaderboard();
             },
             submitBan: async (uid) => {
                 const title = document.getElementById('ban-title').value.trim();

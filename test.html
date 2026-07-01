@@ -1,11 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+<div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-2.5 shrink-0">
+                            <div class="flex bg-gray-100 p-1 rounded-xl">
+                                <button onclick="app.setRankingScope('class')" class="flex-1 py-2 text-xs font-bold rounded-lg transition ${scope === 'class' ? 'bg-white text-pink-500 shadow-sm' : 'text-gray-500'}">ระดับห้องเรียน</button>
+                                <button onclick="app.setRankingScope('school')" class="flex-1 py-2 text-xs font-bold rounded-lg transition ${scope === 'school' ? 'bg-white text-pink-500 shadow-sm' : 'text-gray-500'}">ระดับโรงเรียน</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="app.setRankingCriteria('cs')" class="flex-1 py-2 text-xs font-bold rounded-xl border transition flex items-center justify-center gap-1.5 ${criteria === 'cs' ? 'border-pink-500 bg-pink-50 text-pink-500' : 'border-gray-100 text-gray-500'}">
+                                    <img src="${ITEM_IMAGES.cs}" class="w-4 h-4 object-contain"> CATSTAR
+                                </button>
+                                <button onclick="app.setRankingCriteria('ct')" class="flex-1 py-2 text-xs font-bold rounded-xl border transition flex items-center justify-center gap-1.5 ${criteria === 'ct' ? 'border-pink-500 bg-pink-50 text-pink-500' : 'border-gray-100 text-gray-500'}">
+                                    <img src="${ITEM_IMAGES.ct}" class="w-4 h-4 object-contain"> CRYSTAL
+                                </button>
+                            </div>
+                        </div>
