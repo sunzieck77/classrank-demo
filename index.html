@@ -1434,9 +1434,7 @@
                 if (!container) return;
 
                 try {
-                    // 1. ดึงข้อมูลการตั้งค่ารางวัลจาก Firebase
                     const rewardsSnap = await get(ref(db, 'system/home_config/login_rewards'));
-                    
                     if (!rewardsSnap.exists()) {
                         container.innerHTML = `
                             <div class="w-full text-center text-gray-500 text-sm py-8 flex flex-col items-center">
@@ -1447,19 +1445,41 @@
                     }
 
                     const rewardsConfig = rewardsSnap.val();
-
-                    // 2. ดึงข้อมูลสถานะการล็อกอินของผู้ใช้ปัจจุบัน
                     const uid = window.appState?.user?.uid || Auth?.currentUser?.uid;
-                    let userStreak = { currentDay: 1, claimedToday: false };
+                    
+                    // 🌟 เพิ่มตัวแปร lastClaimDate เป็นค่าเริ่มต้น
+                    let userStreak = { currentDay: 1, claimedToday: false, lastClaimDate: '' };
                     
                     if (uid) {
                         const streakSnap = await get(ref(db, `users/${uid}/loginStreak`));
                         if (streakSnap.exists()) {
-                            userStreak = streakSnap.val();
+                            userStreak = { ...userStreak, ...streakSnap.val() };
                         }
                     }
 
-                    // 3. สร้าง HTML สำหรับการ์ดแต่ละวัน
+                    // 🌟 เพิ่ม Logic รีเซ็ตเมื่อขึ้นวันใหม่ 🌟
+                    const todayStr = new Date().toDateString();
+                    
+                    // ถ้าเคยกดรับไปแล้ว และวันที่ล่าสุดที่รับไม่ใช่วันนี้ (แปลว่าข้ามวันแล้ว)
+                    if (userStreak.claimedToday && userStreak.lastClaimDate !== todayStr) {
+                        userStreak.claimedToday = false; // ปลดล็อกให้กดรับได้
+                        userStreak.currentDay += 1;      // เลื่อนไปวันที่ถัดไป
+                        
+                        // ถ้ารับครบ 7 วันแล้ว ให้วนกลับไปวันที่ 1 ใหม่
+                        if (userStreak.currentDay > 7) {
+                            userStreak.currentDay = 1;
+                        }
+
+                        // อัปเดตกลับไปที่ Firebase อัตโนมัติ
+                        if (uid) {
+                            await update(ref(db, `users/${uid}/loginStreak`), {
+                                currentDay: userStreak.currentDay,
+                                claimedToday: false
+                            });
+                        }
+                    }
+
+                    // 3. สร้าง HTML สำหรับการ์ดแต่ละวัน...
                     let html = '';
                     const days = [1, 2, 3, 4, 5, 6, 7];
                     
@@ -1468,7 +1488,6 @@
                         if (!reward) return; 
 
                         const isLastDay = dayNum === 7;
-                        // ตรวจสอบสถานะ: รับแล้ว, รอรับ, ยังไม่ถึง
                         const isClaimed = dayNum < userStreak.currentDay || (dayNum === userStreak.currentDay && userStreak.claimedToday);
                         const isClaimable = dayNum === userStreak.currentDay && !userStreak.claimedToday;
                         
@@ -13100,10 +13119,11 @@
 
                     const reward = sysSnap.val();
                     
-                    // 2. ตรวจสอบฝั่งผู้ใช้ (ถ้าไม่มีข้อมูล ให้ตั้งค่าเริ่มต้นวันแรกให้เลย ไม่ต้องโยน Error)
-                    let userStreak = { currentDay: 1, claimedToday: false };
+                    // 2. ตรวจสอบฝั่งผู้ใช้ (เพิ่ม lastClaimDate ไว้ในโครงสร้างเริ่มต้น)
+                    let userStreak = { currentDay: 1, claimedToday: false, lastClaimDate: '' };
                     if (userStreakSnap.exists()) {
-                        userStreak = userStreakSnap.val();
+                        // ใช้ Spread Operator เพื่อป้องกัน property หาย
+                        userStreak = { ...userStreak, ...userStreakSnap.val() };
                     }
 
                     // 3. ตรวจสอบเงื่อนไขความถูกต้อง
@@ -13112,9 +13132,10 @@
                     }
 
                     let updates = {};
-                    // บันทึกสถานะการรับรางวัล (และล็อกค่าวันปัจจุบันเอาไว้กรณีเป็นผู้ใช้ใหม่)
+                    // 🌟 จุดแก้ไขสำคัญ: บันทึกสถานะการรับรางวัล พร้อมกับ "วันที่ล่าสุด" ที่กดรับ (lastClaimDate)
                     updates[`users/${uid}/loginStreak/claimedToday`] = true;
                     updates[`users/${uid}/loginStreak/currentDay`] = userStreak.currentDay;
+                    updates[`users/${uid}/loginStreak/lastClaimDate`] = new Date().toDateString();
 
                     // 4. มอบของรางวัลโดยเช็ค Type เพื่อยิงเข้า Database ถูกจุด
                     const t = reward.itemType;
