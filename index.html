@@ -341,7 +341,7 @@
 
         <!-- Main Layout -->
 
-        <div id="maintenance-view" class="hidden absolute inset-0 z-[9999] flex-col items-center justify-center p-6 text-center" style="background-background-color: #FFF0F5;">
+        <div id="maintenance-view" class="hidden absolute inset-0 z-[9999] flex-col items-center justify-center p-6 text-center" style="background-color: #FFF0F5;">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center max-w-sm w-full relative overflow-hidden border border-pink-100">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
                 <div class="w-32 h-32 mb-4 animate-bounce-slow relative z-10">
@@ -1962,14 +1962,14 @@
                             img.onload = resolve;
                             img.onerror = resolve;
                         }));
-                        await Promise.all(shopImagePromises);
+                        //await Promise.all(shopImagePromises);
                     } catch (shopError) {
                         console.error("Shop Preload Failed:", shopError);
                         // โหลดร้านค้าไม่สำเร็จไม่ส่งผลให้ระบบหลักค้าง ทำงานต่อได้
                     }
 
                     // ขั้นที่ 4: ตรวจสอบไอเทมสวมใส่และการคำนวณบัฟพิเศษ
-                    await updateProgress(90, 'กำลังตรวจสอบบัฟและไอเทม...', 200);
+                    await updateProgress(90, 'กำลังตรวจสอบบัฟและไอเทม...', 100);
 
                     // ขั้นที่ 5: เสร็จสิ้น
                     await updateProgress(100, 'พร้อมแล้ว เมี๊ยว!', 300);
