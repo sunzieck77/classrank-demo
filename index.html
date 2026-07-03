@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="only light">
+    <meta name="supported-color-schemes" content="light">
     <title>Cat Room</title>
     
-    <!-- External UI Libraries -->
-    <script>
-        tailwind.config = {
-            darkMode: false
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
@@ -22,7 +17,13 @@
 
     <!-- Tailwind Configuration -->
     <script>
+        document.documentElement.style.setProperty(
+            "color-scheme",
+            "only light",
+            "important"
+        );
         tailwind.config = {
+            darkMode: false,
             theme: {
                 extend: {
                     fontFamily: {
@@ -39,13 +40,19 @@
                 }
             }
         }
+        document.documentElement.classList.remove("dark");
     </script>
     <style>
+        *{
+            color-scheme: inherit;
+        }
         :root {
-            color-scheme: light;
+            
+            color-scheme: only light !important;
         }
         /* Fixed Mobile App Viewport Constraints */
         body, html {
+            color-scheme: only light;
             margin: 0;
             padding: 0;
             height: 100dvh;
@@ -57,6 +64,17 @@
             overscroll-behavior-y: none;
             display: flex;
             justify-content: center;
+        }
+        @media (prefers-color-scheme: dark) {
+            html,
+            body,
+            :root{
+                color-scheme: only light !important;
+                background-color: #f3f4f6 !important;
+                color: #1f2937 !important;
+         
+            }
+
         }
         
         #app-container {
