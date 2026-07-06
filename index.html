@@ -4693,22 +4693,41 @@
         async showStudentProfileDetail(studentUid) {
             Loader.show();
             try {
-                // ดึงข้อมูลผู้ใช้ และ รายชื่อฉายาทั้งหมด
-                let titlesSnap = null;
-                if (!window.renderStore.playerTitles || Object.keys(window.renderStore.playerTitles).length === 0) {
-                    titlesSnap = await get(ref(db, 'player_titles'));
-                    if (titlesSnap.exists()) window.renderStore.playerTitles = titlesSnap.val();
+                // 🌟 1. ดึงข้อมูล player_titles และ users พร้อมกัน (Parallel Fetching) เพื่อลดเวลารอ
+                const titlesPromise = (!window.renderStore.playerTitles || Object.keys(window.renderStore.playerTitles).length === 0)
+                    ? get(ref(db, 'player_titles'))
+                    : Promise.resolve(null);
+                    
+                const userPromise = get(ref(db, `users/${studentUid}`));
+
+                const [titlesSnap, snap] = await Promise.all([titlesPromise, userPromise]);
+
+                if (titlesSnap && titlesSnap.exists()) {
+                    window.renderStore.playerTitles = titlesSnap.val();
                 }
-                const snap = await get(ref(db, `users/${studentUid}`));
-                
-                Loader.hide();
-                if (!snap.exists()) return;
+
+                if (!snap.exists()) {
+                    Loader.hide();
+                    return;
+                }
                 
                 const u = snap.val();
                 const avatar = u.profileImage || DEFAULT_AVATAR;
                 const banner = u.bannerImage || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80';
                 const items = u.items || { cs: 0, ct: 0, ticket: 0, sc: 0 };
                 const currentFrame = getProfileFrame(u);
+
+                const preloadImage = (src) => new Promise((resolve) => {
+                    if (!src) return resolve();
+                    const img = new Image();
+                    img.onload = resolve;
+                    img.onerror = resolve; // ต่อให้โหลดภาพไม่สำเร็จ ก็ให้ทำงานต่อไม่ให้โค้ดค้าง
+                    img.src = src;
+                });
+
+                await Promise.all([
+                    preloadImage(currentFrame)
+                ]);
                 
                 const ctVal = items.ct || 0;
                 const rankBadge = getRankBadge(ctVal);
@@ -4766,7 +4785,7 @@
                     
                     equippedCardsHTML += `</div>`;
                 }
-                
+                Loader.hide();
                 Swal.fire({
                     html: `
                         <div class="text-left font-sans -mx-4 sm:-mx-6 -mt-6 sm:-mt-8 overflow-hidden rounded-t-[2rem] max-h-[85vh] flex flex-col">
@@ -4901,6 +4920,13 @@
                     `,
                     confirmButtonText: 'ปิดหน้าต่าง',
                     confirmButtonColor: '#27D6F5',
+                    showClass: {
+                        // ช่วยให้ Animation ตอนเปิดนุ่มนวลขึ้น ลดอาการเด้งกระตุก
+                        popup: 'animate__animated animate__fadeInUp animate__faster'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutDown animate__faster'
+                    },
                     customClass: {
                         popup: 'rounded-[2rem] p-0 overflow-hidden w-[95%] max-w-sm',
                         confirmButton: 'rounded-xl font-bold py-2.5 px-6 mb-5'
