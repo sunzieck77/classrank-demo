@@ -4672,7 +4672,6 @@
 
         async showStudentProfileDetail(studentUid) {
             try {
-                // 🌟 1. ดึงข้อมูล player_titles และ users พร้อมกัน (Parallel Fetching) เพื่อลดเวลารอ
                 const titlesPromise = (!window.renderStore.playerTitles || Object.keys(window.renderStore.playerTitles).length === 0)
                     ? get(ref(db, 'player_titles'))
                     : Promise.resolve(null);
