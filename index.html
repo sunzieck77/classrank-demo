@@ -5263,7 +5263,7 @@
                     const data = snap.val();
                     window.renderStore.assignments = window.renderStore.assignments || {};
 
-                    html += `<div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-24 space-y-3">`;
+                    html += `<div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-32 space-y-3">`;
                     for(const [id, a] of Object.entries(data)) {
                         window.renderStore.assignments[id] = a;
                         html += `
@@ -5279,6 +5279,9 @@
                             </div>
                         `;
                     }
+
+                    // 2. เพิ่มกล่องพื้นที่ว่างดันท้ายลิสต์ก่อนปิด tag div
+                    html += `<div class="h-24 w-full shrink-0"></div>`; 
                     html += `</div>`;
                 }
                 container.innerHTML = html;
@@ -5361,19 +5364,39 @@
 
                 let listHtml = `
                     <div class="flex-1 flex flex-col w-full h-full min-h-0 overflow-hidden">
-                        <div class="shrink-0 px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 border-b border-gray-200 flex items-center gap-2 sm:gap-3">
-                            <button onclick="app.navigate('tasks')" class="text-gray-500 hover:text-dark bg-white w-8 h-8 sm:w-9 sm:h-9 rounded-full shadow-sm flex items-center justify-center shrink-0 border border-gray-100 transition active:scale-90"><i class="fa-solid fa-arrow-left"></i></button>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-bold text-base sm:text-lg text-dark truncate leading-tight">${title}</h3>
-                                <p class="text-[9px] sm:text-[10px] text-gray-500 font-bold tracking-wider uppercase mt-0.5">ตรวจงานห้อง ${c}/${r}</p>
+                        <div class="shrink-0 px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 border-b border-gray-200 flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                <button onclick="app.navigate('tasks')" class="text-gray-500 hover:text-dark bg-white w-8 h-8 sm:w-9 sm:h-9 rounded-full shadow-sm flex items-center justify-center shrink-0 border border-gray-100 transition active:scale-90"><i class="fa-solid fa-arrow-left"></i></button>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-bold text-base sm:text-lg text-dark truncate leading-tight">${title}</h3>
+                                    <p class="text-[9px] sm:text-[10px] text-gray-500 font-bold tracking-wider uppercase mt-0.5">ตรวจงานห้อง ${c}/${r}</p>
+                                </div>
+                            </div>
+                            
+                            ${students.length > 0 ? `
+                            <button onclick="app.gradeAllAssignments('${assignId}', '${c}', '${r}')" class="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-2 rounded-xl text-[10px] sm:text-xs shadow-sm active:scale-95 transition flex items-center gap-1.5 border border-emerald-400">
+                                <i class="fa-solid fa-check-double"></i> ตรวจผ่านทั้งหมด
+                            </button>
+                            ` : ''}
+                        </div>
+
+                        ${students.length > 0 ? `
+                        <div class="shrink-0 px-4 sm:px-5 pt-3">
+                            <div class="relative">
+                                <input type="text" 
+                                       oninput="const q = this.value.toLowerCase(); document.querySelectorAll('.student-grade-row').forEach(row => { row.style.display = row.getAttribute('data-search').toLowerCase().includes(q) ? 'flex' : 'none'; });" 
+                                       placeholder="ค้นหาชื่อ หรือ เลขที่..." 
+                                       class="w-full p-2.5 pl-9 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-primary bg-gray-50 focus:bg-white transition-colors">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
                             </div>
                         </div>
-                `;
+                        ` : ''}
+                        `;
 
                 if(students.length === 0) {
                     listHtml += `<div class="flex-1 flex flex-col items-center justify-center text-gray-400 pb-10">ไม่พบรายชื่อนักเรียนในห้องนี้</div>`;
                 } else {
-                    listHtml += `<div class="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-5 py-2 sm:py-3 pb-24 space-y-2.5 sm:space-y-3">`;
+                    listHtml += `<div class="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-5 py-2 sm:py-3 pb-32 space-y-2.5 sm:space-y-3">`;
                     window.renderStore.students = window.renderStore.students || {};
                     window.renderStore.submissions = window.renderStore.submissions || {};
 
@@ -5383,8 +5406,9 @@
                         window.renderStore.students[st.uid] = st;
                         window.renderStore.submissions[`${assignId}_${st.uid}`] = sub;
 
+                        // 🌟 เพิ่มคลาส student-grade-row และ data-search ให้กับรายการนักเรียน เพื่อให้สคริปต์ค้นหาทำงานได้
                         listHtml += `
-                            <div class="p-2.5 sm:p-3.5 rounded-xl border ${stColor} shadow-sm flex items-center justify-between transition-all" id="student-row-${st.uid}">
+                            <div class="student-grade-row p-2.5 sm:p-3.5 rounded-xl border ${stColor} shadow-sm flex items-center justify-between transition-all" id="student-row-${st.uid}" data-search="${st.number} ${st.fullName}">
                                 <div class="min-w-0 pr-2 flex-1">
                                     <div class="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">เลขที่ ${st.number}</div>
                                     <div class="font-bold text-xs sm:text-sm text-dark truncate">${st.fullName}</div>
@@ -5395,9 +5419,90 @@
                             </div>
                         `;
                     });
+
+                    // แทรกกล่องพื้นที่ว่าง (Spacer) เพื่อดันท้ายลิสต์ไม่ให้จมลงไปใน Nav
+                    listHtml += `<div class="h-24 w-full shrink-0"></div>`;
+                    
                     listHtml += `</div></div>`;
                 }
                 content.innerHTML = listHtml;
+            },
+            async gradeAllAssignments(assignId, c, r) {
+                const students = Object.values(window.renderStore.students || {});
+                if (students.length === 0) return;
+
+                const { value: ctAmount } = await Swal.fire({
+                    title: '<span style="font-family: \'Kanit\'; font-weight: bold;">ตรวจผ่านทั้งห้อง</span>',
+                    html: `
+                        <div class="text-left font-sans text-sm mt-2">
+                            <p class="text-gray-600 mb-3">คุณกำลังจะปรับสถานะงานของนักเรียนห้อง <b class="text-primary">${c}/${r}</b> จำนวน <b>${students.length} คน</b> ให้เป็น <span class="text-emerald-500 font-bold">"ตรวจแล้ว"</span> ทั้งหมด</p>
+                            <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">ให้ Crystal (CT) เท่ากันทุกคน</label>
+                            <input type="number" id="swal-grade-all-ct" value="10" class="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50 outline-none focus:border-emerald-500 font-bold text-emerald-600" min="0" max="100">
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-check-double mr-1"></i> ยืนยันตรวจผ่านทุกคน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#10B981',
+                    customClass: { popup: 'rounded-3xl' },
+                    preConfirm: () => {
+                        return parseInt(document.getElementById('swal-grade-all-ct').value) || 0;
+                    }
+                });
+
+                if (ctAmount !== undefined) {
+                    Loader.show();
+                    try {
+                        let updates = {};
+
+                        // วนลูปสร้างคำสั่งอัปเดตสำหรับนักเรียนทุกคนในห้อง
+                        for (const st of students) {
+                            const currentSub = window.renderStore.submissions[`${assignId}_${st.uid}`] || {};
+                            
+                            // 1. อัปเดตสถานะการส่งงานเป็น "ตรวจแล้ว"
+                            const newSubData = {
+                                status: 'ตรวจแล้ว',
+                                crystal: ctAmount,
+                                note: currentSub.note || ''
+                            };
+
+                            // เก็บของขวัญแนบเดิมไว้ (ถ้าเคยแนบไว้ก่อนหน้านี้)
+                            if (currentSub.attachment) {
+                                newSubData.attachment = currentSub.attachment;
+                            }
+
+                            updates[`submissions/${assignId}/${st.uid}`] = newSubData;
+                            window.renderStore.submissions[`${assignId}_${st.uid}`] = newSubData;
+
+                            // 2. แจก Crystal (CT) เพิ่มเข้าตัวเด็ก (กรณีที่ตั้งให้มากกว่า 0)
+                            if (ctAmount > 0) {
+                                const currentCt = (st.items && st.items.ct) || 0;
+                                updates[`users/${st.uid}/items/ct`] = currentCt + ctAmount;
+                                if (!st.items) st.items = {};
+                                st.items.ct = currentCt + ctAmount;
+                            }
+                        }
+
+                        // ส่งคำสั่งอัปเดตขึ้น Firebase พร้อมกันในรอบเดียว (Atomic Batch Update)
+                        await update(ref(db), updates);
+                        Loader.hide();
+
+                        Toast.fire({ icon: 'success', title: `ตรวจผ่านและแจก ${ctAmount} CT สำเร็จแล้ว!` });
+
+                        // โหลดรีเฟรชหน้าจอรายการใหม่ เพื่อเปลี่ยนสีกล่องทั้งหมดเป็นสีเขียวทันที
+                        this.gradeAssignment(c, r, assignId);
+
+                    } catch (error) {
+                        Loader.hide();
+                        console.error("Grade All Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถบันทึกการตรวจงานทั้งหมดได้ โปรดลองอีกครั้ง',
+                            customClass: { popup: 'rounded-3xl' }
+                        });
+                    }
+                }
             },
             
             openGradeModal(assignId, studentUid) {
@@ -12689,6 +12794,8 @@
                                 <option value="frame" ${att && att.type==='frame'?'selected':''}>กรอบโปรไฟล์</option>
                                 <option value="cat" ${att && att.type==='cat'?'selected':''}>แมว</option>
                                 <option value="food" ${att && att.type==='food'?'selected':''}>อาหารแมว</option>
+                                <option value="sc" ${att && att.type==='sc'?'selected':''}>S-Card (SC)</option>
+                                <option value="cs" ${att && att.type==='cs'?'selected':''}>ClassStar (CS)</option>
                                 <option value="cc" ${att && att.type==='cc'?'selected':''}>Cat Coin (CC)</option>
                                 <option value="cd" ${att && att.type==='cd'?'selected':''}>Cat Diamond (CD)</option>
                                 <option value="ce" ${att && att.type==='ce'?'selected':''}>Cat Emerald (CE)</option>
@@ -12734,11 +12841,13 @@
                                 if(type === 'food') {
                                     amount = parseInt(document.getElementById('attach-amount').value) || 1;
                                 }
-                            } else if (['cc', 'cd', 'ce'].includes(type)) {
+                            } else if (['cc', 'cd', 'ce', 'sc', 'cs'].includes(type)) {
                                 const amtInp = document.getElementById('attach-amount');
                                 amount = parseInt(amtInp.value) || 0;
-                                if(amount <= 0) { Swal.showValidationMessage('กรุณาใส่จำนวนแร่ที่ถูกต้อง'); return false; }
-                                itemName = type === 'cc' ? 'Cat Coin' : (type === 'cd' ? 'Cat Diamond' : 'Cat Emerald');
+                                if(amount <= 0) { Swal.showValidationMessage('กรุณาใส่จำนวนที่ถูกต้อง'); return false; }
+                                
+                                const nameMap = { cc: 'Cat Coin', cd: 'Cat Diamond', ce: 'Cat Emerald', sc: 'S-Card (SC)', cs: 'ClassStar (CS)' };
+                                itemName = nameMap[type] || type.toUpperCase();
                             }
                             
                             attachment = { type, itemId, itemName, amount, claimed: false };
@@ -12783,7 +12892,6 @@
                 }
             });
         };
-
         Views.showAssignmentDetail = function(aId) {
             const aData = window.renderStore.assignments[aId] || {};
             const mySub = window.renderStore.submissions[aId] || { status: 'ยังไม่ส่ง', crystal: 0, note: '-' };
@@ -12801,6 +12909,9 @@
             if (att) {
                 let iconStr = '<i class="fa-solid fa-gift text-pink-400 text-xl"></i>';
                 if(['cc','cd','ce'].includes(att.type)) iconStr = `<img src="${CAT_ASSETS[att.type]}" class="w-8 h-8 object-contain drop-shadow">`;
+                // 🌟 เพิ่มเงื่อนไขให้แสดงรูปภาพ SC และ CS
+                else if(att.type === 'sc') iconStr = `<img src="${ITEM_IMAGES.sc}" class="w-8 h-8 object-contain drop-shadow">`;
+                else if(att.type === 'cs') iconStr = `<img src="${ITEM_IMAGES.cs}" class="w-8 h-8 object-contain drop-shadow">`;
                 
                 let btnHtml = att.claimed 
                     ? `<span class="bg-gray-100 text-gray-400 font-bold px-3 py-1.5 rounded-xl text-[10px]">รับแล้ว</span>`
@@ -13475,6 +13586,7 @@
             deleteAssignment: (c, a) => Views.deleteAssignment(c, a),
             gradeAssignment: (c, r, a) => Views.gradeAssignment(c, r, a),
             openGradeModal: (aId, uId) => Views.openGradeModal(aId, uId),
+            gradeAllAssignments: (assignId, c, r) => Views.gradeAllAssignments(assignId, c, r),
             checkMailBadge: () => Views.checkMailBadge(),
             showMailbox: () => Views.showMailbox(),
             claimMail: (id, cat, drive) => Views.claimMail(id, cat, drive),
@@ -13982,8 +14094,12 @@
                             <select id="attach-item-id" class="flex-1 p-2.5 border rounded-xl text-sm bg-white font-bold" required>${opts}</select>
                             <input type="number" id="attach-amount" value="${att && att.type==='food'?att.amount:1}" min="1" class="w-16 p-2.5 border rounded-xl text-sm text-center font-bold" required placeholder="ชิ้น">
                         </div>`;
-                } else if (['cc', 'cd', 'ce'].includes(val)) {
-                    con.innerHTML = `<input type="number" id="attach-amount" value="${att && att.type===val?att.amount:100}" min="1" class="w-full p-2.5 border rounded-xl text-sm font-bold" required placeholder="ใส่จำนวน">`;
+                } else if (['cc', 'cd', 'ce', 'sc', 'cs'].includes(val)) {
+                    let defaultAmt = 100;
+                    if (val === 'sc') defaultAmt = 500;
+                    if (val === 'cs') defaultAmt = 10;
+                    
+                    con.innerHTML = `<input type="number" id="attach-amount" value="${att && att.type===val?att.amount:defaultAmt}" min="1" class="w-full p-2.5 border rounded-xl text-sm font-bold" required placeholder="ใส่จำนวน">`;
                 }
             },
             handleAttachStatusChange: (val) => {
@@ -14022,6 +14138,13 @@
                         const addAmount = parseInt(att.amount) || 0;
                         updates[`users/${uid}/catData/inventory/${att.type}`] = cur + addAmount;
                         if(appState.user.catData) appState.user.catData.inventory[att.type] = cur + addAmount;
+                    } else if (['sc', 'cs'].includes(att.type)) {
+                        // 🌟 เพิ่มการจัดการ SC และ CS ตรงนี้
+                        const cur = (appState.user.items?.[att.type]) || 0;
+                        const addAmount = parseInt(att.amount) || 0;
+                        updates[`users/${uid}/items/${att.type}`] = cur + addAmount;
+                        if(!appState.user.items) appState.user.items = {};
+                        appState.user.items[att.type] = cur + addAmount;
                     }
 
                     await update(ref(db), updates);
