@@ -3917,7 +3917,6 @@
                         <button onclick="app.navigate('home')" class="absolute top-4 left-4 z-[110] w-6 h-6 rounded-full bg-white/50 flex items-center justify-center text-dark hover:bg-white transition active:scale-90 shadow-sm border border-gray-200">
                             <i class="fa-solid fa-chevron-left text-sm"></i>
                         </button>
-                        <!-- style="background:url('https://i.pinimg.com/1200x/13/4b/16/134b1608b90c7031d10429cd55564601.jpg'); background-size: cover; background-position: center; -->
                         <div id="podium-container" class="w-full shrink-0"></div>
                         <div class="shrink-0 mt-4 sm:mt-4 px-4 sm:px-5 relative z-10">
                             <div class="flex flex-row sm:items-center justify-between gap-3 mb-3">
@@ -3928,21 +3927,20 @@
                                 </h3>
                                 
                                 <div class="flex bg-gray-200/80 p-0.5 rounded-xl text-xs font-semibold shadow-inner self-end sm:self-auto">
-                                    <button onclick="app.setRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${appState.rankingCriteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <button onclick="app.setRankingCriteria('cs')" id="rank-tab-cs" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 ${criteria === 'cs' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
                                         <img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain"> <p class="hidden min-[320px]:flex"> ClassStar </p>
                                     </button>
-                                    <button onclick="app.setRankingCriteria('ct')" id="rank-tab-ct" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${appState.rankingCriteria === 'ct' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <button onclick="app.setRankingCriteria('ct')" id="rank-tab-ct" class="px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${criteria === 'ct' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
                                         <img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain"><p class="hidden min-[320px]:flex"> Crystal </p>
                                     </button>
                                 </div>
                             </div>
                             
                             <div class="flex bg-gray-200/80 p-1 rounded-xl text-xs font-semibold shadow-inner w-full mb-4">
-                                <button onclick="app.setRankingScope('class')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${(!appState.rankingScope || appState.rankingScope === 'class') ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                <button onclick="app.setRankingScope('class')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${scope === 'class' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
                                     <i class="fa-solid fa-chalkboard-user"></i> ระดับห้องเรียน
                                 </button>
-                                
-                                <button onclick="app.setRankingScope('school')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${appState.rankingScope === 'school' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
+                                <button onclick="app.setRankingScope('school')" class="flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${scope === 'school' ? 'bg-white text-primary shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700'}">
                                     <i class="fa-solid fa-school"></i> ระดับโรงเรียน
                                 </button>
                             </div>
@@ -3987,16 +3985,16 @@
                         appState.leaderboardCache.lastFetch = now;
                     }
 
-                    let students = [];
-                    const cachedStudents = appState.leaderboardCache.students;
-                    
+                    // คัดกรองข้อมูลจาก Cache
+                    let filteredStudents = [];
                     if (scope === 'class' && appState.user) {
-                        students = cachedStudents.filter(u => u.class === appState.user.class && u.room === appState.user.room);
+                        filteredStudents = appState.leaderboardCache.students.filter(u => u.class === appState.user.class && u.room === appState.user.room);
                     } else {
-                        students = [...cachedStudents]; 
+                        filteredStudents = [...appState.leaderboardCache.students];
                     }
 
-                    students.sort((a, b) => {
+                    // เรียงลำดับข้อมูล
+                    filteredStudents.sort((a, b) => {
                         const scoreA = (a.items && a.items[criteria]) || 0;
                         const scoreB = (b.items && b.items[criteria]) || 0;
                         return scoreB - scoreA;
@@ -4004,7 +4002,7 @@
 
                     let myRankHtml = '';
                     if (appState.user && appState.user.role === 'student') {
-                        const myIndex = students.findIndex(s => s.uid === appState.user.uid);
+                        const myIndex = filteredStudents.findIndex(s => s.uid === appState.user.uid);
                         const myRank = myIndex !== -1 ? myIndex + 1 : '-';
                         const myScore = (appState.user.items && appState.user.items[criteria]) || 0;
                         const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-4 h-4 object-contain">` : `<img src="${ITEM_IMAGES.ct}" class="w-4 h-4 object-contain">`;
@@ -4024,24 +4022,24 @@
                         `;
                     }
 
-                    if (students.length === 0) {
+                    if (filteredStudents.length === 0) {
                         podiumContainer.innerHTML = '';
                         listContainer.innerHTML = myRankHtml + `<div class="text-center py-8 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
                         pagContainer.innerHTML = '';
                         return;
                     }
 
-                    const totalItems = students.length;
+                    const totalItems = filteredStudents.length;
                     const totalPages = Math.ceil(totalItems / limit);
                     const currentPage = Math.min(Math.max(page, 1), totalPages);
                     appState.rankingPage = currentPage; 
 
                     const startIndex = (currentPage - 1) * limit;
                     const endIndex = Math.min(startIndex + limit, totalItems);
-                    const pageData = students.slice(startIndex, endIndex);
+                    const pageData = filteredStudents.slice(startIndex, endIndex);
 
                     // ------------------ ส่วนจัดการ Podium (Top 3) ------------------
-                    if (currentPage === 1 && students.length > 0) {
+                    if (currentPage === 1 && filteredStudents.length > 0) {
                         const getPodiumAvatar = (st, rank, isCenter = false, bgGradient = "") => {
                             if (!st) return `<div class="w-[30%] max-w-[120px]"></div>`;
                             
@@ -4081,12 +4079,9 @@
                                     <div class="w-full h-full bg-[url('https://i.pinimg.com/1200x/13/4b/16/134b1608b90c7031d10429cd55564601.jpg')] bg-cover bg-center"></div>
                                     <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
                                 </div>
-
-                                ${getPodiumAvatar(students[1], 2, false, 'from-cyan-400 to-blue-400/10')}
-
-                                ${getPodiumAvatar(students[0], 1, true, 'from-orange-400 to-amber-400/10')}
-
-                                ${getPodiumAvatar(students[2], 3, false, 'from-pink-400 to-purple-400/10')}
+                                ${getPodiumAvatar(filteredStudents[1], 2, false, 'from-cyan-400 to-blue-400/10')}
+                                ${getPodiumAvatar(filteredStudents[0], 1, true, 'from-orange-400 to-amber-400/10')}
+                                ${getPodiumAvatar(filteredStudents[2], 3, false, 'from-pink-400 to-purple-400/10')}
                             </div>
                         `;
                         podiumContainer.style.display = 'block';
@@ -4096,52 +4091,41 @@
                     }
 
                     // ------------------ ส่วน Render List ด้านล่าง ------------------
-                    let listHtml = myRankHtml; 
-                    pageData.forEach((st, idx) => {
+                    const rowsHtml = pageData.map((st, idx) => {
                         const absoluteRank = startIndex + idx + 1;
-                        
-                        if (currentPage === 1 && absoluteRank <= 3) return;
+                        if (currentPage === 1 && absoluteRank <= 3) return '';
 
                         const score = (st.items && st.items[criteria]) || 0;
                         const avatar = st.profileImage || DEFAULT_AVATAR;
                         const currentFrame = getProfileFrame(st);
                         const displayN = st.displayName || st.fullName;
                         const catImg = st.catData?.equippedCat || CAT_ASSETS.starterCat;
-                   
-                        
-                        let rankBadge = `<span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>`;
+
                         let rankBg = 'bg-white hover:border-gray-200';
-                        if (absoluteRank === 4) rankBg = "border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782885855/FIRSTMEET_ofnf4g.jpg')]";      // ลำดับที่ 4 สีเหลือง
-                        else if (absoluteRank === 5) rankBg = "bg-blue-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886611/FIRSTMEET_1_c2fwsn.jpg')]";   // ลำดับที่ 5 สีฟ้า
-                        else if (absoluteRank === 6) rankBg = "bg-pink-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886733/FIRSTMEET_2_qe90m5.jpg')]";   // ลำดับที่ 6 สีชมพู
+                        if (absoluteRank === 4) rankBg = "border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782885855/FIRSTMEET_ofnf4g.jpg')]";
+                        else if (absoluteRank === 5) rankBg = "bg-blue-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886611/FIRSTMEET_1_c2fwsn.jpg')]";
+                        else if (absoluteRank === 6) rankBg = "bg-pink-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782886733/FIRSTMEET_2_qe90m5.jpg')]";
                         else rankBg = "bg-pink-200 border-4 border-white bg-cover bg-center bg-[url('https://res.cloudinary.com/du7bh92n6/image/upload/v1782888767/FIRSTMEET_4_babaea.jpg')]";
 
                         const scoreIcon = criteria === 'cs' ? `<img src="${ITEM_IMAGES.cs}" class="w-5 h-5 object-contain" loading="lazy">` : `<img src="${ITEM_IMAGES.ct}" class="w-5 h-5 object-contain" loading="lazy">`;
 
-                        listHtml += `
+                        return `
                             <div onclick="app.showStudentProfileDetail('${st.uid}')" class="p-3 sm:p-3.5 drop-shadow-md rounded-xl border ${rankBg} flex items-center justify-between transition-all duration-200 shadow-sm cursor-pointer hover:border-pink-500/40 active:scale-[0.98]">
                                 <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
                                     <div class="w-6 sm:w-8 flex justify-center items-center shrink-0">
-                                        ${rankBadge}
+                                        <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-500">${absoluteRank}</span>
                                     </div>
                                     <div class="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 select-none">
-                                        <img src="${avatar}" 
-                                            class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner"
-                                            onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'"
-                                            alt="${st.fullName}" loading="lazy">
+                                        <img src="${avatar}" class="w-[90%] h-[90%] rounded-full object-cover bg-white shadow-inner" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}'" alt="${st.fullName}" loading="lazy">
                                         <img src="${currentFrame}" class="absolute inset-0 w-full h-full pointer-events-none object-contain scale-[1.18]" alt="Profile Frame" loading="lazy">
                                         <div class="absolute -right-2 -bottom-1 w-6 h-6 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
                                             <img src="https://drive.google.com/thumbnail?id=${catImg}&sz=s400" class="w-full h-full object-contain" loading="lazy">
                                         </div>
                                     </div>
                                     <div class="min-w-0 flex-1 pl-1">
-                                        <div class="font-bold text-xs sm:text-sm truncate" 
-                                            style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.9);">
-                                            ${displayN}
-                                        </div>
-                                        
+                                        <div class="font-bold text-xs sm:text-sm truncate" style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.9);">${displayN}</div>
                                         <div class="flex justify-start mt-1">
-                                            <span class="bg-white px-3 rounded-full text-gray-500 shadow-sm border border-gray-100 text-center w-full max-w-max text-[8px] sm:text-[8px] font-semibold truncate">
+                                            <span class="bg-white px-3 rounded-full text-gray-500 shadow-sm border border-gray-100 text-center w-full max-w-max text-[8px] font-semibold truncate">
                                                 ม.${st.class}/${st.room} • เลขที่ ${st.number}
                                             </span>
                                         </div>
@@ -4153,20 +4137,16 @@
                                 </div>
                             </div>
                         `;
-                    });
-                    
-                    listContainer.innerHTML = listHtml;
+                    }).join('');
+
+                    listContainer.innerHTML = myRankHtml + rowsHtml;
 
                     pagContainer.innerHTML = `
-                        <button onclick="app.changeRankingPage(-1)" 
-                                ${currentPage === 1 ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                        <button onclick="app.changeRankingPage(-1)" ${currentPage === 1 ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'}>
                             <i class="fa-solid fa-chevron-left"></i> ก่อนหน้า
                         </button>
-                        <span class="text-xs font-bold text-gray-500">
-                            หน้า ${currentPage} / ${totalPages}
-                        </span>
-                        <button onclick="app.changeRankingPage(1)" 
-                                ${currentPage === totalPages ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'} >
+                        <span class="text-xs font-bold text-gray-500">หน้า ${currentPage} / ${totalPages}</span>
+                        <button onclick="app.changeRankingPage(1)" ${currentPage === totalPages ? 'disabled class="text-gray-300 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-bold"' : 'class="text-gray-600 hover:text-pink-500 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"'}>
                             ถัดไป <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     `;
@@ -4691,7 +4671,6 @@
             },
 
         async showStudentProfileDetail(studentUid) {
-            Loader.show();
             try {
                 // 🌟 1. ดึงข้อมูล player_titles และ users พร้อมกัน (Parallel Fetching) เพื่อลดเวลารอ
                 const titlesPromise = (!window.renderStore.playerTitles || Object.keys(window.renderStore.playerTitles).length === 0)
