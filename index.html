@@ -100,6 +100,36 @@
 
         .item-card-shadow { box-shadow: 0 4px 15px -3px rgba(39, 214, 245, 0.2); }
 
+       @keyframes gold-shine-diagonal {
+        0% {
+            background-position: 0% 0%;
+        }
+        100% {
+            background-position: 100% 100%;
+        }
+        }
+
+        .animate-gold-shine {
+        /* ใช้แนวเฉียง 135deg และจัดวางสีแบบสมมาตร (Mirror) 
+            โดยล็อกสีหัวและท้ายให้จบด้วยสีทองเข้ม (#b45309) เหมือนกัน */
+        background: linear-gradient(
+            135deg,
+            #b45309 0%,
+            #d97706 15%,
+            #facc15 30%,
+            #fef08a 45%,
+            #ffffff 50%,
+            #fef08a 55%,
+            #facc15 70%,
+            #d97706 85%,
+            #b45309 100%
+        );
+        /* ขยายขนาดพื้นหลังใหญ่ขึ้น 4 เท่า ทั้งกว้างและสูง */
+        background-size: 400% 400%;
+        /* แสงเงาจะวิ่งทแยงมุมอย่างนุ่มนวลและวนลูปแบบไร้รอยต่อ 100% */
+        animation: gold-shine-diagonal 5s ease-in-out infinite alternate;
+        }
+
         @keyframes floatSlow {
             0%, 100% { transform: translate3d(0, 0, 0); }
             50% { transform: translate3d(0, -6px, 0); }
@@ -5588,56 +5618,69 @@
                             
                             const totalQty = parseInt(data.quantity) || 1;
                             const totalPrice = data.price * totalQty;
-
+                            console.log(data);
+                            
                             const cardGrade = data.cardGrade || "A";
+                            let displayGrade = data.cardGrade || 'ทั่วไป';
                             let gradeColor = "text-gray-500 bg-gray-50 border-gray-100";
-                            if (cardGrade.includes("SSS")) {
+                            
+                            // กำหนด Class พื้นหลังเริ่มต้นสำหรับการ์ดปกติ
+                            let cardContainerClass = "bg-white border-gray-100";
+
+                            // ตรวจสอบว่า cardKey เริ่มต้นด้วย "item" หรือไม่
+                            if (data.cardKey && data.cardKey.startsWith("item")) {
+                                displayGrade = "พิเศษ";
+                                // เปลี่ยนสีป้ายบอกระดับ
+                                gradeColor = "text-amber-950 bg-white/80 border-amber-400 font-black shadow-sm backdrop-blur-sm";
+                                // เปลี่ยนพื้นหลังการ์ดให้เป็นสีทอง + เอฟเฟกต์แสงเงาวิ่ง (Glossy & Shining)
+                                cardContainerClass = "animate-gold-shine border-amber-300 shadow-amber-200/50";
+                            } else if (cardGrade.includes("SSS")) {
                                 gradeColor = "text-amber-600 bg-amber-50 border-amber-200 font-black";
                             } else if (cardGrade.includes("SS")) {
                                 gradeColor = "text-purple-600 bg-purple-50 border-purple-100 font-extrabold";
                             } else if (cardGrade.includes("S")) {
                                 gradeColor = "text-indigo-600 bg-indigo-50 border-indigo-100 font-bold";
-                            } else if (cardGrade.includes("R")) {
+                            } else if (cardGrade.includes("SPACIAL")) {
                                 gradeColor = "text-blue-600 bg-blue-50 border-blue-100";
                             } else if (cardGrade.includes("A")) {
                                 gradeColor = "text-emerald-600 bg-emerald-50 border-emerald-100 font-bold";
                             }
 
                             itemsHtml += `
-                                <div class="bg-white border border-gray-100 rounded-xl p-2 shadow-sm flex flex-col relative transition hover:shadow-md h-full">
+                                <div class="${cardContainerClass} border rounded-xl p-2 shadow-sm flex flex-col relative transition hover:shadow-md h-full overflow-hidden">
                                     ${hasPassword ? `<span class="absolute top-1.5 left-1.5 bg-red-50 text-red-500 text-[7px] px-1 py-0.5 rounded font-bold border border-red-100 z-10"><i class="fa-solid fa-lock"></i> ล็อก</span>` : ''}
                                     
-                                    <div class="w-full aspect-[3/4] bg-gray-50 border border-gray-100 rounded-lg mb-2 flex items-center justify-center text-gray-300 shadow-inner overflow-hidden p-1 relative">
-                                        <img src="${data.cardImage}" class="w-full h-full object-contain drop-shadow-sm" onerror="this.src='https://placehold.co/150x200?text=Card'">
+                                    <div class="w-full aspect-[3/4] bg-white/80 backdrop-blur-sm border border-white/60 rounded-lg mb-2 flex items-center justify-center text-gray-300 shadow-inner overflow-hidden p-1 relative">
+                                        <img src="${data.cardImage}" class="w-full h-full object-contain drop-shadow-sm transition hover:scale-105" onerror="this.src='https://placehold.co/150x200?text=Card'">
                                     </div>
                                     
-                                    <span class="text-[10px] font-extrabold text-dark text-center line-clamp-1 w-full px-0.5 mb-1">${data.cardName}</span>
+                                    <span class="text-[10px] font-extrabold text-gray-800 text-center line-clamp-1 w-full px-0.5 mb-1 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">${data.cardName}</span>
                                     
                                     <div class="text-center mb-1">
                                         <span class="inline-block text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${gradeColor}">
-                                            ระดับ ${data.cardGrade || 'ทั่วไป'}
+                                            ระดับ ${displayGrade}
                                         </span>
                                     </div>
                                     
-                                    <span class="text-[9px] text-gray-400 text-center font-bold mb-2">จำนวน ${totalQty} ใบ</span>
+                                    <span class="text-[9px] text-gray-600 text-center font-bold mb-2">จำนวน ${totalQty} ใบ</span>
                                     
-                                    <div class="flex items-center gap-1.5 border-t border-gray-50 pt-1.5 mb-2 w-full text-left">
-                                        <img src="${data.sellerImage || 'https://placehold.co/40x40?text=User'}" class="w-4 h-4 rounded-full object-cover border border-gray-200 shrink-0">
+                                    <div class="flex items-center gap-1.5 border-t border-black/5 pt-1.5 mb-2 w-full text-left">
+                                        <img src="${data.sellerImage || 'https://placehold.co/40x40?text=User'}" class="w-4 h-4 rounded-full object-cover border border-white shrink-0 shadow-sm">
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-[8px] text-gray-700 font-bold truncate leading-none">${isMyListing ? 'ตัวฉันเอง' : (data.sellerName || 'ไม่ระบุชื่อ')}</p>
+                                            <p class="text-[8px] text-gray-800 font-bold truncate leading-none">${isMyListing ? 'ตัวฉันเอง' : (data.sellerName || 'ไม่ระบุชื่อ')}</p>
                                         </div>
                                     </div>
                                     
                                     <div class="mt-auto w-full">
                                         ${isMyListing ? `
-                                            <button disabled class="w-full bg-gray-100 text-gray-400 border border-gray-200 py-1.5 rounded-lg text-[9px] font-bold cursor-not-allowed flex items-center justify-center gap-1 shadow-inner">
-                                                <i class="fa-solid fa-ban"></i> ของคุณ
-                                            </button>
+                                        <button disabled class="w-full bg-white/60 text-gray-500 border border-gray-300/50 py-1.5 rounded-lg text-[9px] font-bold cursor-not-allowed flex items-center justify-center gap-1 shadow-inner">
+                                            <i class="fa-solid fa-ban"></i> ของคุณ
+                                        </button>
                                         ` : `
-                                            <button onclick="app.buyMarketCard('${listingId}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-1.5 rounded-lg text-[9px] font-bold transition shadow-md active:scale-95 flex items-center justify-center gap-1">
-                                                <img src="${ITEM_IMAGES.sc}" class="w-3 h-3 object-contain filter brightness-100" onerror="this.src='https://placehold.co/20x20?text=SC'">
-                                                ${totalPrice.toLocaleString()} SC
-                                            </button>
+                                        <button onclick="app.buyMarketCard('${listingId}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-1.5 rounded-lg text-[9px] font-bold transition shadow-md active:scale-95 flex items-center justify-center gap-1">
+                                            <img src="${ITEM_IMAGES.sc}" class="w-3 h-3 object-contain filter brightness-100" onerror="this.src='https://placehold.co/20x20?text=SC'">
+                                            ${totalPrice.toLocaleString()} SC
+                                        </button>
                                         `}
                                     </div>
                                 </div>
