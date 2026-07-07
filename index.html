@@ -8048,13 +8048,14 @@
                     optionsHtml += classrooms.map(cr => `<option value="${cr.class}|${cr.room}">${cr.class}/${cr.room}</option>`).join('');
                 }
 
-                // สร้างตัวเลือกไอเทม
+                // สร้างตัวเลือกไอเทม 
+                // [อัปเดต] ปรับ value สกุลเงินให้มีโครงสร้าง 4 ส่วน (type|category|driveId|name) เหมือนไอเทม
                 let itemOptions = `
                     <optgroup label="สกุลเงินหลัก">
-                        <option value="currency|cs">ClassStar (CS)</option>
-                        <option value="currency|ct">Crystal (CT)</option>
-                        <option value="currency|ticket">Ticket</option>
-                        <option value="currency|sc">S-Card (SC)</option>
+                        <option value="currency|cs|none|ClassStar (CS)">ClassStar (CS)</option>
+                        <option value="currency|ct|none|Crystal (CT)">Crystal (CT)</option>
+                        <option value="currency|ticket|none|Ticket">Ticket</option>
+                        <option value="currency|sc|none|S-Card (SC)">S-Card (SC)</option>
                     </optgroup>
                     <optgroup label="กรอบโปรไฟล์">
                 `;
@@ -8062,7 +8063,6 @@
                 // (ส่วนดึงข้อมูล)
                 if (framesSnap.exists()) {
                     Object.entries(framesSnap.val()).forEach(([key, val]) => {
-                        // เช็คว่าราคาต้องไม่เท่ากับ 0 ถึงจะเอามาแสดง
                         if (val.price !== 0 && val.price !== '0') {
                             itemOptions += `<option value="item|frame|${val.driveId}|${val.name}">กรอบ: ${val.name}</option>`;
                         }
@@ -8072,12 +8072,11 @@
                 itemOptions += `</optgroup><optgroup label="ร้านค้าแมว">`;
                 if (catShopSnap.exists()) {
                     Object.entries(catShopSnap.val()).forEach(([key, val]) => {
-                        // เช็คว่าราคาต้องไม่เท่ากับ 0 ถึงจะเอามาแสดง
                         if (val.price !== 0 && val.price !== '0') {
                             if(val.type === 'cat_frame') {
-                            itemOptions += `<option value="item|cat_frame|${val.driveId}|${val.name}">กรอบแมว: ${val.name}</option>`;
+                                itemOptions += `<option value="item|cat_frame|${val.driveId}|${val.name}">กรอบแมว: ${val.name}</option>`;
                             } else {
-                            itemOptions += `<option value="item|${val.type}|${val.driveId}|${val.name}">${val.type.toUpperCase()}: ${val.name}</option>`;
+                                itemOptions += `<option value="item|${val.type}|${val.driveId}|${val.name}">${val.type.toUpperCase()}: ${val.name}</option>`;
                             }
                         }
                     });
@@ -8106,6 +8105,7 @@
             },  
 
             async loadStudentsForReward() {
+                // โค้ดส่วนนี้เหมือนเดิม 100% ใช้งานได้ปกติครับ
                 const selectVal = document.getElementById('rw-classroom-select').value;
                 const itemType = document.getElementById('rw-item').value;
                 const amount = parseInt(document.getElementById('rw-amount').value);
@@ -8163,35 +8163,27 @@
                 try {
                     for (let cb of checkboxes) {
                         const uid = cb.value;
-
-                        if (type === 'currency') {
-                            // ให้สกุลเงินเข้าตัวโดยตรง
-                            const currencyType = itemCategory;
-                            const itemRef = ref(db, `users/${uid}/items/${currencyType}`);
-                            const snap = await get(itemRef);
-                            await set(itemRef, (snap.exists() ? snap.val() : 0) + amount);
-                        } else if (type === 'item') {
-                            // ส่งไอเทมเข้าจดหมาย
-                            const mailRef = ref(db, `mailbox/${uid}`);
-                            const mailSnap = await get(mailRef);
-                            const currentMails = mailSnap.exists() ? mailSnap.val() : {};
-                            
-                            // เช็คโควต้า 10 ฉบับ
-                            if (Object.keys(currentMails).length >= 10) {
-                                continue; // ข้ามคนนี้ไปถ้ากล่องจดหมายเต็ม
-                            }
-
-                            await push(mailRef, {
-                                itemCategory: itemCategory,
-                                driveId: driveId,
-                                itemName: itemName,
-                                amount: amount,
-                                timestamp: Date.now()
-                            });
+                        const mailRef = ref(db, `mailbox/${uid}`);
+                        const mailSnap = await get(mailRef);
+                        const currentMails = mailSnap.exists() ? mailSnap.val() : {};
+                        
+                        // เช็คโควต้า 10 ฉบับ
+                        if (Object.keys(currentMails).length >= 10) {
+                            continue; // ข้ามคนนี้ไปถ้ากล่องจดหมายเต็ม
                         }
+
+                        // [อัปเดต] ไม่ว่าจะเป็นสกุลเงิน หรือ ไอเทม ให้ดันเข้ากล่องจดหมายทั้งหมด
+                        await push(mailRef, {
+                            type: type, // บันทึก type ไว้ใช้เช็คภาพตอนเปิดจดหมาย
+                            itemCategory: itemCategory,
+                            driveId: driveId,
+                            itemName: itemName,
+                            amount: amount,
+                            timestamp: Date.now()
+                        });
                     }
                     
-                    Toast.fire({icon:'success', title: 'แจกรางวัลสำเร็จ'});
+                    Toast.fire({icon:'success', title: 'แจกรางวัลสำเร็จ จดหมายถูกส่งแล้ว'});
                     document.getElementById('rw-student-list').innerHTML = '';
                     document.getElementById('rw-amount').value = '1';
                 } catch(e) {
@@ -10691,6 +10683,7 @@
                 }
             },
             async checkMailBadge() {
+                // โค้ดส่วนนี้เหมือนเดิม
                 const uid = appState.user?.uid;
                 if (!uid) return;
                 const snap = await get(ref(db, `mailbox/${uid}`));
@@ -10700,7 +10693,7 @@
                         const count = Object.keys(snap.val()).length;
                         badge.innerText = count;
                         badge.classList.remove('hidden');
-                        badge.classList.add('flex'); // ใส่ flex กลับเข้ามาเมื่อมีจดหมาย
+                        badge.classList.add('flex');
                     } else {
                         badge.classList.add('hidden');
                         badge.classList.remove('flex');
@@ -10778,7 +10771,12 @@
                         let html = '';
                         
                         Object.entries(mails).sort((a,b) => b[1].timestamp - a[1].timestamp).forEach(([mailId, data]) => {
-                            const imgUrl = `https://drive.google.com/thumbnail?id=${data.driveId}&sz=s400`;
+                            // [อัปเดต] เช็คถ้าเป็นสกุลเงิน ให้ดึงรูปจาก ITEM_IMAGES
+                            let imgUrl = `https://drive.google.com/thumbnail?id=${data.driveId}&sz=s400`;
+                            if (data.type === 'currency' && ITEM_IMAGES[data.itemCategory]) {
+                                imgUrl = ITEM_IMAGES[data.itemCategory];
+                            }
+
                             html += `
                                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center justify-between shadow-sm">
                                     <div class="flex items-center gap-3 min-w-0">
@@ -10807,22 +10805,43 @@
                 try {
                     let updates = {};
                     
-                    // รับของเข้าตัว
-                    if (category === 'frame' || category === 'cat_frame') {
+                    // [อัปเดต] ดึงข้อมูลจดหมายออกมาก่อนเพื่อให้ได้ค่า amount มาใช้กับทุกประเภท (รวมถึงสกุลเงิน)
+                    const mailSnap = await get(ref(db, `mailbox/${uid}/${mailId}`));
+                    if (!mailSnap.exists()) {
+                        Loader.hide();
+                        return Toast.fire({ icon: 'error', title: 'ไม่พบจดหมาย (อาจถูกรับไปแล้ว)' });
+                    }
+                    const mailData = mailSnap.val();
+                    const amount = mailData.amount || 1;
+
+                    // [อัปเดต] เพิ่มเงื่อนไขการรับเข้าตัว หากเป็นสกุลเงินหลัก
+                    if (['cs', 'ct', 'ticket', 'sc'].includes(category)) {
+                        const itemRef = ref(db, `users/${uid}/items/${category}`);
+                        const itemSnap = await get(itemRef);
+                        
+                        // 1. คำนวณค่าใหม่
+                        const newAmount = (itemSnap.exists() ? itemSnap.val() : 0) + amount;
+                        
+                        // 2. ส่งขึ้น Firebase
+                        updates[`users/${uid}/items/${category}`] = newAmount;
+                        
+                        // 3. [เพิ่มส่วนนี้] อัปเดตข้อมูลใน Local State ทันที กระเป๋าจะได้อัปเดตตาม
+                        if (!appState.user.items) appState.user.items = {};
+                        appState.user.items[category] = newAmount;
+                    }
+                    else if (category === 'frame' || category === 'cat_frame') {
                         updates[`users/${uid}/unlocked_frames/${driveId}`] = true;
                         if(!appState.user.unlocked_frames) appState.user.unlocked_frames = {};
                         appState.user.unlocked_frames[driveId] = true;
-                    } else if (category === 'cat' || category === 'bg') {
+                    } 
+                    else if (category === 'cat' || category === 'bg') {
                         updates[`users/${uid}/catData/unlocked/${driveId}`] = true;
                         if(appState.user.catData) {
                             if(!appState.user.catData.unlocked) appState.user.catData.unlocked = {};
                             appState.user.catData.unlocked[driveId] = true;
                         }
-                    } else if (category === 'food') {
-                        const mailSnap = await get(ref(db, `mailbox/${uid}/${mailId}`));
-                        const amount = mailSnap.exists() ? mailSnap.val().amount : 1;
-                        
-                        // 1. ค้นหา Shop Key (เช่น food_1) จาก Drive ID 
+                    } 
+                    else if (category === 'food') {
                         let foodKey = driveId; 
                         if (!window.renderStore.catShop || Object.keys(window.renderStore.catShop).length === 0) {
                             const snap = await get(ref(db, 'cat_shop'));
@@ -10835,7 +10854,6 @@
                             }
                         }
 
-                        // 2. บันทึกข้อมูลด้วย foodKey แทน driveId
                         const cur = appState.user.catData?.inventory?.[foodKey] || 0;
                         updates[`users/${uid}/catData/inventory/${foodKey}`] = cur + amount;
                         
