@@ -99,6 +99,45 @@
         }
 
         .item-card-shadow { box-shadow: 0 4px 15px -3px rgba(39, 214, 245, 0.2); }
+       /* แอนิเมชันสำหรับเลื่อนแบบไร้รอยต่อ */
+       @keyframes scroll-seamless {
+            0% {
+                transform: translateX(0); /* เริ่มเลื่อนจากขอบขวา (เพราะถูกดันด้วย padding) */
+            }
+            85% {
+                transform: translateX(-100%); /* เลื่อนไปจนข้อความหายไปทางซ้ายสุด */
+            }
+            100% {
+                transform: translateX(-100%); /* ซ่อนไว้ 3 วินาที (15% ของ 20 วิ) ก่อนวนรอบใหม่ */
+            }
+        }
+
+        .animate-marquee-seamless {
+            display: flex;
+            width: max-content;
+            padding-left: 100%; /* สำคัญมาก: ดันข้อความไปเริ่มที่ขอบขวาของหน้าจอ */
+            animation: scroll-seamless 20s linear infinite; 
+        }
+
+        /* หยุดเลื่อนเมื่อเอาเมาส์ชี้ (ตัวเลือกเสริม) */
+        .animate-marquee-seamless:hover {
+            animation-play-state: paused;
+        }
+
+        /* หยุดเลื่อนเมื่อเอาเมาส์ชี้ หรือเอานิ้วจิ้ม (ตัวเลือกเสริม) */
+        .animate-marquee-seamless:hover {
+            animation-play-state: paused;
+        }
+        .animate-marquee {
+            display: inline-block;
+            padding-left: 100%; /* เริ่มต้นให้ข้อความอยู่ขอบขวาพอดี */
+            animation: scroll-left 15s linear infinite; /* ปรับความเร็วตรง 15s (ค่าน้อย = เร็วขึ้น) */
+        }
+
+        /* หยุดเลื่อนเมื่อเอาเมาส์ชี้ (ตัวเลือกเสริม) */
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
 
        @keyframes gold-shine-diagonal {
         0% {
@@ -1298,13 +1337,43 @@
                         </div>
                     `;
                 }
-
+                let announcementHtml = '';
+                try {
+                    // 2. ดึงข้อมูลการตั้งค่าประกาศจาก Firebase
+                    const snap = await get(ref(db, 'settings/announcement'));
+                    
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        
+                        // 3. ตรวจสอบว่าแอดมินเปิดให้แสดงหรือไม่ (isEnabled) และต้องมีข้อความ (text)
+                        if (data.isEnabled && data.text) {
+                            
+                            // 4. นำ HTML ของคุณมาใส่ และแทนที่ ${announceText} ด้วย ${data.text}
+                            announcementHtml = `
+                                <div class="mt-4 mx-4 border border-orange-200 rounded-lg bg-orange-50 py-4 flex items-center relative overflow-hidden shadow-sm">
+                                    
+                                    <div class="pl-4 pr-3 bg-orange-50 z-10 flex items-center justify-center shadow-[10px_0_15px_-3px_rgba(255,247,237,1)] relative h-full">
+                                        <i class="fa-solid fa-bullhorn text-orange-500 text-lg"></i>
+                                    </div>
+                                    
+                                    <div class="flex-1 overflow-hidden relative flex items-center">
+                                        <div class="animate-marquee-seamless whitespace-nowrap text-base font-medium text-orange-700">
+                                            <div class="flex items-center">${data.text}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching announcement:", error);
+                }
                 const html = `
                     <div class="flex-1 overflow-y-auto no-scrollbar w-full pb-24 flex flex-col">
                         <div class="shrink-0 h-[15rem] bg-cover bg-center relative z-0" style="background-image: url('${mainBanner}')"></div>
                         
                         ${carouselHtml}
-
+                            ${announcementHtml}
                        <div class="shrink-0 px-2 min-[360px]:px-4 sm:px-5 mt-3">
                             <div class="flex gap-2 min-[360px]:gap-2.5 sm:gap-3 h-[120px] min-[360px]:h-[140px] sm:h-[160px]">
                                 
@@ -1314,7 +1383,9 @@
                                     </div>
                                 </div>
 
+
                                 <div class="w-[42%] flex flex-col gap-2 min-[360px]:gap-2.5 sm:gap-3">
+                                    
                                     <button onclick="app.navigate('gacha')" class="flex-1 rounded-2xl shadow-sm flex items-center justify-center transition-transform active:scale-[0.98] relative overflow-hidden group drop-shadow-md border-4 border-white">
                                         <img class="w-full h-full object-cover transition-transform hover:scale-110" src="https://res.cloudinary.com/du7bh92n6/image/upload/v1782801431/FIRSTMEET_7_jrnp6q.png">
                                     </button>
@@ -1331,6 +1402,8 @@
                                 </div>
 
                             </div>
+                                
+
 
                             <div id="teacher-profile-dropdown" class="hidden w-full mt-3 transition-all">
                                 <div id="teacher-dropdown-content" class="w-full flex items-center justify-center py-4 bg-white border border-gray-200 rounded-2xl shadow-sm">
@@ -8197,7 +8270,7 @@
                 const isTeacher = appState.user.role === 'teacher';
                 
                 let html = `
-                    <div class="flex-1 overflow-y-auto no-scrollbar w-full p-5 pb-24 space-y-6">
+                    <div class="flex-1 overflow-y-auto no-scrollbar w-full p-5 pb-24 space-y-5">
                         <div class="shrink-0 mb-2">
                             <button onclick="app.navigate('profile')" class="text-gray-500 hover:text-dark flex items-center text-sm transition">
                                 <i class="fa-solid fa-arrow-left mr-2"></i> กลับไปหน้าโปรไฟล์
@@ -8207,67 +8280,82 @@
                         <div class="space-y-4 shrink-0">
                             ${isTeacher ? `
                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div class="bg-gray-50 px-4 py-2 border-b text-xs font-bold text-gray-500 uppercase">ส่วนของครู</div>
-                                    <button onclick="app.editHomeConfig()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-palette"></i></div><span class="font-medium">ปรับแต่งหน้าหลัก</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                                    <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron-icon').classList.toggle('-rotate-90');" class="w-full bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-100 transition cursor-pointer">
+                                        <span class="text-xs font-bold text-gray-500 uppercase">จัดการหน้าหลัก</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200 chevron-icon -rotate-90"></i>
                                     </button>
-                                    
-                                    <button onclick="app.openLoginStreakAdmin()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-calendar-check"></i></div><span class="font-medium">ตั้งค่ารางวัลล็อกอิน 7 วัน</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
+                                    <div class="transition-all duration-300 hidden">
+                                        <button onclick="app.editHomeConfig()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-palette"></i></div><span class="font-medium">ปรับแต่งหน้าหลัก</span></div>
+                                        </button>
+                                        <button onclick="app.openLoginStreakAdmin()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-calendar-check"></i></div><span class="font-medium">ตั้งค่ารางวัลล็อกอิน 7 วัน</span></div>
+                                        </button>
+                                        <button onclick="app.manageAnnouncement()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-bullhorn"></i></div><span class="font-medium text-slate-700">จัดการประกาศ</span></div>
+                                        </button>
+                                    </div>
+                                </div>
 
-                                    <button onclick="app.showClassroomManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-users"></i></div><span class="font-medium">จัดการห้องเรียน / นร.</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron-icon').classList.toggle('-rotate-90');" class="w-full bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-100 transition cursor-pointer">
+                                        <span class="text-xs font-bold text-gray-500 uppercase">ระบบเกมและนักเรียน</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200 chevron-icon -rotate-90"></i>
                                     </button>
-                                    <button onclick="app.openGachaAdminManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div><span class="font-medium">จัดการตู้สุ่ม (Gacha)</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                                    <div class="transition-all duration-300 hidden">
+                                        <button onclick="app.showClassroomManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-users"></i></div><span class="font-medium">จัดการห้องเรียน / นร.</span></div>
+                                        </button>
+                                        <button onclick="app.openGachaAdminManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div><span class="font-medium">จัดการตู้สุ่ม (Gacha)</span></div>
+                                        </button>
+                                        <button onclick="app.showTitleManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fa-solid fa-award"></i></div><span class="font-medium">จัดการป้ายฉายา</span></div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron-icon').classList.toggle('-rotate-90');" class="w-full bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-100 transition cursor-pointer">
+                                        <span class="text-xs font-bold text-gray-500 uppercase">จัดการระบบและซ่อมบำรุง</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200 chevron-icon -rotate-90"></i>
                                     </button>
-                                    <button onclick="app.showTitleManager()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fa-solid fa-award"></i></div><span class="font-medium">จัดการป้ายฉายา</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
-                                    <button onclick="app.manageMaintenanceMode()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center"><i class="fa-solid fa-tools"></i></div><span class="font-medium text-red-600">เปิด/ปิด โหมดปรับปรุงระบบ</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
-                                    <button onclick="app.navigate('ban_manager')" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
-                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-user-slash"></i></div><span class="font-medium text-slate-700">จัดการระบบแบนผู้ใช้งาน</span></div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
-                                    <button onclick="app.navigate('admin_patch_notes')" class="w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between mt-3 border border-gray-100 active:scale-95 transition-transform">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shadow-inner">
-                                                <i class="fa-solid fa-file-pen text-lg"></i>
-                                            </div>
-                                            <div class="text-left">
-                                                <div class="text-sm font-bold text-gray-800">จัดการอัพเดต (Patch Notes)</div>
-                                                <div class="text-[10px] text-gray-500">แก้ไขรายละเอียดและเพิ่มแบนเนอร์</div>
-                                            </div>
-                                        </div>
-                                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                    </button>
+                                    <div class="transition-all duration-300 hidden">
+                                        <button onclick="app.navigate('admin_patch_notes')" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center"><i class="fa-solid fa-file-pen text-lg"></i></div><span class="font-medium text-slate-700">จัดการ Patch Notes</span></div>
+                                        </button>
+                                        <button onclick="app.navigate('ban_manager')" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center"><i class="fa-solid fa-user-slash"></i></div><span class="font-medium text-slate-700">จัดการระบบแบนผู้ใช้งาน</span></div>
+                                        </button>
+                                        <button onclick="app.manageMaintenanceMode()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center"><i class="fa-solid fa-tools"></i></div><span class="font-medium text-red-600">เปิด/ปิด โหมดปรับปรุงระบบ</span></div>
+                                        </button>
+                                        <button onclick="window.app.hardResetZeroPasswords()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center"><i class="fa-solid fa-key"></i></div><span class="font-medium text-slate-700">Hard Reset รหัสผ่าน</span></div>
+                                        </button>
+                                    </div>
                                 </div>
                             ` : ''}
 
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div class="bg-gray-50 px-4 py-2 border-b text-xs font-bold text-gray-500 uppercase">โปรไฟล์ & ความปลอดภัย</div>
-                                <button onclick="app.showEditProfile()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
-                                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-500 flex items-center justify-center"><i class="fa-solid fa-image"></i></div><span class="font-medium">แก้ไขโปรไฟล์ / ปก</span></div>
-                                    <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-2">
+                                <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron-icon').classList.toggle('-rotate-90');" class="w-full bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-100 transition cursor-pointer">
+                                    <span class="text-xs font-bold text-gray-500 uppercase">โปรไฟล์ & ความปลอดภัย</span>
+                                    <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200 chevron-icon -rotate-90"></i>
                                 </button>
-                                <button onclick="app.showChangePassword()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
-                                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center"><i class="fa-solid fa-key"></i></div><span class="font-medium">เปลี่ยนรหัสผ่าน</span></div>
-                                    <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                                </button>
+                                <div class="transition-all duration-300">
+                                    <button onclick="app.showEditProfile()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-500 flex items-center justify-center"><i class="fa-solid fa-image"></i></div><span class="font-medium">แก้ไขโปรไฟล์ / ปก</span></div>
+                                    </button>
+                                    <button onclick="app.showChangePassword()" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-200">
+                                        <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center"><i class="fa-solid fa-key"></i></div><span class="font-medium">เปลี่ยนรหัสผ่าน</span></div>
+                                    </button>
+                                </div>
                             </div>
-
-                            <button onclick="app.logout()" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-2xl mt-8 border border-red-100 active:scale-95 transition-transform">
+                            
+                            <button onclick="app.logout()" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-2xl mt-4 border border-red-100 hover:bg-red-100 active:scale-95 transition-all">
                                 ออกจากระบบ
                             </button>
+
                         </div>
                     </div>
                 `;
@@ -13395,6 +13483,161 @@
                 } catch (err) {
                     console.error(err);
                     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถดำเนินการรับของรางวัลได้ในขณะนี้' });
+                }
+            },
+            async manageAnnouncement() {
+                // 1. ดึงข้อมูลประกาศเดิมจาก Firebase
+                Loader.show();
+                let annEnabled = true;
+                let annText = '<span class="mx-4">📢 ยินดีต้อนรับเข้าสู่ระบบ!</span>';
+                
+                try {
+                    const snap = await get(ref(db, 'settings/announcement'));
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        annEnabled = data.isEnabled;
+                        annText = data.text;
+                    }
+                } catch (error) {
+                    console.error("Error fetching announcement:", error);
+                }
+                Loader.hide();
+
+                // 2. แสดง SweetAlert2 ให้แก้ไข
+                const { value: formValues } = await Swal.fire({
+                    title: 'จัดการประกาศหน้าแรก',
+                    html: `
+                        <div class="text-left mt-4 px-2">
+                            <!-- สวิตช์ เปิด/ปิด -->
+                            <div class="flex items-center justify-between mb-5 bg-orange-50 p-3 rounded-xl border border-orange-100">
+                                <label class="text-sm font-bold text-orange-800">แสดงประกาศหน้าแรก</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="swal-ann-toggle" class="sr-only peer" ${annEnabled ? 'checked' : ''}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- กล่องข้อความ -->
+                            <label class="block text-sm font-bold text-gray-700 mb-2">ข้อความประกาศ</label>
+                            <textarea id="swal-ann-text" rows="4" placeholder="พิมพ์ข้อความที่นี่..." class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all">${annText}</textarea>
+                            <p class="text-[10px] text-gray-400 mt-1">* รองรับ HTML เช่น &lt;span class="mx-4"&gt;ข้อความ&lt;/span&gt;</p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'บันทึก',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#f97316',
+                    cancelButtonColor: '#9ca3af',
+                    customClass: { popup: 'rounded-[2rem]' },
+                    preConfirm: () => {
+                        return {
+                            isEnabled: document.getElementById('swal-ann-toggle').checked,
+                            text: document.getElementById('swal-ann-text').value.trim()
+                        };
+                    }
+                });
+
+                // 3. บันทึกข้อมูลกลับลง Firebase
+                if (formValues) {
+                    if (formValues.isEnabled && !formValues.text) {
+                        Swal.fire({ icon: 'warning', title: 'กรุณาระบุข้อความ', text: 'หากเปิดใช้งาน ต้องมีข้อความเสมอ' });
+                        return;
+                    }
+
+                    Loader.show();
+                    try {
+                        await set(ref(db, 'settings/announcement'), formValues);
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: 'บันทึกสำเร็จ',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } catch (error) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถบันทึกได้' });
+                    } finally {
+                        Loader.hide();
+                    }
+                }
+            },
+            async hardResetZeroPasswords() {
+                // ตรวจสอบสิทธิ์ว่าผู้ใช้เป็น Admin (teacher) หรือไม่
+                if (appState.user.role !== 'teacher') return;
+
+                // เรียกใช้ SweetAlert2 เพื่อยืนยันการดำเนินการ
+                const { isConfirmed } = await Swal.fire({
+                    title: 'ยืนยันการ Hard Reset?',
+                    text: 'ระบบจะทำการรีเซ็ตรหัสผ่านของนักเรียนทุกคนที่ใช้รหัส "00000" ให้เป็นตัวอักษรสุ่ม 6 หลัก',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#F5275B',
+                    cancelButtonColor: '#9ca3af',
+                    confirmButtonText: 'ยืนยันรีเซ็ต',
+                    cancelButtonText: 'ยกเลิก',
+                    customClass: { popup: 'rounded-[2rem]' }
+                });
+
+                if (!isConfirmed) return;
+
+                Loader.show();
+                try {
+                    const usersRef = ref(db, 'users');
+                    const snap = await get(usersRef);
+                    
+                    if (snap.exists()) {
+                        const users = snap.val();
+                        let updatedCount = 0;
+                        const updates = {};
+                        let resultListHtml = '';
+
+                        // ฟังก์ชันสุ่มตัวอักษรและตัวเลข 6 หลัก
+                        const generateRandomPass = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+
+                        // วนลูปตรวจสอบข้อมูลผู้ใช้ทั้งหมด
+                        for (const uid in users) {
+                            const u = users[uid];
+                            
+                            // หากไม่ใช่ครู และรหัสผ่านถูกแฮชเป็นค่าของ 00000
+                            if (u.role !== 'teacher' && (u.password === btoa('00000') || u.password === '00000')) {
+                                const newPassword = generateRandomPass();
+                                
+                                // อัปเดตรหัสผ่านใหม่ที่ผ่านการเข้ารหัส btoa
+                                updates[`users/${uid}/password`] = btoa(newPassword);
+                                updatedCount++;
+                                
+                                // บันทึกรายชื่อเพื่อแสดงสรุปผลให้ Admin ทราบ
+                                const studentName = u.displayName || u.fullName || u.studentId || 'ไม่ระบุชื่อ';
+                                resultListHtml += `<div class="text-left border-b py-1 text-sm"><span class="font-bold text-gray-700">${studentName}</span> : <span class="text-red-500 font-mono">${newPassword}</span></div>`;
+                            }
+                        }
+
+                        if (updatedCount > 0) {
+                            // อัปเดตข้อมูลขึ้น Firebase แบบ Batch
+                            await update(ref(db), updates);
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: `รีเซ็ตสำเร็จ ${updatedCount} บัญชี`,
+                                html: `
+                                    <p class="text-sm text-gray-500 mb-2">กรุณาบันทึกรหัสผ่านใหม่เหล่านี้ให้แก่นักเรียน:</p>
+                                    <div class="max-h-48 overflow-y-auto bg-gray-50 p-2 rounded-xl border">${resultListHtml}</div>
+                                `,
+                                confirmButtonColor: '#27D6F5'
+                            });
+                        } else {
+                            Swal.fire({ 
+                                icon: 'info', 
+                                title: 'ไม่มีบัญชีที่ต้องรีเซ็ต',
+                                text: 'ไม่พบนักเรียนที่ใช้งานรหัสผ่าน "00000"',
+                                confirmButtonColor: '#27D6F5'
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error("Hard Reset Error:", error);
+                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการเชื่อมต่อข้อมูล' });
+                } finally {
+                    Loader.hide();
                 }
             },
             insertPatchNoteImage: async () => {
