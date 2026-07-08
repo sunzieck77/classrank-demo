@@ -9458,8 +9458,8 @@
                                 const currentHunger = val.hunger || 0;
                                 const currentHappy = val.happy || 0;
 
-                                const displayHunger = hasHungerBonus ? Math.floor(currentHunger * 1.10) : currentHunger;
-                                const displayHappy = hasHappyBonus ? Math.floor(currentHappy * 1.08) : currentHappy;
+                                const displayHunger = hasHungerBonus ? Math.ceil(currentHunger * 1.50) : currentHunger;
+                                const displayHappy = hasHappyBonus ? Math.ceil(currentHappy * 1.08) : currentHappy;
 
                                 const hungerColorClass = hasHungerBonus ? 'text-green-300 font-black' : 'text-orange-200';
                                 const happyColorClass = hasHappyBonus ? 'text-green-300 font-black' : 'text-pink-300';
@@ -10070,6 +10070,13 @@
             let curLevel = u.catData.level || 1;
             let overfeedCount = u.catData.overfeedCount || 0;
 
+            const equippedItems = appState.user.equippedSpecialItems || {};
+            const hasHungerBonus = Object.values(equippedItems).includes('item_8'); // การ์ดเพิ่มความหิว 10%
+            const hasHappyBonus = Object.values(equippedItems).includes('item_9'); // การ์ดเพิ่มความสุข 8%
+
+            const actualHPlus = hasHungerBonus ? Math.ceil(hPlus * 1.10) : hPlus;
+            const actualHpPlus = hasHappyBonus ? Math.ceil(hpPlus * 1.08) : hpPlus;
+
             // 🌟 ดึงข้อมูลรายละเอียดอาหาร (ชื่อ และ รูปภาพ) จาก Store มาแสดงผลบน Modal
             const foodItem = window.renderStore && window.renderStore.catShop && window.renderStore.catShop[foodId];
             const foodName = foodItem ? foodItem.name : 'อาหารแมว';
@@ -10147,7 +10154,7 @@
 
             Loader.show();
             try {
-                // 4. ลูปคำนวณสถานะทีละชิ้นตามจำนวนที่เลือกป้อนจริง
+                // ลูปคำนวณสถานะทีละชิ้นตามจำนวนที่เลือกป้อนจริง
                 for (let i = 0; i < feedQty; i++) {
                     if (curHunger >= 100 && curHappy >= 100) {
                         overfeedCount += 1;
@@ -10155,14 +10162,14 @@
                         overfeedCount = 0;
                     }
 
-                    curHunger = Math.min(100, curHunger + hPlus);
-                    curHappy = Math.min(100, curHappy + hpPlus);
+                    // 🌟 3. เปลี่ยนไปบวกด้วยค่า actualHPlus และ actualHpPlus แทน
+                    curHunger = Math.min(100, curHunger + actualHPlus);
+                    curHappy = Math.min(100, curHappy + actualHpPlus);
                     
                     if (Math.random() > 0.8) {
                         curLevel = Math.min(120, curLevel + 1);
                     }
                 }
-
                 // 5. บันทึกผลลัพธ์ลง Firebase ครั้งเดียว
                 let updates = {};
                 updates[`users/${u.uid}/catData/inventory/${foodId}`] = curFood - feedQty;
