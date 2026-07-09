@@ -1566,6 +1566,13 @@
                     }
 
                     const rewardsConfig = rewardsSnap.val();
+                    const streakSection = document.getElementById('login-streak-section');
+                    if (rewardsConfig.isActive === false) {
+                        if (streakSection) streakSection.style.display = 'none';
+                        return; // หยุดการทำงาน ไม่ต้องเรนเดอร์ของรางวัล
+                    } else {
+                        if (streakSection) streakSection.style.display = 'block';
+                    }
                     const uid = window.appState?.user?.uid || Auth?.currentUser?.uid;
                     
                     // 🌟 เพิ่มตัวแปร lastClaimDate เป็นค่าเริ่มต้น
@@ -1588,7 +1595,8 @@
                         
                         // ถ้ารับครบ 7 วันแล้ว ให้วนกลับไปวันที่ 1 ใหม่
                         if (userStreak.currentDay > 7) {
-                            userStreak.currentDay = 1;
+                            userStreak.currentDay = 7;
+                            userStreak.claimedToday = true;
                         }
 
                         // อัปเดตกลับไปที่ Firebase อัตโนมัติ
@@ -13220,12 +13228,18 @@
                         const savedVal = saved.itemType ? `${saved.itemType}|${saved.itemId}|${saved.name}|${saved.driveId}` : '';
                         
                         formHtml += `
+                            
                             <div class="border border-indigo-100 rounded-2xl p-4 bg-indigo-50/30 shadow-sm space-y-3 relative">
                                 <div class="font-extrabold text-indigo-900 text-sm flex items-center gap-2">
                                     <span class="bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm text-xs">${d}</span>
                                     ของรางวัลวันที่ ${d}
                                 </div>
 
+                                
+                                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-indigo-100 mb-3 shadow-sm">
+                                    <span class="font-bold text-sm text-indigo-900">เปิดใช้งานกิจกรรมล็อกอิน</span>
+                                    <input type="checkbox" id="streak-active-toggle" class="w-5 h-5 accent-indigo-600" ${currentRewards.isActive !== false ? 'checked' : ''}>
+                                </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <input type="text" id="streak-search-${d}" placeholder="🔍 พิมพ์ชื่อเพื่อค้นหา..." class="w-full p-2 border border-indigo-100 rounded-xl bg-white focus:outline-none text-[11px] font-bold text-indigo-950" oninput="window.app.filterStreakOptions(${d})">
@@ -13326,12 +13340,24 @@
                                     icon: iconUrl
                                 };
                             }
+                            finalRewards.isActive = document.getElementById('streak-active-toggle').checked;
                             return finalRewards;
                         }
                     }).then(async (result) => {
                         if (result.isConfirmed) {
                             Loader.show();
                             await set(ref(db, 'system/home_config/login_rewards'), result.value);
+
+                            if (result.value.isActive === false) {
+                                const usersSnap = await get(ref(db, 'users'));
+                                if (usersSnap.exists()) {
+                                    let updates = {};
+                                    Object.keys(usersSnap.val()).forEach(uid => {
+                                        updates[`users/${uid}/loginStreak`] = null; // ล้างข้อมูลการกดรับของทุกคน
+                                    });
+                                    await update(ref(db), updates);
+                                }
+                            }
                             Loader.hide();
                             Toast.fire({ icon: 'success', title: 'อัปเดตของรางวัลล็อกอิน 7 วันสำเร็จ' });
                             if (typeof Views !== 'undefined' && Views.renderHome) Views.renderHome();
