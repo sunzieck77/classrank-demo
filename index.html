@@ -2618,7 +2618,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ราคา (S-Card / ใบ):</label>
-                                <input type="number" id="sell-price" min="1" step="1"
+                                <input type="number" id="sell-price" min="1" max="999999" step="1"
                                     class="w-full border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm" 
                                     placeholder="ระบุราคา S-Card ที่ต้องการ">
                             </div>
@@ -2641,8 +2641,9 @@
                         const price = parseInt(document.getElementById('sell-price').value);
                         const code = document.getElementById('sell-code').value.trim();
 
-                        if (!price || price <= 0) {
-                            Swal.showValidationMessage('กรุณาระบุราคาที่มากกว่า 0 S-Card');
+                        // เพิ่มเงื่อนไขตรวจสอบไม่ให้ราคาเกิน 999,999
+                        if (!price || price <= 0 || price > 999999) {
+                            Swal.showValidationMessage('ตัวเลขไม่ถูกต้อง! กรุณาใส่ตัวเลขตามความจริง');
                             return false;
                         }
                         return { qty, price, code: code || null };
@@ -6152,7 +6153,7 @@
                                 </div>
                                 <div>
                                     <label class="text-xs font-bold text-gray-500 mb-1 block">ราคาใหม่ (ต่อหน่วย)</label>
-                                    <input type="number" id="edit-p-price" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary font-bold" value="${listingData.price}" min="1">
+                                    <input type="number" id="edit-p-price" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary font-bold" value="${listingData.price}" min="1" max="999999" placeholder="ระบุราคาที่ต้องการขาย">
                                 </div>
                                 <div>
                                     <label class="text-xs font-bold text-gray-500 mb-1 block">ตั้งรหัสผ่านล็อกห้องใหม่ (เว้นว่างไว้หากไม่ต้องการล็อก)</label>
@@ -6169,8 +6170,9 @@
                             const newPrice = parseInt(document.getElementById('edit-p-price').value);
                             const newCode = document.getElementById('edit-p-code').value.trim();
                             
-                            if (!newPrice || newPrice <= 0) {
-                                Swal.showValidationMessage('กรุณาระบุราคาที่ถูกต้องและมากกว่า 0');
+                            // เพิ่มการตรวจสอบไม่ให้เกิน 999,999
+                            if (!newPrice || newPrice <= 0 || newPrice > 999999) {
+                                Swal.showValidationMessage('ตัวเลขไม่ถูกต้อง! กรุณาใส่ตัวเลขตามความจริง');
                                 return false;
                             }
                             return { price: newPrice, code: newCode || null };
