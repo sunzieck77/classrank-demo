@@ -1,14 +1,218 @@
-<div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-2.5 shrink-0">
-                            <div class="flex bg-gray-100 p-1 rounded-xl">
-                                <button onclick="app.setRankingScope('class')" class="flex-1 py-2 text-xs font-bold rounded-lg transition ${scope === 'class' ? 'bg-white text-pink-500 shadow-sm' : 'text-gray-500'}">ระดับห้องเรียน</button>
-                                <button onclick="app.setRankingScope('school')" class="flex-1 py-2 text-xs font-bold rounded-lg transition ${scope === 'school' ? 'bg-white text-pink-500 shadow-sm' : 'text-gray-500'}">ระดับโรงเรียน</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="app.setRankingCriteria('cs')" class="flex-1 py-2 text-xs font-bold rounded-xl border transition flex items-center justify-center gap-1.5 ${criteria === 'cs' ? 'border-pink-500 bg-pink-50 text-pink-500' : 'border-gray-100 text-gray-500'}">
-                                    <img src="${ITEM_IMAGES.cs}" class="w-4 h-4 object-contain"> CATSTAR
-                                </button>
-                                <button onclick="app.setRankingCriteria('ct')" class="flex-1 py-2 text-xs font-bold rounded-xl border transition flex items-center justify-center gap-1.5 ${criteria === 'ct' ? 'border-pink-500 bg-pink-50 text-pink-500' : 'border-gray-100 text-gray-500'}">
-                                    <img src="${ITEM_IMAGES.ct}" class="w-4 h-4 object-contain"> CRYSTAL
-                                </button>
-                            </div>
-                        </div>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการรูปภาพ Cloudinary</title>
+    <!-- โหลดฟอนต์และ CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- โหลด SweetAlert2 สำหรับแจ้งเตือนสวยๆ -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- โหลด CryptoJS สำหรับเข้ารหัส Signature -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .img-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .img-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 max-w-5xl mx-auto">
+
+    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">📸 อัปโหลดรูปภาพ (Cloudinary)</h2>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">ชื่อโฟลเดอร์ (เว้นว่างได้):</label>
+            <input type="text" id="folderInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น my_folder">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-semibold mb-2">เลือกรูปภาพ:</label>
+            <input type="file" id="fileInput" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50">
+        </div>
+        
+        <button id="uploadBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-200">
+            อัปโหลดรูปภาพ
+        </button>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-md">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">🖼️ คลังรูปภาพของคุณ</h2>
+        <div id="gallery" class="gallery-grid">
+            <!-- รูปภาพจะถูกสร้างขึ้นที่นี่ด้วย JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // ข้อมูล API ของคุณ (จากภาพที่คุณแนบมา)
+        const cloudName = 'f2aztwao';
+        const apiKey = '543894455628167';
+        const apiSecret = 'EYeLAF50ohKmWgrEE5IBloVHJlA'; 
+        const uploadPreset = 'catroom';
+
+        const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const gallery = document.getElementById('gallery');
+
+        // โหลดข้อมูลรูปภาพจาก LocalStorage (จำลองฐานข้อมูล)
+        let imagesList = JSON.parse(localStorage.getItem('myCloudinaryImages')) || [];
+
+        // ฟังก์ชันแสดงผลรูปภาพทั้งหมด
+        function renderGallery() {
+            gallery.innerHTML = '';
+            
+            if(imagesList.length === 0) {
+                gallery.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">ยังไม่มีรูปภาพ</p>';
+                return;
+            }
+
+            imagesList.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                card.innerHTML = `
+                    <img src="${img.url}" alt="image">
+                    <p class="text-xs text-gray-500 mb-3 truncate" title="${img.public_id}">${img.public_id}</p>
+                    <div class="flex justify-center gap-2">
+                        <button onclick="updateImage(${index})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm w-full">ใส่ฟิลเตอร์</button>
+                        <button onclick="deleteImage('${img.public_id}', ${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-sm w-full">ลบถาวร</button>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        }
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            const folderName = folderInput.value.trim();
+
+            if (!file) {
+                return Swal.fire('แจ้งเตือน', 'กรุณาเลือกไฟล์ก่อนอัปโหลด', 'warning');
+            }
+
+            // แสดง Loading
+            Swal.fire({
+                title: 'กำลังอัปโหลด...',
+                text: 'โปรดรอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            if (folderName) formData.append('folder', folderName);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // บันทึกข้อมูลรูปลง Array และ LocalStorage
+                    imagesList.unshift({ public_id: data.public_id, url: data.secure_url });
+                    localStorage.setItem('myCloudinaryImages', JSON.stringify(imagesList));
+                    
+                    Swal.fire('สำเร็จ!', 'อัปโหลดรูปภาพเรียบร้อยแล้ว', 'success');
+                    fileInput.value = ''; // ล้างค่า
+                    renderGallery(); // รีเฟรชแกลเลอรี
+                } else {
+                    Swal.fire('ข้อผิดพลาด', `อัปโหลดไม่สำเร็จ: ${data.error.message}`, 'error');
+                }
+            } catch (err) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+            }
+        });
+
+        window.updateImage = function(index) {
+            let img = imagesList[index];
+            
+            // เช็กว่าใส่ฟิลเตอร์ไปแล้วหรือยัง
+            if(img.url.includes('e_blur:200,e_grayscale')) {
+                return Swal.fire('แจ้งเตือน', 'รูปนี้ถูกใส่ฟิลเตอร์ไปแล้ว', 'info');
+            }
+
+            // เพิ่มพารามิเตอร์ฟิลเตอร์ใน URL
+            img.url = img.url.replace('/upload/', '/upload/e_blur:200,e_grayscale/');
+            localStorage.setItem('myCloudinaryImages', JSON.stringify(imagesList));
+            
+            Swal.fire({
+                title: 'สำเร็จ', 
+                text: 'ใส่ฟิลเตอร์ (เบลอ+ขาวดำ) เรียบร้อย', 
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            renderGallery();
+        };
+
+        window.deleteImage = async function(public_id, index) {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบถาวร?',
+                html: `คุณต้องการลบรูป <b>${public_id}</b> ใช่หรือไม่?<br><span class="text-red-500 text-sm">การกระทำนี้ไม่สามารถกู้คืนได้</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'กำลังลบรูปภาพ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const timestamp = Math.floor(new Date().getTime() / 1000);
+            
+            // สร้าง String สำหรับลายเซ็นต์ (เรียงตัวอักษร public_id -> timestamp)
+            // ถอด invalidate ออก เพื่อให้การแฮชตรงกับ Server ที่สุด
+            const stringToSign = `public_id=${public_id}&timestamp=${timestamp}${apiSecret}`;
+            
+            // เข้ารหัสด้วย CryptoJS แบบมาตรฐาน
+            const signature = CryptoJS.SHA1(stringToSign).toString();
+
+            const formData = new FormData();
+            formData.append('public_id', public_id);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp);
+            formData.append('signature', signature);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok && data.result === 'ok') {
+                    // ลบรูปออกจาก Array และอัปเดต LocalStorage
+                    imagesList.splice(index, 1);
+                    localStorage.setItem('myCloudinaryImages', JSON.stringify(imagesList));
+                    
+                    Swal.fire('ลบสำเร็จ!', 'รูปภาพถูกลบออกจาก Cloudinary แล้ว', 'success');
+                    renderGallery();
+                } else {
+                    Swal.fire('ข้อผิดพลาดจาก Cloudinary', data.error ? data.error.message : 'ไม่พบไฟล์ที่ต้องการลบ', 'error');
+                }
+            } catch (err) {
+                Swal.fire('ข้อผิดพลาด', 'ระบบขัดข้อง ไม่สามารถลบไฟล์ได้', 'error');
+                console.error(err);
+            }
+        };
+
+        // เรียกแสดงรูปตอนเปิดเว็บครั้งแรก
+        renderGallery();
+    </script>
+</body>
+</html>
